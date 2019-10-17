@@ -1,0 +1,7 @@
+{
+    "models": [
+        "M0"
+    ], 
+    "models_params_file": "model_params.json", 
+    "morph_path": "/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/"
+}

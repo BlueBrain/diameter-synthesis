@@ -1,0 +1,16 @@
+{
+    "by_mtypes": true, 
+    "ext": ".png", 
+    "fig_folder": "figures", 
+    "models": [
+        "M0"
+    ], 
+    "models_params_file": "model_params.json", 
+    "morph_path": "/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/", 
+    "n_morphs_max": null, 
+    "n_mtypes_max": 60, 
+    "neurite_types": [
+        "basal", 
+        "apical"
+    ]
+}
