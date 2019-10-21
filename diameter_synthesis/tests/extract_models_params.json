@@ -1,5 +1,5 @@
 {
-    "by_mtypes": true, 
+    "by_mtypes": false, 
     "ext": ".png", 
     "fig_folder": "figures", 
     "models": [
@@ -10,7 +10,6 @@
     "n_morphs_max": null, 
     "n_mtypes_max": 60, 
     "neurite_types": [
-        "basal", 
-        "apical"
+        "basal"
     ]
 }

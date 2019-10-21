@@ -1,8 +1,11 @@
+import os, glob, shutil
 import numpy as np
 
 import matplotlib
 matplotlib.use('Agg')
 import pylab as plt
+
+from neurom import viewer
 
 import diameter_synthesis.utils as utils 
 
@@ -167,3 +170,15 @@ def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', fig
     plt.xticks(np.arange(1, len(data)+1), data.keys(), rotation='vertical')
     #plt.axis([0, len(data)+1, 0., 5])
     plt.savefig(figname + '_trunk' + ext, bbox_inches = 'tight')
+
+def plot_neuron(neuron, folder, ext = '.png'):
+    """ plot a neuron and save in a folder """
+
+    if not os.path.isdir(folder):
+            os.mkdir(folder)
+
+    fig, ax = viewer.draw(neuron[0])
+    plt.savefig(folder + '/' + neuron[1] + '_' + folder + ext, dpi = 500)
+    plt.close()
+
+

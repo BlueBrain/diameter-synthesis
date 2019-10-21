@@ -1,7 +1,14 @@
 {
+    "by_mtypes": false, 
     "models": [
         "M0"
     ], 
     "models_params_file": "model_params.json", 
-    "morph_path": "/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/"
+    "morph_path": "/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/", 
+    "n_morphs_max": 50, 
+    "n_mtypes_max": 2, 
+    "neurite_types": [
+        "basal"
+    ], 
+    "new_morph_path": "new_diameters/"
 }

@@ -1,0 +1,7 @@
+- learn taper distribution
+- use mtype-based model to create diameters
+- some hardcoded parameters could be put in json file
+- collect morphologies that we can check with diameter-check
+- make a script to run diameter-check
+- update the readme/doc/.tex with the model
+- maybe learn all with mtypes and select which parameters are mtype related, or from all

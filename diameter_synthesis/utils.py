@@ -29,8 +29,8 @@ def load_morphologies_from_dict(morph_path, name_dict):
         for fname in tqdm(name_dict[mtype], disable = tqdm_2):
             name, ext = os.path.splitext(fname)
             if ext in {'.h5', '.asc', '.swc'}:
-                neuron = neurom.load_neuron(morph_path+'/'+fname)
-                morphologies[mtype].append(neuron)
+                neuron = neurom.load_neuron(morph_path + '/' + fname)
+                morphologies[mtype].append([neuron, name])
 
     return morphologies 
 
@@ -138,11 +138,19 @@ def Rall_deviations(neurite, method = 'mean'):
 
     return Rall_deviations
 
-def terminal_diameters(neurite, threshold = 1.2):
+def terminal_diameters(neurite, method = 'mean', threshold = 0.8):
     """Returns the model for the terminations"""
 
-    mean_diam = np.mean(neurite.points[:, 3])
-    term_diam = [2. * t.points[-1, 3] for t in neurom.core.Tree.ileaf(next(neurite.iter_sections())) if t.points[-1, 3] < threshold * mean_diam]
+    mean_radii = np.mean(neurite.points[:, 3])
+
+    if method == 'mean':
+        term_diam = [2. * np.mean(t.points[:, 3]) for t in neurom.core.Tree.ileaf(next(neurite.iter_sections())) if np.mean(t.points[:, 3]) < threshold * mean_radii]
+
+    elif method == 'first':
+        term_diam = [2. * t.points[-1, 3] for t in neurom.core.Tree.ileaf(next(neurite.iter_sections())) if t.points[-1, 3] < threshold * mean_radii]
+
+    else:
+        raise Exception('Method for singling computation not understood!')
 
     return term_diam
 
@@ -194,6 +202,50 @@ def evaluate_distribution(x, model, tpes = []):
     else:
         raise Exception('Distribution not understood')
 
+def sample_distribution(model, tpe = 0):
+    """ sample from a distribution"""
+
+    def truncate(sample_func, min_value, max_value):
+        sample = sample_func()
+
+        while sample > max_value or sample < min_value:
+            sample = sample_func()
+
+        return sample 
+
+    params = model['params']
+
+    if model['distribution'] == 'expon_rev':
+        from scipy.stats import expon
+
+        return truncate(lambda: 1. - expon.rvs(params['loc'], params['scale']), params['min'], params['max'])
+
+    elif model['distribution'] == 'exponnorm':
+        from scipy.stats import exponnorm 
+
+        return truncate(lambda: exponnorm.rvs(params['a'], params['loc'], params['scale']), params['min'], params['max'])
+
+
+    elif model['distribution'] == 'gamma':
+        from scipy.stats import gamma
+
+        return truncate(lambda: gamma.rvs(params['a'], params['loc'], params['scale']), params['min'], params['max'])
+
+    elif model['distribution'] == 'skewnorm':
+        from scipy.stats import skewnorm 
+
+        return truncate(lambda: skewnorm.rvs(params['a'], params['loc'], params['scale']), params['min'], params['max'])
+
+    elif model['distribution'] == 'exponnorm_sequence':
+        from scipy.stats import exponnorm
+
+        return truncate(lambda: exponnorm.rvs(np.poly1d(params['a'])(tpe), np.poly1d(params['loc'])(tpe), np.poly1d(params['scale'])(tpe)), np.poly1d(params['min'])(tpe), np.poly1d(params['max'])(tpe))
+
+        return fits
+    else:
+        raise Exception('Distribution not understood')
+
+
 def fit_distribution_params(params): 
     tpes_model = params.keys()
     As     = [v['a'] for v in params.values()]
@@ -244,7 +296,7 @@ def fit_distribution(data, distribution, floc = None, min_sample_num = 10, p = 5
             return {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': np.round(np.percentile(data, 100-p), ROUND)}
 
         elif distribution == 'exponnorm_sequence':
-            from scipy.stats import gamma
+            from scipy.stats import exponnorm 
 
             tpes = np.asarray(data)[:, 1] #collect the type of point (branching order for now)
             values = np.asarray(data)[:, 0] #collect the data itself
@@ -294,3 +346,14 @@ def update_params_fit_distribution(data, model):
         model['params'] = {'a': [0.], 'loc': [0.], 'scale': [0.], 'min': 0., 'max': 0.1 }
 
     return model
+
+
+def save_neuron(neuron, model, folder):
+        """ save the neuron morphology for later analysis """
+
+        if not os.path.isdir(folder):
+                os.mkdir(folder)
+
+        neuron[0].write(folder + '/' + model + '_' + neuron[1] + '.asc')
+
+

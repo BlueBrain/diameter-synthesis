@@ -28,7 +28,7 @@ def sampling_model_test(morphologies, neurite_types, tqdm_disable = False):
     #loop first over all morphologies (TODO: could be parallelized)
     for neuron in tqdm(morphologies, disable = tqdm_disable):
         #for each neurite in the neuron
-        for i, neurite in enumerate(neuron.neurites):
+        for i, neurite in enumerate(neuron[0].neurites):
             #for each type of neurite we consider
             for neurite_type in neurite_types:
                 if neurite.type == STR_TO_TYPES[neurite_type]:
@@ -86,12 +86,11 @@ def sampling_model_test(morphologies, neurite_types, tqdm_disable = False):
     return all_models, all_data
 
 
-def build(models, morphologies, neurite_types, fig_folder = 'figures', ext = '.png'):
+def build_models(models, morphologies, neurite_types, fig_folder = 'figures', ext = '.png'):
     """ Building the models in the list of models """  
 
     all_models = {'M0': sampling_model_test}
     
-    #to have a single progression bar
     if len(morphologies) >1:
         tqdm_1 = False
         tqdm_2 = True
@@ -99,7 +98,7 @@ def build(models, morphologies, neurite_types, fig_folder = 'figures', ext = '.p
         tqdm_1 = True
         tqdm_2 = False
 
-    #extrac tthe data and the models
+    #extract the data and the models
     models_params = {} #dictionary of model parameters for each mtype
     models_data = {} #dictionary of model parameters for each mtype
     for mtype in tqdm(morphologies, disable = tqdm_1):
