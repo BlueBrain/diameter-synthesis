@@ -107,3 +107,63 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
     if isinstance(data[neurite_types[0]][0], list): #if the fits are done as a function of a type
         plot_fit_distribution_params(model, neurite_types, fig_name = fig_name+  '_param_fit', ext = ext)
 
+def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', figname = 'test', ext = '.png', figsize = (6,3)):
+    """ box plots for the fits of the model parameters """
+
+    import collections 
+    data = collections.OrderedDict() 
+
+    mtype = model_params.keys()[0]
+    for fit in  model_params[mtype][model]:
+        if fit != 'trunk_diameter':
+            for params in model_params[mtype][model][fit][neurite_type]['params']:
+                data[fit + '_' + params] = []
+        else:
+            for params in model_params[mtype][model][fit][neurite_type]['params']:
+                data[fit + '_' + params + '_0'] = []
+                data[fit + '_' + params + '_1'] = []
+
+
+
+    for mtype in model_params:
+        for fit in  model_params[mtype][model]:
+            if fit != 'trunk_diameter':
+                for params in model_params[mtype][model][fit][neurite_type]['params']:
+                    data[fit+'_' + params].append(model_params[mtype][model][fit][neurite_type]['params'][params])
+            else:
+                for params in model_params[mtype][model][fit][neurite_type]['params']:
+                    data[fit+'_' + params + '_0'].append(model_params[mtype][model][fit][neurite_type]['params'][params][0])
+                    data[fit+'_' + params + '_1'].append(model_params[mtype][model][fit][neurite_type]['params'][params][1])
+
+
+    plt.figure(figsize = figsize)
+    plt.boxplot(data.values())
+    plt.xticks(np.arange(1, len(data)+1), data.keys(), rotation='vertical')
+    #plt.axis([0, len(data)+1, 0., 5])
+    plt.savefig(figname + ext, bbox_inches = 'tight')
+
+    data = collections.OrderedDict() 
+
+    bos = ['0.0', '1.0', '2.0', '3.0', '4.0', '5.0','6.0','7.0','8.0',]
+    mtype = model_params.keys()[0]
+    for fit in  model_params[mtype][model]:
+        if fit == 'trunk_diameter':
+            for params in model_params[mtype][model][fit][neurite_type]['params_data']['0.0']:
+                for bo in bos:
+                    data[bo + '_' + params] = []
+
+
+    print(data)
+    for mtype in model_params:
+        for fit in  model_params[mtype][model]:
+            if fit == 'trunk_diameter':
+                for bo in model_params[mtype][model][fit][neurite_type]['params_data']:
+                    if bo in bos:
+                        for params in model_params[mtype][model][fit][neurite_type]['params_data'][bo]:
+                            data[bo + '_' + params].append(model_params[mtype][model][fit][neurite_type]['params_data'][bo][params])
+
+    plt.figure(figsize = figsize)
+    plt.boxplot(data.values())
+    plt.xticks(np.arange(1, len(data)+1), data.keys(), rotation='vertical')
+    #plt.axis([0, len(data)+1, 0., 5])
+    plt.savefig(figname + '_trunk' + ext, bbox_inches = 'tight')

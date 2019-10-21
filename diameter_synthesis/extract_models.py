@@ -58,12 +58,12 @@ def sampling_model_test(morphologies, neurite_types, tqdm_disable = False):
         
         #terminal diameters
         terminal_diameters_models[neurite_type] = {} 
-        terminal_diameters_models[neurite_type]['distribution'] =  'gamma'
+        terminal_diameters_models[neurite_type]['distribution'] =  'exponnorm'
         terminal_diameters_models[neurite_type]['params'] =  utils.fit_distribution(terminal_diameters[neurite_type], terminal_diameters_models[neurite_type]['distribution'])
 
         #trunk diameters
         trunk_diameters_models[neurite_type] = {} 
-        trunk_diameters_models[neurite_type]['distribution'] =  'gamma_sequence'
+        trunk_diameters_models[neurite_type]['distribution'] =  'exponnorm_sequence'
         min_sample_num = {'basal': 10, 'apical': 5}
         trunk_diameters_models[neurite_type]['params'] =  utils.fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], min_sample_num = min_sample_num[neurite_type], floc = 0)
         trunk_diameters_models[neurite_type] = utils.update_params_fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type])

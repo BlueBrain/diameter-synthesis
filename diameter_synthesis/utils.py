@@ -183,14 +183,12 @@ def evaluate_distribution(x, model, tpes = []):
 
         return skewnorm.pdf(x, params['a'], params['loc'], params['scale'])
 
-    elif model['distribution'] == 'gamma_sequence':
-        from scipy.stats import gamma
+    elif model['distribution'] == 'exponnorm_sequence':
         from scipy.stats import exponnorm
-        gamma = exponnorm
 
         fits = []
         for tpe in tpes:
-            fits.append(gamma.pdf(x, np.poly1d(params['a'])(tpe), np.poly1d(params['loc'])(tpe), np.poly1d(params['scale'])(tpe)))
+            fits.append(exponnorm.pdf(x, np.poly1d(params['a'])(tpe), np.poly1d(params['loc'])(tpe), np.poly1d(params['scale'])(tpe)))
 
         return fits
     else:
@@ -245,10 +243,8 @@ def fit_distribution(data, distribution, floc = None, min_sample_num = 10, p = 5
 
             return {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': np.round(np.percentile(data, 100-p), ROUND)}
 
-        elif distribution == 'gamma_sequence':
+        elif distribution == 'exponnorm_sequence':
             from scipy.stats import gamma
-            from scipy.stats import exponnorm
-            gamma = exponnorm
 
             tpes = np.asarray(data)[:, 1] #collect the type of point (branching order for now)
             values = np.asarray(data)[:, 0] #collect the data itself
@@ -258,9 +254,9 @@ def fit_distribution(data, distribution, floc = None, min_sample_num = 10, p = 5
                 values_tpe = values[tpes==tpe] #select the values by its type 
                 if len(values_tpe) > min_sample_num: #if enough points, try to fit
                     if floc is not None:
-                        a, loc, scale = gamma.fit(values_tpe, floc = floc) 
+                        a, loc, scale = exponnorm.fit(values_tpe, floc = floc) 
                     else:
-                        a, loc, scale = gamma.fit(values_tpe)
+                        a, loc, scale = exponnorm.fit(values_tpe)
 
                     params[tpe] = {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(values_tpe, p), ROUND), 'max': np.round(np.percentile(values_tpe, 100-p), ROUND)}
 
@@ -275,7 +271,7 @@ def fit_distribution(data, distribution, floc = None, min_sample_num = 10, p = 5
             raise Exception('Distribution not understood')
     else:
         # if no data, return null parameters (for neurons without apical dentrites)
-        if distribution == 'gamma_sequence':
+        if distribution == 'exponnorm_sequence':
             return {0. : {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1 }}
         else:
             return {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1 }
