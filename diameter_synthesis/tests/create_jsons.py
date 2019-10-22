@@ -18,14 +18,14 @@ with open('extract_models_params.json', 'w') as json_file:
 
 
 generate_diameters_params = {
-    'morph_path': '/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/', 
+    'morph_path': '../../scripts/extract_morphologies/selected_morphologies/',
     'by_mtypes': False,
     'n_morphs_max': 50, 
     'n_mtypes_max': 2,
     'models': ['M0',],
     'neurite_types': ['basal'],
     'models_params_file': 'model_params.json',
-    'new_morph_path': 'new_diameters/', 
+    'new_morph_path': '../../scripts/diameter-checks/new_morphologies/', 
 } 
 
 with open('generate_diameters_params.json', 'w') as json_file:

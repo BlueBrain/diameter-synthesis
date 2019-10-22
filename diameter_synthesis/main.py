@@ -53,5 +53,6 @@ def build_diameters(config_file):
     print('Generate diameters...')
     with open(config['models_params_file'], 'r') as f:
         models_params = json.load(f)
+
     #generate diameters
     models_params = generate_diameters.build_diameters(config['models'], models_params , morphologies, config['neurite_types'], config['new_morph_path'])
