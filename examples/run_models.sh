@@ -13,5 +13,5 @@ export OMP_NUM_THREADS=1
 
 python create_jsons.py
 
-diameter-synthesis build_models extract_models_params.json
+diameter-synthesis run_models extract_models_params.json
 

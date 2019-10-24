@@ -8,8 +8,8 @@ extract_models_params = {
     'n_mtypes_max': 60,
     'models': ['M0', ],
     'neurite_types': ['basal',],
-    'models_params_file': 'model_params.json',
-    'fig_folder': 'figures', 
+    'models_params_file': 'model_params_all.json',
+    'fig_folder': 'figures_all', 
     'ext': '.png'
 } 
 
@@ -18,14 +18,14 @@ with open('extract_models_params.json', 'w') as json_file:
 
 
 generate_diameters_params = {
-    'morph_path': '../../scripts/extract_morphologies/selected_morphologies/',
+    'morph_path': '../scripts/extract_morphologies/selected_morphologies/',
     'by_mtypes': False,
-    'n_morphs_max': 50, 
-    'n_mtypes_max': 2,
+    'n_morphs_max': None, 
+    'n_mtypes_max': 60,
     'models': ['M0',],
     'neurite_types': ['basal'],
-    'models_params_file': 'model_params.json',
-    'new_morph_path': '../../scripts/diameter-checks/new_morphologies/', 
+    'models_params_file': 'model_params_all.json',
+    'new_morph_path': '../scripts/diameter-checks/new_morphologies_all/', 
 } 
 
 with open('generate_diameters_params.json', 'w') as json_file:

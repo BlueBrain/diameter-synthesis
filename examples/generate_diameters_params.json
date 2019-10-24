@@ -3,12 +3,12 @@
     "models": [
         "M0"
     ], 
-    "models_params_file": "model_params.json", 
-    "morph_path": "../../scripts/extract_morphologies/selected_morphologies/", 
-    "n_morphs_max": 50, 
-    "n_mtypes_max": 2, 
+    "models_params_file": "model_params_all.json", 
+    "morph_path": "../scripts/extract_morphologies/selected_morphologies/", 
+    "n_morphs_max": null, 
+    "n_mtypes_max": 60, 
     "neurite_types": [
         "basal"
     ], 
-    "new_morph_path": "../../scripts/diameter-checks/new_morphologies/"
+    "new_morph_path": "../scripts/diameter-checks/new_morphologies_all/"
 }

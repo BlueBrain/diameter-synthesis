@@ -7,7 +7,11 @@ import pylab as plt
 
 from neurom import viewer
 
-import diameter_synthesis.utils as utils 
+from diameter_synthesis.distribution_fitting import evaluate_distribution
+
+########################
+## plotting functions ##
+########################
 
 colors = {'basal': 'b', 'apical': 'r'}
 
@@ -80,7 +84,7 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
                     #plt.axvline(min_tpe, ls='--', c='k')
                     #plt.axvline(max_tpe, ls='--', c='k')
 
-                    plt.plot(x, bottom_shift + utils.evaluate_distribution(x, model[neurite_type], tpes = [tpe,])[0], c=colors[neurite_type], lw = 1, ls='--')#, label = neurite_type)
+                    plt.plot(x, bottom_shift + evaluate_distribution(x, model[neurite_type], tpes = [tpe,])[0], c=colors[neurite_type], lw = 1, ls='--')#, label = neurite_type)
                 plt.gca().set_ylim(0, bottom_shift + 1)
 
             else:
@@ -92,7 +96,7 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
                     plt.hist(data[neurite_type], bins = 50 , log = False, density = True, histtype='bar', lw=0.5, color=colors[neurite_type], alpha=0.5, range=[min_val*0.8, max_val*1.2])
 
                     x = np.linspace(min_val, max_val, 1000)
-                    plt.plot(x, utils.evaluate_distribution(x, model[neurite_type]), c=colors[neurite_type], lw = 3, ls='--', label = neurite_type)
+                    plt.plot(x, evaluate_distribution(x, model[neurite_type]), c=colors[neurite_type], lw = 3, ls='--', label = neurite_type)
 
                 plt.legend(loc='best')
                 plt.gca().set_xlim(min_val*0.8, max_val*1.2)

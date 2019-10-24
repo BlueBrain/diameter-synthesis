@@ -4,12 +4,20 @@ from tqdm import tqdm
 
 import numpy as np
 
-import neurom 
+import neurom as nm
+from neurom import COLS
+from neurom.core import iter_sections
 
-from tns.morphio_utils import STR_TO_TYPES, TYPE_TO_STR 
+from diameter_synthesis.utils import STR_TO_TYPES, TYPE_TO_STR 
 
 import diameter_synthesis.utils as utils 
+from diameter_synthesis.distribution_fitting import fit_distribution, update_params_fit_distribution
+import diameter_synthesis.morph_functions as morph_funcs
 import diameter_synthesis.plotting as plotting 
+
+##############################################
+## Build a model from a set of morphologies ##
+##############################################
 
 def sampling_model_test(morphologies, neurite_types, tqdm_disable = False):
     """ test for sampling models """
@@ -28,16 +36,16 @@ def sampling_model_test(morphologies, neurite_types, tqdm_disable = False):
     #loop first over all morphologies (TODO: could be parallelized)
     for neuron in tqdm(morphologies, disable = tqdm_disable):
         #for each neurite in the neuron
-        for i, neurite in enumerate(neuron[0].neurites):
+        for neurite in neuron[0].neurites:
             #for each type of neurite we consider
             for neurite_type in neurite_types:
                 if neurite.type == STR_TO_TYPES[neurite_type]:
 
                     #compute here all the morphological values from the neurite
-                    sibling_ratios[neurite_type] += utils.sibling_ratios(neurite)
-                    Rall_deviations[neurite_type] += utils.Rall_deviations(neurite)
-                    terminal_diameters[neurite_type] += utils.terminal_diameters(neurite)
-                    trunk_diameters[neurite_type] += utils.trunk_diameter(neurite)
+                    sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(neurite)
+                    Rall_deviations[neurite_type] += morph_funcs.Rall_deviations(neurite)
+                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite)
+                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite)
   
     #do the fits of each morphological values
     sibling_ratio_models = {}
@@ -49,24 +57,24 @@ def sampling_model_test(morphologies, neurite_types, tqdm_disable = False):
         #sibling ratio 
         sibling_ratio_models[neurite_type] = {} 
         sibling_ratio_models[neurite_type]['distribution'] =  'expon_rev'
-        sibling_ratio_models[neurite_type]['params'] =  utils.fit_distribution(sibling_ratios[neurite_type], sibling_ratio_models[neurite_type]['distribution'])
+        sibling_ratio_models[neurite_type]['params'] =  fit_distribution(sibling_ratios[neurite_type], sibling_ratio_models[neurite_type]['distribution'])
         
         #Rall deviation
         Rall_deviation_models[neurite_type] = {} 
         Rall_deviation_models[neurite_type]['distribution'] =  'exponnorm'
-        Rall_deviation_models[neurite_type]['params'] =  utils.fit_distribution(Rall_deviations[neurite_type], Rall_deviation_models[neurite_type]['distribution'])
+        Rall_deviation_models[neurite_type]['params'] =  fit_distribution(Rall_deviations[neurite_type], Rall_deviation_models[neurite_type]['distribution'])
         
         #terminal diameters
         terminal_diameters_models[neurite_type] = {} 
         terminal_diameters_models[neurite_type]['distribution'] =  'exponnorm'
-        terminal_diameters_models[neurite_type]['params'] =  utils.fit_distribution(terminal_diameters[neurite_type], terminal_diameters_models[neurite_type]['distribution'])
+        terminal_diameters_models[neurite_type]['params'] =  fit_distribution(terminal_diameters[neurite_type], terminal_diameters_models[neurite_type]['distribution'])
 
         #trunk diameters
         trunk_diameters_models[neurite_type] = {} 
         trunk_diameters_models[neurite_type]['distribution'] =  'exponnorm_sequence'
         min_sample_num = {'basal': 10, 'apical': 5}
-        trunk_diameters_models[neurite_type]['params'] =  utils.fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], min_sample_num = min_sample_num[neurite_type], floc = 0)
-        trunk_diameters_models[neurite_type] = utils.update_params_fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type])
+        trunk_diameters_models[neurite_type]['params'] =  fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], min_sample_num = min_sample_num[neurite_type], floc = 0)
+        trunk_diameters_models[neurite_type] = update_params_fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type])
 
     #collect all models in one dictionary
     all_models = {
@@ -91,12 +99,7 @@ def build_models(models, morphologies, neurite_types, fig_folder = 'figures', ex
 
     all_models = {'M0': sampling_model_test}
     
-    if len(morphologies) >1:
-        tqdm_1 = False
-        tqdm_2 = True
-    else:
-        tqdm_1 = True
-        tqdm_2 = False
+    tqdm_1, tqdm_2 = utils.tqdm_disable(morphologies) #to have a single progression bar
 
     #extract the data and the models
     models_params = {} #dictionary of model parameters for each mtype

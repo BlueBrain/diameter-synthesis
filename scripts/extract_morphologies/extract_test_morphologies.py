@@ -47,12 +47,16 @@ def extract_test_morphologies(config_file, final_json, emodel_etype_map):
 
     with open(config_file) as f:
         config = json.load(f)
+    
 
     emodel_morph_map = read_final_json(final_json)
     emodel_etype_map = read_emodel_etype_map(emodel_etype_map)
 
     if not os.path.isdir(config['morph_path']):
         os.mkdir(config['morph_path'])
+
+    #copy the neuronDB.xml file to the new folder for later analysis
+    shutil.copy(config['rep_morph_path']+'neuronDB.xml', config['morph_path']+'neuronDB.xml')
 
     fnames = []
     n = 0 

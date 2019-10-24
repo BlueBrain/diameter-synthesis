@@ -1,7 +1,7 @@
 {
     "version": "1.0",
     "circuitmvd3_path": "circuit.mvd3",
-    "morph_path": "new_morphologies",
+    "morph_path": "new_morphologies_all",
     "rep_morph_path": "/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/",
     "unrep_morph_path": "/gpfs/bbp.cscs.ch/project/proj68/home/kanari/DiamCheck/SYN_for_paper/Raw/04_ZeroDiameterFix-ASC/",
     "emodels_repo": "ssh://bbpcode.epfl.ch/project/proj38/singlecell-optimization",
