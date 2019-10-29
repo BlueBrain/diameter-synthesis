@@ -19,7 +19,7 @@ import diameter_synthesis.plotting as plotting
 ## Build a model from a set of morphologies ##
 ##############################################
 
-def sampling_model_test(morphologies, neurite_types, tqdm_disable = False):
+def sampling_model_generic(morphologies, neurite_types, extra_params, tqdm_disable = False):
     """ test for sampling models """
   
     #initialise dictionaries for collecting morphological quantities
@@ -44,7 +44,7 @@ def sampling_model_test(morphologies, neurite_types, tqdm_disable = False):
                     #compute here all the morphological values from the neurite
                     sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(neurite)
                     Rall_deviations[neurite_type] += morph_funcs.Rall_deviations(neurite)
-                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite)
+                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite, threshold = extra_params['terminal_threshold'])
                     trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite)
   
     #do the fits of each morphological values
@@ -72,8 +72,7 @@ def sampling_model_test(morphologies, neurite_types, tqdm_disable = False):
         #trunk diameters
         trunk_diameters_models[neurite_type] = {} 
         trunk_diameters_models[neurite_type]['distribution'] =  'exponnorm_sequence'
-        min_sample_num = {'basal': 10, 'apical': 5}
-        trunk_diameters_models[neurite_type]['params'] =  fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], min_sample_num = min_sample_num[neurite_type], floc = 0)
+        trunk_diameters_models[neurite_type]['params'] =  fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], min_sample_num = extra_params['trunk_min_sample_num'][neurite_type], floc = extra_params['trunk_floc'])
         trunk_diameters_models[neurite_type] = update_params_fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type])
 
     #collect all models in one dictionary
@@ -94,10 +93,15 @@ def sampling_model_test(morphologies, neurite_types, tqdm_disable = False):
     return all_models, all_data
 
 
-def build_models(models, morphologies, neurite_types, fig_folder = 'figures', ext = '.png'):
+def build_models(models, morphologies, neurite_types, extra_params, fig_folder = 'figures', ext = '.png', plot = True):
     """ Building the models in the list of models """  
 
-    all_models = {'M0': sampling_model_test}
+    all_models = {'M0': sampling_model_generic,
+            'M1': sampling_model_generic,
+            'M2': sampling_model_generic,
+            'M3': sampling_model_generic,
+            'M4': sampling_model_generic,
+    }
     
     tqdm_1, tqdm_2 = utils.tqdm_disable(morphologies) #to have a single progression bar
 
@@ -108,16 +112,17 @@ def build_models(models, morphologies, neurite_types, fig_folder = 'figures', ex
         models_params[mtype] = {}
         models_data[mtype] = {}
         for model in models:
-            models_params[mtype][model], models_data[mtype][model] = all_models[model](morphologies[mtype], neurite_types, tqdm_2)
+            models_params[mtype][model], models_data[mtype][model] = all_models[model](morphologies[mtype], neurite_types, extra_params[model], tqdm_2)
 
     #plot the distributions and fit of the data
-    print('Plot the fits...')
-    shutil.rmtree(fig_folder, ignore_errors = True)
-    os.mkdir(fig_folder)
-    for mtype in tqdm(morphologies): # for each mtypes
-        os.mkdir(fig_folder +'/' + mtype)
-        for model in models: #for each diameter model
-            for fit_tpe in models_data[mtype][model]: #for each fit of the data we did 
-                plotting.plot_distribution_fit(models_data[mtype][model][fit_tpe], models_params[mtype][model][fit_tpe], neurite_types, fig_name = fig_folder + '/' + mtype + '/' + model +'_' + fit_tpe, ext = ext)
+    if plot:
+        print('Plot the fits...')
+        shutil.rmtree(fig_folder, ignore_errors = True)
+        os.mkdir(fig_folder)
+        for mtype in tqdm(morphologies): # for each mtypes
+            os.mkdir(fig_folder +'/' + mtype)
+            for model in models: #for each diameter model
+                for fit_tpe in models_data[mtype][model]: #for each fit of the data we did 
+                    plotting.plot_distribution_fit(models_data[mtype][model][fit_tpe], models_params[mtype][model][fit_tpe], neurite_types, fig_name = fig_folder + '/' + mtype + '/' + model +'_' + fit_tpe, ext = ext)
 
     return models_params

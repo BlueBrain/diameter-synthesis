@@ -1,7 +1,43 @@
 {
     "by_mtypes": false, 
+    "extra_params": {
+        "M0": {
+            "max_bo_fit": 10, 
+            "seed": 1, 
+            "taper": 0, 
+            "trunk_floc": 0
+        }, 
+        "M1": {
+            "max_bo_fit": 10, 
+            "seed": 10, 
+            "taper": 0, 
+            "trunk_floc": 0
+        }, 
+        "M2": {
+            "max_bo_fit": 10, 
+            "seed": 100, 
+            "taper": 0, 
+            "trunk_floc": 0
+        }, 
+        "M3": {
+            "max_bo_fit": 10, 
+            "seed": 1000, 
+            "taper": 0, 
+            "trunk_floc": 0
+        }, 
+        "M4": {
+            "max_bo_fit": 10, 
+            "seed": 10000, 
+            "taper": 0, 
+            "trunk_floc": 0
+        }
+    }, 
     "models": [
-        "M0"
+        "M0", 
+        "M1", 
+        "M2", 
+        "M3", 
+        "M4"
     ], 
     "models_params_file": "model_params_all.json", 
     "morph_path": "../scripts/extract_morphologies/selected_morphologies/", 

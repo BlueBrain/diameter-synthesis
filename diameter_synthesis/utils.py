@@ -49,6 +49,17 @@ def load_morphologies_from_dict(morph_path, name_dict):
             if ext in {'.h5', '.asc', '.swc'} and os.path.exists(morph_path + '/' + fname):
                 neuron = nm.load_neuron(morph_path + '/' + fname)
                 morphologies[mtype].append([neuron, name])
+                neurite_types =['basal']
+                for neurite_type in neurite_types:
+                    neurites = (neurite for neurite in neuron.neurites if neurite.type == STR_TO_TYPES[neurite_type])
+                    """
+                    for neurite in neurites: 
+                        for section in iter_sections(neurite):
+                            if np.std(get_diameters(section))>0.01:
+                                print(name, get_diameters(section)/2.)
+                    """
+
+
 
     return morphologies 
 
@@ -103,6 +114,14 @@ def save_neuron(neuron, model, folder):
                 os.mkdir(folder)
 
         neuron[0].write(folder + '/' + model + '_' + neuron[1] + '.asc')
+  
+def load_neuron(fname, model, folder):
+        """ load the neuron morphology for later analysis """
+        if model:
+            return nm.load_neuron(folder + '/' + model + '_' + fname + '.asc')
+        else:
+            return nm.load_neuron(folder + '/' + fname + '.asc')
+           
 
  
 #################################

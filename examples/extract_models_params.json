@@ -1,9 +1,55 @@
 {
     "by_mtypes": false, 
     "ext": ".png", 
+    "extra_params": {
+        "M0": {
+            "terminal_threshold": 0.8, 
+            "trunk_floc": 0, 
+            "trunk_min_sample_num": {
+                "apical": 5, 
+                "basal": 20
+            }
+        }, 
+        "M1": {
+            "terminal_threshold": 0.8, 
+            "trunk_floc": 0, 
+            "trunk_min_sample_num": {
+                "apical": 5, 
+                "basal": 20
+            }
+        }, 
+        "M2": {
+            "terminal_threshold": 0.8, 
+            "trunk_floc": 0, 
+            "trunk_min_sample_num": {
+                "apical": 5, 
+                "basal": 20
+            }
+        }, 
+        "M3": {
+            "terminal_threshold": 0.8, 
+            "trunk_floc": 0, 
+            "trunk_min_sample_num": {
+                "apical": 5, 
+                "basal": 20
+            }
+        }, 
+        "M4": {
+            "terminal_threshold": 0.8, 
+            "trunk_floc": 0, 
+            "trunk_min_sample_num": {
+                "apical": 5, 
+                "basal": 20
+            }
+        }
+    }, 
     "fig_folder": "figures_all", 
     "models": [
-        "M0"
+        "M0", 
+        "M1", 
+        "M2", 
+        "M3", 
+        "M4"
     ], 
     "models_params_file": "model_params_all.json", 
     "morph_path": "/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/", 

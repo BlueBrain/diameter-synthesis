@@ -30,7 +30,7 @@ def run_models(config_file):
 
     print('Extracting models parameters...')
     #compute the model
-    models_params = build_models(config['models'], morphologies, config['neurite_types'], fig_folder = config['fig_folder'], ext = config['ext'])
+    models_params = build_models(config['models'], morphologies, config['neurite_types'], config['extra_params'], fig_folder = config['fig_folder'], ext = config['ext'])
 
     #save the models parameters in a json file
     with open(config['models_params_file'], 'w') as json_file:
@@ -54,4 +54,4 @@ def run_diameters(config_file):
         models_params = json.load(f)
 
     #generate diameters
-    models_params = build_diameters(config['models'], models_params , morphologies, config['neurite_types'], config['new_morph_path'])
+    models_params = build_diameters(config['models'], models_params , morphologies, config['neurite_types'], config['new_morph_path'], config['extra_params'], config['morph_path'])

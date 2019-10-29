@@ -50,16 +50,14 @@ def Rall_deviations(neurite, method = 'mean'):
         if len(bif_point.children) == 2:
 
             if method == 'mean':
-
                 d_0 = np.mean(get_diameters(bif_point))
                 d_1 = np.mean(get_diameters(bif_point.children[0]))
                 d_2 = np.mean(get_diameters(bif_point.children[1]))
 
             elif method == 'first':
-
                 d_0 = get_diameters(bif_point)[-1]
-                d_1 = get_diameters(bif_point.children[0])[-1]
-                d_2 = get_diameters(bif_point.children[1])[-1]
+                d_1 = get_diameters(bif_point.children[0])[0]
+                d_2 = get_diameters(bif_point.children[1])[0]
 
             Rall_deviations.append( (d_1/d_0)**(3./2.) + (d_2/d_0)**(3./2.) )
 
@@ -73,16 +71,16 @@ def Rall_reduction_factor(Rall_deviation, siblings_ratio):
 
     return (Rall_deviation / (1. + siblings_ratio**(3./2.) ) )**(2./3.)
 
-def terminal_diameters(neurite, method = 'mean', threshold = 0.8):
+def terminal_diameters(neurite, method = 'mean', threshold = 1.0):
     """Returns the model for the terminations"""
 
     mean_diameter = np.mean(get_diameters(neurite))
 
     if method == 'mean':
-        term_diam = [2. * np.mean(get_diameters(t)) for t in nm.core.Tree.ileaf(iter_sections(neurite).next()) if np.mean(get_diameters(t)) < threshold * mean_diameter]
+        term_diam = [ np.mean(get_diameters(t)) for t in nm.core.Tree.ileaf(iter_sections(neurite).next()) if np.mean(get_diameters(t)) < threshold * mean_diameter]
 
     elif method == 'first':
-        term_diam = [2. * get_diameters(t)[-1] for t in nm.core.Tree.ileaf(iter_sections(neurite).next()) if get_diameters(t)[-1] < threshold * mean_radii]
+        term_diam = [ get_diameters(t)[-1] for t in nm.core.Tree.ileaf(iter_sections(neurite).next()) if get_diameters(t)[-1] < threshold * mean_radii]
 
     else:
         raise Exception('Method for singling computation not understood!')

@@ -89,8 +89,10 @@ def sample_distribution(model, tpe = 0):
 
     elif model['distribution'] == 'exponnorm_sequence':
         from scipy.stats import exponnorm
+
         #hack to use the all data values if the fit failed
         if params.values()[0] == [0.,0.]:
+            #print('used all parameter for branching order', tpe)
             params =  {                                                                          
                         "a": [                                                                           
                             0.022,                                                                       
@@ -113,10 +115,19 @@ def sample_distribution(model, tpe = 0):
                             0.302                                                                        
                         ]                                                                                
                     }
-        
-        return truncate(lambda: exponnorm.rvs(np.poly1d(params['a'])(tpe), np.poly1d(params['loc'])(tpe), np.poly1d(params['scale'])(tpe)), np.poly1d(params['min'])(tpe), np.poly1d(params['max'])(tpe))
+ 
+        a = np.poly1d(params['a'])(tpe)
+        if a < 0: 
+            a = 1.
+            print('bad fit of a parameter -- it may not work')
 
-        return fits
+        loc = np.poly1d(params['loc'])(tpe)
+        scale = np.poly1d(params['scale'])(tpe)
+        Min = np.poly1d(params['min'])(tpe)
+        Max = np.poly1d(params['max'])(tpe)
+
+       
+        return truncate(lambda: exponnorm.rvs(a, loc, scale), Min, Max)
     else:
         raise Exception('Distribution not understood')
 

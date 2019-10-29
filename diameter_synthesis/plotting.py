@@ -5,9 +5,11 @@ import matplotlib
 matplotlib.use('Agg')
 import pylab as plt
 
+from neurom.core import iter_sections
 from neurom import viewer
 
 from diameter_synthesis.distribution_fitting import evaluate_distribution
+import diameter_synthesis.utils as utils 
 
 ########################
 ## plotting functions ##
@@ -183,6 +185,159 @@ def plot_neuron(neuron, folder, ext = '.png'):
 
     fig, ax = viewer.draw(neuron[0])
     plt.savefig(folder + '/' + neuron[1] + '_' + folder + ext, dpi = 500)
+    plt.close()
+
+
+
+
+from neurom.view import (plot_neuron, plot_neuron3d,
+                   plot_tree, plot_tree3d,
+                   plot_soma, plot_soma3d,
+                   plot_dendrogram)
+
+from neurom.view import common
+from neurom.core import Tree, Neurite, Soma, Neuron
+
+MODES = ('2d', '3d', 'dendrogram')
+
+_VIEWERS = {
+    'neuron_3d': plot_neuron3d,
+    'neuron_2d': plot_neuron,
+    'neuron_dendrogram': plot_dendrogram,
+    'tree_3d': plot_tree3d,
+    'tree_2d': plot_tree,
+    'tree_dendrogram': plot_dendrogram,
+    'soma_3d': plot_soma3d,
+    'soma_2d': plot_soma
+}
+
+class ViewerError(Exception):
+    '''Base class for viewer exceptions'''
+
+
+class InvalidDrawModeError(ViewerError):
+    '''Exception class to indicate invalid draw mode'''
+
+class NotDrawableError(Exception):
+    '''Exception class for things that aren't drawable'''
+
+def draw_axis(obj, mode='2d', ax = None, **kwargs):
+    '''Draw a morphology object
+
+    Parameters:
+        obj: morphology object to be drawn (neuron, tree, soma).
+        mode (Optional[str]): drawing mode ('2d', '3d', 'dendrogram'). Defaults to '2d'.
+        **kwargs: keyword arguments for underlying neurom.view.view functions.
+
+    Raises:
+        InvalidDrawModeError if mode is not valid
+        NotDrawableError if obj is not drawable
+        NotDrawableError if obj type and mode combination is not drawable
+
+    Examples:
+
+        >>> nrn = ... # load a neuron
+        >>> fig, _ = viewer.draw(nrn)             # 2d plot
+        >>> fig.show()
+        >>> fig3d, _ = viewer.draw(nrn, mode='3d') # 3d plot
+        >>> fig3d.show()
+        >>> fig, _ = viewer.draw(nrn.neurites[0]) # 2d plot of neurite tree
+        >>> dend, _ = viewer.draw(nrn, mode='dendrogram')
+
+    '''
+
+    if mode not in MODES:
+        raise InvalidDrawModeError('Invalid drawing mode %s' % mode)
+
+    if mode in ('2d', 'dendrogram'):
+        if not ax:
+            fig, ax = common.get_figure()
+        else: 
+            fig, ax_1 = common.get_figure()
+        
+    else:
+        fig, ax = common.get_figure(params={'projection': '3d'})
+
+    if isinstance(obj, Neuron):
+        tag = 'neuron'
+    elif isinstance(obj, (Tree, Neurite)):
+        tag = 'tree'
+    elif isinstance(obj, Soma):
+        tag = 'soma'
+    else:
+        raise NotDrawableError('draw not implemented for %s' % obj.__class__)
+
+    viewer = '%s_%s' % (tag, mode)
+    try:
+        plotter = _VIEWERS[viewer]
+    except KeyError:
+        raise NotDrawableError('No drawer for class %s, mode=%s' % (obj.__class__, mode))
+
+    output_path = kwargs.pop('output_path', None)
+    plotter(ax, obj, **kwargs)
+
+    if mode != 'dendrogram':
+        common.plot_style(fig=fig, ax=ax, **kwargs)
+
+    if output_path:
+        common.save_plot(fig=fig, output_path=output_path, **kwargs)
+
+    return fig, ax
+
+
+def plot_diameter_diff(neuron_name, morph_path, new_morph_path, model, neurite_types, folder):
+    """ plot original morphology, new one and differences """    
+
+    if not os.path.isdir(folder):
+        os.mkdir(folder)
+
+    neuron_orig = utils.load_neuron(neuron_name, None, morph_path)
+    neuron_diff_pos = utils.load_neuron(neuron_name, None, morph_path)
+    neuron_diff_neg = utils.load_neuron(neuron_name, None, morph_path)
+    neuron_new = utils.load_neuron(neuron_name, model, new_morph_path)
+
+    fig, axs = plt.subplots(2, 2, figsize=(10,10))
+    draw_axis(neuron_orig, ax = axs[0,0])
+    axs[0,0].set_title('Original neuron')
+    draw_axis(neuron_new, ax= axs[0,1])
+    axs[0,1].set_title('New neuron')
+
+    neurite_types=['basal','axon','apical']
+    for neurite_type in neurite_types:
+        neurites = [neurite for neurite in neuron_orig.neurites if neurite.type == utils.STR_TO_TYPES[neurite_type]]
+        neurites_new = [neurite for neurite in neuron_new.neurites if neurite.type == utils.STR_TO_TYPES[neurite_type]]
+        neurites_diff_neg = [neurite for neurite in neuron_diff_neg.neurites if neurite.type == utils.STR_TO_TYPES[neurite_type]]
+        neurites_diff_pos = [neurite for neurite in neuron_diff_pos.neurites if neurite.type == utils.STR_TO_TYPES[neurite_type]]
+
+        for i, neurite in enumerate(neurites):
+
+            diam_orig = []
+            for s in iter_sections(neurite):
+                diam_orig.append(utils.get_diameters(s))
+
+            diam_new = []
+            for s in iter_sections(neurites_new[i]):
+                diam_new.append(utils.get_diameters(s))
+
+            for j, s in enumerate(iter_sections(neurites_diff_pos[i])):
+                diff = diam_new[j] - diam_orig[j]
+                diff_pos = diff.copy()
+                diff_pos[diff_pos<0] = 0 
+                utils.set_diameters(s, diff_pos)
+
+            for j, s in enumerate(iter_sections(neurites_diff_neg[i])):
+                diff = diam_new[j] - diam_orig[j]
+                diff_neg = -diff.copy()
+                diff_neg[diff_neg<0] = 0 
+                utils.set_diameters(s, diff_neg)
+
+
+    draw_axis(neuron_diff_pos, ax= axs[1,0])
+    axs[1,0].set_title('Positive diameter differences')
+    draw_axis(neuron_diff_neg, ax= axs[1,1])
+    axs[1,1].set_title('Negative diameter differences')
+
+    fig.savefig(folder + '/' + neuron_name + '_' + folder+'_'+ model + '.png', dpi = 500)
     plt.close()
 
 
