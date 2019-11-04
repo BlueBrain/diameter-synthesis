@@ -26,7 +26,7 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
     ax1 = fig.add_subplot(311)
 
     for neurite_type in neurite_types:
-        tpes_model = model[neurite_type]['params_data'].keys()
+        tpes_model = [*model[neurite_type]['params_data']]
         ax1.plot(tpes_model, np.poly1d(model[neurite_type]['params']['a'])(tpes_model), c=colors[neurite_type])
         As     = [v['a'] for v in model[neurite_type]['params_data'].values()]
         ax1.plot(tpes_model, As, '+', c=colors[neurite_type])
@@ -37,7 +37,7 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
     ax2 = fig.add_subplot(312)
 
     for neurite_type in neurite_types:
-        tpes_model = model[neurite_type]['params_data'].keys()
+        tpes_model = [*model[neurite_type]['params_data']]
         ax2.plot(tpes_model, np.poly1d(model[neurite_type]['params']['loc'])(tpes_model), c=colors[neurite_type])
         locs   = [v['loc'] for v in model[neurite_type]['params_data'].values()]
         ax2.plot(tpes_model, locs, '+', c=colors[neurite_type])
@@ -48,7 +48,7 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
     ax3 = fig.add_subplot(313)
 
     for neurite_type in neurite_types:
-        tpes_model = model[neurite_type]['params_data'].keys()
+        tpes_model = [*model[neurite_type]['params_data']]
         ax3.plot(tpes_model, np.poly1d(model[neurite_type]['params']['scale'])(tpes_model), c=colors[neurite_type])
         scales = [v['scale'] for v in model[neurite_type]['params_data'].values()]
         ax3.plot(tpes_model, scales, '+', c=colors[neurite_type])
@@ -121,7 +121,7 @@ def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', fig
     import collections 
     data = collections.OrderedDict() 
 
-    mtype = model_params.keys()[0]
+    mtype = [*model_params][0]
     for fit in  model_params[mtype][model]:
         if fit != 'trunk_diameter':
             for params in model_params[mtype][model][fit][neurite_type]['params']:
@@ -146,7 +146,7 @@ def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', fig
 
     plt.figure(figsize = figsize)
     plt.boxplot(data.values())
-    plt.xticks(np.arange(1, len(data)+1), data.keys(), rotation='vertical')
+    plt.xticks(np.arange(1, len(data)+1), [*data], rotation='vertical')
     #plt.axis([0, len(data)+1, 0., 5])
     plt.savefig(figname + ext, bbox_inches = 'tight')
     plt.close()
@@ -154,7 +154,7 @@ def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', fig
     data = collections.OrderedDict() 
 
     bos = ['0.0', '1.0', '2.0', '3.0', '4.0', '5.0','6.0','7.0','8.0',]
-    mtype = model_params.keys()[0]
+    mtype = [*model_params][0]
     for fit in  model_params[mtype][model]:
         if fit == 'trunk_diameter':
             for params in model_params[mtype][model][fit][neurite_type]['params_data']['0.0']:
@@ -173,7 +173,7 @@ def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', fig
 
     plt.figure(figsize = figsize)
     plt.boxplot(data.values())
-    plt.xticks(np.arange(1, len(data)+1), data.keys(), rotation='vertical')
+    plt.xticks(np.arange(1, len(data)+1), [*data], rotation='vertical')
     #plt.axis([0, len(data)+1, 0., 5])
     plt.savefig(figname + '_trunk' + ext, bbox_inches = 'tight')
     plt.close()
@@ -292,18 +292,20 @@ def plot_diameter_diff(neuron_name, morph_path, new_morph_path, model, neurite_t
     if not os.path.isdir(folder):
         os.mkdir(folder)
 
-    neuron_orig = utils.load_neuron(neuron_name, None, morph_path)
+    neuron_orig     = utils.load_neuron(neuron_name, None, morph_path)
     neuron_diff_pos = utils.load_neuron(neuron_name, None, morph_path)
     neuron_diff_neg = utils.load_neuron(neuron_name, None, morph_path)
-    neuron_new = utils.load_neuron(neuron_name, model, new_morph_path)
+    neuron_new      = utils.load_neuron(neuron_name, model, new_morph_path)
 
     fig, axs = plt.subplots(2, 2, figsize=(10,10))
+
     draw_axis(neuron_orig, ax = axs[0,0])
     axs[0,0].set_title('Original neuron')
+
     draw_axis(neuron_new, ax= axs[0,1])
     axs[0,1].set_title('New neuron')
 
-    neurite_types=['basal','axon','apical']
+    neurite_types = ['basal', 'axon', 'apical']
     for neurite_type in neurite_types:
         neurites = [neurite for neurite in neuron_orig.neurites if neurite.type == utils.STR_TO_TYPES[neurite_type]]
         neurites_new = [neurite for neurite in neuron_new.neurites if neurite.type == utils.STR_TO_TYPES[neurite_type]]

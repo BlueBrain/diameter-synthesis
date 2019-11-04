@@ -10,8 +10,7 @@ from neurom import COLS
 from neurom.core import iter_sections
 from neurom import viewer
 
-from utils import STR_TO_TYPES, TYPE_TO_STR
-
+from diameter_synthesis.utils import STR_TO_TYPES, TYPE_TO_STR
 import diameter_synthesis.utils as utils 
 import diameter_synthesis.morph_functions as morph_funcs
 from diameter_synthesis.distribution_fitting import sample_distribution
@@ -22,27 +21,52 @@ import matplotlib
 matplotlib.use('Agg')
 import pylab as plt
 
-import copy
+from multiprocessing import Pool
+from functools import partial
+
 ##################################
 ## Build diameters from a model ##
 ##################################
 
-def build_diameters(models, models_params, morphologies, neurite_types, new_morph_path, extra_params, morph_path):
+def build_diameters(models, models_params, morphologies_dict, neurite_types, new_morph_path, extra_params, morph_path, plot = True, n_cpu = 1):
     """ Building the diameters from the generated diameter models"""  
 
     all_models = {}
     for model in models:
-        all_models[model]  = diametrize_model_generic
+        all_models[model] = diametrize_model_generic
 
-    tqdm_1, tqdm_2 = utils.tqdm_disable(morphologies) #to have a single progression bar
+    #collect neurons paths and mtypes
+    for model in models:
+        print('Generating model', model)
+        neurons = []
+        for mtype in morphologies_dict:
+            for neuron in morphologies_dict[mtype]:
+                name, ext = os.path.splitext(neuron)
+                if ext in {'.h5', '.asc', '.swc'}:
+                    neurons.append([neuron, mtype])
+        
+        #set all parameters
+        build_diam_poolf = partial(build_diam_pool, all_models, model, models_params, neurite_types, extra_params, morph_path, new_morph_path, plot)
 
-    for mtype in tqdm(morphologies, disable = tqdm_1):
-        for model in models:
-            for neuron in tqdm(morphologies[mtype], disable = tqdm_2):
+        #generate diameters in parallel
+        with Pool(processes = n_cpu) as p_build:  #initialise the parallel computation
+            list(tqdm(p_build.imap(build_diam_poolf, neurons), total = len(neurons)))
 
-                all_models[model](neuron[0], models_params[mtype][model], neurite_types, extra_params[model])
-                utils.save_neuron(neuron, model, new_morph_path) 
-                plotting.plot_diameter_diff(neuron[1], morph_path, new_morph_path, model, neurite_types, folder='new_morphologies')
+def build_diam_pool(all_models, model, models_params, neurite_types, extra_params, morph_path, new_morph_path, plot, neuron_input):
+    """ build a neuron diameters, save and plot it """
+
+    fname = neuron_input[0]
+    mtype = neuron_input[1]
+
+    name, ext = os.path.splitext(fname)
+    neuron = nm.load_neuron(morph_path + '/' + fname)
+
+    all_models[model](neuron, models_params[mtype][model], neurite_types, extra_params[model])
+
+    utils.save_neuron([neuron, name], model, new_morph_path) 
+
+    if plot:
+        plotting.plot_diameter_diff(name, morph_path, new_morph_path, model, neurite_types, folder='new_morphologies')
 
 def diametrize_model_generic(neuron, params, neurite_types, extra_params):
     '''Corrects the diameters of a morphio-neuron according to the model.
@@ -91,10 +115,8 @@ def diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac = 1.,
             for section in list(active):
 
                 if section.is_root():
-                    taper = -taper
                     init_diam = trunk_diam
                 else:
-                    taper = -taper
                     init_diam = get_diameters(section)[0]
                 
                 #sample a terminal diameter
@@ -126,8 +148,8 @@ def diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac = 1.,
                     if d2 < terminal_diam:
                         d2 = terminal_diam
 
-                    if len(children)>2:
-                        print(len(children), 'children for this branch')
+                    #if len(children)>2:
+                    #    print(len(children), 'children for this branch')
 
                     for i, ch in enumerate(children):
                         new_diam = d1 if i == 0 else d2

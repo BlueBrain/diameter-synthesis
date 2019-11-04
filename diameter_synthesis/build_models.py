@@ -39,6 +39,7 @@ def sampling_model_generic(morphologies, neurite_types, extra_params, tqdm_disab
         for neurite in neuron[0].neurites:
             #for each type of neurite we consider
             for neurite_type in neurite_types:
+
                 if neurite.type == STR_TO_TYPES[neurite_type]:
 
                     #compute here all the morphological values from the neurite

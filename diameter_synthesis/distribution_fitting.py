@@ -116,14 +116,22 @@ def sample_distribution(model, tpe = 0):
         if tpe == 0:
             tpe = 1
 
+
+        if params['a'][0]<0:
+            params['a'][0] = 1
+
         a = np.poly1d(params['a'])(tpe)
         loc = np.poly1d(params['loc'])(tpe)
+
+        if params['scale'][0]<0:
+            params['scale'][0] = 1
+
         scale = np.poly1d(params['scale'])(tpe)
         Min = np.poly1d(params['min'])(tpe)
         Max = np.poly1d(params['max'])(tpe)
 
         #hack to use the all data values if the fit failed
-        if params.values()[0] == [0.,0.] or np.array([a, loc, scale, Min, Max]).any()<0:
+        if [*params.values()][0] == [0.,0.] or np.array([a, loc, scale, Min, Max]).any()<0:
 
             a = np.poly1d(params_all['a'])(tpe)
             loc = np.poly1d(params_all['loc'])(tpe)
@@ -131,8 +139,10 @@ def sample_distribution(model, tpe = 0):
             Min = np.poly1d(params_all['min'])(tpe)
             Max = np.poly1d(params_all['max'])(tpe)
 
-
-        return truncate(lambda: exponnorm.rvs(a, loc, scale), Min, Max)
+        try: 
+            return truncate(lambda: exponnorm.rvs(a, loc, scale), Min, Max)
+        except:
+            print('error in parameters for tpe',tpe, 'with params', [a, loc, scale, Min, Max], 'and', params)
     else:
         raise Exception('Distribution not understood')
 
@@ -140,12 +150,13 @@ def sample_distribution(model, tpe = 0):
 def fit_distribution_params(params): 
     """ linear fit to model parameters as a function of a given quantity tppes_model """
 
-    tpes_model = params.keys()
-    As     = [v['a'] for v in params.values()]
-    locs   = [v['loc'] for v in params.values()]
-    scales = [v['scale'] for v in params.values()]
-    mins = [v['min'] for v in params.values()]
-    maxs = [v['max'] for v in params.values()]
+    tpes_model = [*params] #fancy python3 way to get dict.keys()
+    params_values = [*params.values()]
+    As     = [v['a'] for v in params_values]
+    locs   = [v['loc'] for v in params_values]
+    scales = [v['scale'] for v in params_values]
+    mins = [v['min'] for v in params_values]
+    maxs = [v['max'] for v in params_values]
 
     z_As = np.polyfit(tpes_model, As, 1)
     z_locs = np.polyfit(tpes_model, locs, 1)

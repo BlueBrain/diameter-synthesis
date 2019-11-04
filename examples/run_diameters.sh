@@ -6,10 +6,10 @@ rm -rf new_neurons
 rm -rf original_neurons
 
 
-module purge all
-. ~/diam/bin/activate
+#module purge all
+#. ~/diam/bin/activate
 
-module load neuron/7.6.8/python2/serial
+#module load neuron/7.6.8/python2/serial
 
 export OMP_NUM_THREADS=1
 

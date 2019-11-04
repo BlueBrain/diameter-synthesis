@@ -52,19 +52,11 @@ def load_morphologies_from_dict(morph_path, name_dict):
                 neurite_types =['basal']
                 for neurite_type in neurite_types:
                     neurites = (neurite for neurite in neuron.neurites if neurite.type == STR_TO_TYPES[neurite_type])
-                    """
-                    for neurite in neurites: 
-                        for section in iter_sections(neurite):
-                            if np.std(get_diameters(section))>0.01:
-                                print(name, get_diameters(section)/2.)
-                    """
-
-
 
     return morphologies 
 
-def load_morphologies(morph_path, by_mtypes = True, n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix ='./'):
-    """ Load the morphologies from a directory, by mtypes or all at once """
+def create_morphologies_dict(morph_path, by_mtypes = True, n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix = ""):
+    """ Create dict to load the morphologies from a directory, by mtypes or all at once """
     
     #load morphologies by mtypes, one list of morphologies for each type
     if by_mtypes:
@@ -72,7 +64,6 @@ def load_morphologies(morph_path, by_mtypes = True, n_morphs_max = None, n_mtype
         #if not max number of mtypes, take all
         if not n_mtypes_max:
             n_mtypes_max =  1e10
-
 
         from xml.etree import ElementTree as ET
         FileDB = ET.parse(morph_path + xml_file)
@@ -109,7 +100,14 @@ def load_morphologies(morph_path, by_mtypes = True, n_morphs_max = None, n_mtype
             morph_paths[i] = prefix + mp 
 
         name_dict['all_types'] = morph_paths
-    print(morph_paths)
+
+    return name_dict
+
+def load_morphologies(morph_path, by_mtypes = True, n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix = ""):
+    """ Load the morphologies from a directory, by mtypes or all at once """
+
+    name_dict = create_morphologies_dict(morph_path, by_mtypes = by_mtypes, n_morphs_max = n_morphs_max, n_mtypes_max = n_mtypes_max, xml_file = xml_file, ext = ext, prefix = prefix)
+
     return load_morphologies_from_dict(morph_path, name_dict)
  
 def save_neuron(neuron, model, folder):

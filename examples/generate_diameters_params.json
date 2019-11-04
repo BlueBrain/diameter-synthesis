@@ -1,86 +1,79 @@
 {
-    "by_mtypes": false, 
+    "by_mtypes": false,
     "extra_params": {
         "M0": {
-            "max_bo_fit": 10, 
-            "seed": 1, 
-            "taper": 0, 
+            "max_bo_fit": 15,
+            "seed": 1,
+            "taper": -0.0005,
             "trunk_floc": 0
-        }, 
+        },
         "M1": {
-            "max_bo_fit": 10, 
-            "seed": 2, 
-            "taper": 0, 
+            "max_bo_fit": 15,
+            "seed": 2,
+            "taper": -0.0005,
             "trunk_floc": 0
-        }, 
+        },
         "M2": {
-            "max_bo_fit": 10, 
-            "seed": 3, 
-            "taper": 0, 
+            "max_bo_fit": 15,
+            "seed": 3,
+            "taper": -0.0005,
             "trunk_floc": 0
-        }, 
+        },
         "M3": {
-            "max_bo_fit": 10, 
-            "seed": 4, 
-            "taper": 0, 
+            "max_bo_fit": 15,
+            "seed": 4,
+            "taper": -0.0005,
             "trunk_floc": 0
-        }, 
+        },
         "M4": {
-            "max_bo_fit": 10, 
-            "seed": 5, 
-            "taper": 0, 
+            "max_bo_fit": 15,
+            "seed": 5,
+            "taper": -0.0005,
             "trunk_floc": 0
-        }, 
+        },
         "M5": {
-            "max_bo_fit": 10, 
-            "seed": 6, 
-            "taper": 0, 
+            "max_bo_fit": 15,
+            "seed": 6,
+            "taper": -0.0005,
             "trunk_floc": 0
-        }, 
+        },
         "M6": {
-            "max_bo_fit": 10, 
-            "seed": 7, 
-            "taper": 0, 
+            "max_bo_fit": 15,
+            "seed": 7,
+            "taper": -0.0005,
             "trunk_floc": 0
-        }, 
+        },
         "M7": {
-            "max_bo_fit": 10, 
-            "seed": 8, 
-            "taper": 0, 
+            "max_bo_fit": 15,
+            "seed": 8,
+            "taper": -0.0005,
             "trunk_floc": 0
-        }, 
+        },
         "M8": {
-            "max_bo_fit": 10, 
-            "seed": 9, 
-            "taper": 0, 
+            "max_bo_fit": 15,
+            "seed": 9,
+            "taper": -0.0005,
             "trunk_floc": 0
-        }, 
+        },
         "M9": {
-            "max_bo_fit": 10, 
-            "seed": 10, 
-            "taper": 0, 
+            "max_bo_fit": 15,
+            "seed": 10,
+            "taper": -0.0005,
             "trunk_floc": 0
         }
-    }, 
+    },
     "models": [
-        "M0", 
-        "M1", 
-        "M2", 
-        "M3", 
-        "M4", 
-        "M5", 
-        "M6", 
-        "M7", 
-        "M8", 
-        "M9"
-    ], 
-    "models_params_file": "model_params_full_all.json", 
-    "morph_path": "../scripts/extract_morphologies/selected_morphologies/", 
-    "n_morphs_max": null, 
-    "n_mtypes_max": 60, 
+        "M0",
+        "M1"
+    ],
+    "models_params_file": "model_params_all.json",
+    "morph_path": "05_RepairUnravel-asc/",
+    "n_cpu": 10,
+    "n_morphs_max": null,
+    "n_mtypes_max": 60,
     "neurite_types": [
-        "basal", 
-        "apical"
-    ], 
-    "new_morph_path": "../scripts/diameter-checks/new_morphologies_full_all/"
+        "basal"
+    ],
+    "new_morph_path": "../scripts/extract_morphometrics/new_morphologies_all/",
+    "plot": false
 }

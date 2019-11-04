@@ -1,12 +1,15 @@
 {
     "by_mtypes": true, 
     "ext": ".png", 
-    "new_morph_path": "new_morphologies_mtype/",
-    "morph_path": "/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/", 
-    "n_morphs_max": 10, 
-    "n_mtypes_max": 10, 
+    "new_morph_path": "new_morphologies_all/",
+    "morph_path": "../../examples/05_RepairUnravel-asc/", 
+        "models": [
+        "M0",
+        "M1"
+    ],
+    "n_morphs_max": null, 
+    "n_mtypes_max": null, 
     "neurite_types": [
-        "basal", 
-        "apical"
+        "basal" 
     ]
 }

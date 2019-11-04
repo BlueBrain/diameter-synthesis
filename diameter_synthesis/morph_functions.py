@@ -18,7 +18,7 @@ def sibling_ratios(neurite, method = 'mean'):
 
     s_ratios = []
     #loop over bifuraction points
-    for bif_point in nm.core.Tree.ibifurcation_point(iter_sections(neurite).next()):
+    for bif_point in nm.core.Tree.ibifurcation_point(next(iter_sections(neurite))):
         if len(bif_point.children) == 2:
 
             if method == 'mean':
@@ -46,7 +46,7 @@ def Rall_deviations(neurite, method = 'mean'):
        of the segments of a tree. """
     
     Rall_deviations = []
-    for bif_point in nm.core.Tree.ibifurcation_point(iter_sections(neurite).next()):
+    for bif_point in nm.core.Tree.ibifurcation_point(next(iter_sections(neurite))):
         if len(bif_point.children) == 2:
 
             if method == 'mean':
@@ -77,10 +77,10 @@ def terminal_diameters(neurite, method = 'mean', threshold = 1.0):
     mean_diameter = np.mean(get_diameters(neurite))
 
     if method == 'mean':
-        term_diam = [ np.mean(get_diameters(t)) for t in nm.core.Tree.ileaf(iter_sections(neurite).next()) if np.mean(get_diameters(t)) < threshold * mean_diameter]
+        term_diam = [ np.mean(get_diameters(t)) for t in nm.core.Tree.ileaf(next(iter_sections(neurite))) if np.mean(get_diameters(t)) < threshold * mean_diameter]
 
     elif method == 'first':
-        term_diam = [ get_diameters(t)[-1] for t in nm.core.Tree.ileaf(iter_sections(neurite).next()) if get_diameters(t)[-1] < threshold * mean_radii]
+        term_diam = [ get_diameters(t)[-1] for t in nm.core.Tree.ileaf(next(iter_sections(neurite))) if get_diameters(t)[-1] < threshold * mean_diameter]
 
     else:
         raise Exception('Method for singling computation not understood!')
