@@ -30,12 +30,9 @@ import copy
 def build_diameters(models, models_params, morphologies, neurite_types, new_morph_path, extra_params, morph_path):
     """ Building the diameters from the generated diameter models"""  
 
-    all_models = {'M0': diametrize_model_generic,
-            'M1': diametrize_model_generic,
-            'M2': diametrize_model_generic,
-            'M3': diametrize_model_generic,
-            'M4': diametrize_model_generic
-    }
+    all_models = {}
+    for model in models:
+        all_models[model]  = diametrize_model_generic
 
     tqdm_1, tqdm_2 = utils.tqdm_disable(morphologies) #to have a single progression bar
 
@@ -91,7 +88,6 @@ def diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac = 1.,
 
 
         while active:
-
             for section in list(active):
 
                 if section.is_root():

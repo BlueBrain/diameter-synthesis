@@ -48,7 +48,7 @@ def run_diameters(config_file):
     print('Loading morphologies...')
     #load all the morphologies 
     morphologies = utils.load_morphologies(config['morph_path'], n_morphs_max = config['n_morphs_max'], by_mtypes = config['by_mtypes'], n_mtypes_max = config['n_mtypes_max'])
-
+    print(len(morphologies))
     print('Generate diameters...')
     with open(config['models_params_file'], 'r') as f:
         models_params = json.load(f)

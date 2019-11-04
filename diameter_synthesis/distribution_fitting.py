@@ -90,43 +90,48 @@ def sample_distribution(model, tpe = 0):
     elif model['distribution'] == 'exponnorm_sequence':
         from scipy.stats import exponnorm
 
-        #hack to use the all data values if the fit failed
-        if params.values()[0] == [0.,0.]:
-            #print('used all parameter for branching order', tpe)
-            params =  {                                                                          
-                        "a": [                                                                           
-                            0.022,                                                                       
-                            3.136                                                                        
-                        ],                                                                               
-                        "loc": [                                                                         
-                            0.0,                                                                         
-                            0.0                                                                          
-                        ],                                                                               
-                        "max": [                                                                         
-                            0.38,                                                                        
-                            2.3                                                                          
-                        ],                                                                               
-                        "min": [                                                                         
-                            0.088,                                                                       
-                            0.498                                                                        
-                        ],                                                                               
-                        "scale": [                                                                       
-                            0.071,                                                                       
-                            0.302                                                                        
-                        ]                                                                                
+        params_all =  {                                                                          
+                   "a": [
+                            0.086, 
+                            2.921
+                        ], 
+                        "loc": [
+                            0.0, 
+                            0.0
+                        ], 
+                        "max": [
+                            0.45, 
+                            2.068
+                        ], 
+                        "min": [
+                            0.1, 
+                            0.457
+                        ], 
+                        "scale": [
+                            0.055, 
+                            0.355
+                        ]
                     }
  
-        a = np.poly1d(params['a'])(tpe)
-        if a < 0: 
-            a = 1.
-            print('bad fit of a parameter -- it may not work')
+        if tpe == 0:
+            tpe = 1
 
+        a = np.poly1d(params['a'])(tpe)
         loc = np.poly1d(params['loc'])(tpe)
         scale = np.poly1d(params['scale'])(tpe)
         Min = np.poly1d(params['min'])(tpe)
         Max = np.poly1d(params['max'])(tpe)
 
-       
+        #hack to use the all data values if the fit failed
+        if params.values()[0] == [0.,0.] or np.array([a, loc, scale, Min, Max]).any()<0:
+
+            a = np.poly1d(params_all['a'])(tpe)
+            loc = np.poly1d(params_all['loc'])(tpe)
+            scale = np.poly1d(params_all['scale'])(tpe)
+            Min = np.poly1d(params_all['min'])(tpe)
+            Max = np.poly1d(params_all['max'])(tpe)
+
+
         return truncate(lambda: exponnorm.rvs(a, loc, scale), Min, Max)
     else:
         raise Exception('Distribution not understood')

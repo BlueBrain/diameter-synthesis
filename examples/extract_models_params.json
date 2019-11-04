@@ -41,21 +41,67 @@
                 "apical": 5, 
                 "basal": 20
             }
+        }, 
+        "M5": {
+            "terminal_threshold": 0.8, 
+            "trunk_floc": 0, 
+            "trunk_min_sample_num": {
+                "apical": 5, 
+                "basal": 20
+            }
+        }, 
+        "M6": {
+            "terminal_threshold": 0.8, 
+            "trunk_floc": 0, 
+            "trunk_min_sample_num": {
+                "apical": 5, 
+                "basal": 20
+            }
+        }, 
+        "M7": {
+            "terminal_threshold": 0.8, 
+            "trunk_floc": 0, 
+            "trunk_min_sample_num": {
+                "apical": 5, 
+                "basal": 20
+            }
+        }, 
+        "M8": {
+            "terminal_threshold": 0.8, 
+            "trunk_floc": 0, 
+            "trunk_min_sample_num": {
+                "apical": 5, 
+                "basal": 20
+            }
+        }, 
+        "M9": {
+            "terminal_threshold": 0.8, 
+            "trunk_floc": 0, 
+            "trunk_min_sample_num": {
+                "apical": 5, 
+                "basal": 20
+            }
         }
     }, 
-    "fig_folder": "figures_all", 
+    "fig_folder": "figures_full_all", 
     "models": [
         "M0", 
         "M1", 
         "M2", 
         "M3", 
-        "M4"
+        "M4", 
+        "M5", 
+        "M6", 
+        "M7", 
+        "M8", 
+        "M9"
     ], 
-    "models_params_file": "model_params_all.json", 
+    "models_params_file": "model_params_full_all.json", 
     "morph_path": "/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/", 
     "n_morphs_max": null, 
     "n_mtypes_max": 60, 
     "neurite_types": [
-        "basal"
+        "basal", 
+        "apical"
     ]
 }

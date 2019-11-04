@@ -96,12 +96,9 @@ def sampling_model_generic(morphologies, neurite_types, extra_params, tqdm_disab
 def build_models(models, morphologies, neurite_types, extra_params, fig_folder = 'figures', ext = '.png', plot = True):
     """ Building the models in the list of models """  
 
-    all_models = {'M0': sampling_model_generic,
-            'M1': sampling_model_generic,
-            'M2': sampling_model_generic,
-            'M3': sampling_model_generic,
-            'M4': sampling_model_generic,
-    }
+    all_models = {}
+    for model in models:
+        all_models[model]  = sampling_model_generic
     
     tqdm_1, tqdm_2 = utils.tqdm_disable(morphologies) #to have a single progression bar
 

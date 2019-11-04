@@ -57,7 +57,6 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
     ax3.set_ylabel('scale')
 
     fig.savefig(fig_name + ext, bbox_inches='tight')
-
     plt.close(fig)
 
 
@@ -150,6 +149,7 @@ def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', fig
     plt.xticks(np.arange(1, len(data)+1), data.keys(), rotation='vertical')
     #plt.axis([0, len(data)+1, 0., 5])
     plt.savefig(figname + ext, bbox_inches = 'tight')
+    plt.close()
 
     data = collections.OrderedDict() 
 
@@ -176,6 +176,7 @@ def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', fig
     plt.xticks(np.arange(1, len(data)+1), data.keys(), rotation='vertical')
     #plt.axis([0, len(data)+1, 0., 5])
     plt.savefig(figname + '_trunk' + ext, bbox_inches = 'tight')
+    plt.close()
 
 def plot_neuron(neuron, folder, ext = '.png'):
     """ plot a neuron and save in a folder """
@@ -338,6 +339,6 @@ def plot_diameter_diff(neuron_name, morph_path, new_morph_path, model, neurite_t
     axs[1,1].set_title('Negative diameter differences')
 
     fig.savefig(folder + '/' + neuron_name + '_' + folder+'_'+ model + '.png', dpi = 500)
-    plt.close()
+    plt.close('all')
 
 

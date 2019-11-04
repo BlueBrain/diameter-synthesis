@@ -63,10 +63,10 @@ def load_morphologies_from_dict(morph_path, name_dict):
 
     return morphologies 
 
-def load_morphologies(morph_path, by_mtypes = True, n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc'):
+def load_morphologies(morph_path, by_mtypes = True, n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix ='./'):
     """ Load the morphologies from a directory, by mtypes or all at once """
     
-    #load morphologies by mtypes, one listt of morphologies for each type
+    #load morphologies by mtypes, one list of morphologies for each type
     if by_mtypes:
 
         #if not max number of mtypes, take all
@@ -84,15 +84,15 @@ def load_morphologies(morph_path, by_mtypes = True, n_morphs_max = None, n_mtype
             try:
                 # Define mtypes
                 mtype = m.find('mtype').text
-                # Define suntypes (if they exist)
+                # Define subtypes (if they exist)
                 if m.find('msubtype').text:
                     mtype = mtype + ':' + m.find('msubtype').text
 
                 #if it is a new mtype, add en entry to name_dict
                 if mtype not in name_dict.keys() and len(name_dict) < n_mtypes_max:
-                    name_dict[mtype] = [m.find('name').text + ext]
+                    name_dict[mtype] = [prefix + m.find('name').text + ext]
                 elif mtype in name_dict.keys():
-                    name_dict[mtype] += [m.find('name').text + ext]
+                    name_dict[mtype] += [prefix + m.find('name').text + ext]
 
             except:
                 print('Failed to process', m)
@@ -101,10 +101,15 @@ def load_morphologies(morph_path, by_mtypes = True, n_morphs_max = None, n_mtype
     else:
         name_dict = {}
         if n_morphs_max is not None:
-            name_dict['all_types'] = os.listdir(morph_path)[:n_morphs_max]
+            morph_paths = os.listdir(morph_path)[:n_morphs_max]
         else:
-            name_dict['all_types'] = os.listdir(morph_path)
-    
+            morph_paths = os.listdir(morph_path)
+
+        for i,mp in enumerate(morph_paths):
+            morph_paths[i] = prefix + mp 
+
+        name_dict['all_types'] = morph_paths
+    print(morph_paths)
     return load_morphologies_from_dict(morph_path, name_dict)
  
 def save_neuron(neuron, model, folder):
