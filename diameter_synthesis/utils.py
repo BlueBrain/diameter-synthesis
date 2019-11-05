@@ -159,7 +159,7 @@ def section_lengths(section):
 
     vecs = np.diff(section.points, axis=0)[:, COLS.XYZ]
     d2 = [np.dot(p, p) for p in vecs]
-    return np.cumsum(np.sqrt(d2))
+    return list(np.cumsum(np.sqrt(d2)))
 
 def tqdm_disable(morphologies):
     """ to have a single progression bar """
@@ -172,4 +172,24 @@ def tqdm_disable(morphologies):
         tqdm_2 = False
 
     return tqdm_1, tqdm_2
+ 
+def set_bins(data, n_bins, n_min = 20):
+    """ find a good set of bins to avoid undersampling """
+
+    #try to bin uniformly
+    max_data = np.max(data)
+    min_data = np.min(data)
+    values, bins = np.histogram(data, bins = n_bins, range = (min_data, max_data) )
+
+    #if the last bins have to few points, reduce the window
+    while values[-1] < n_min:
+        max_data = bins[-2]
+        values, bins = np.histogram(data, bins = n_bins, range = (min_data, max_data) )
+
+    #if the first bins have to few points, reduce the window
+    while values[0] < n_min:
+        min_data = bins[1]
+        values, bins = np.histogram(data, bins = n_bins, range = (min_data, max_data) )
+
+    return bins
 

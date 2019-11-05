@@ -4,7 +4,7 @@
     "extra_params": {
         "M0": {
             "terminal_threshold": 1.2,
-            "trunk_floc": 0,
+            "trunk_floc": null,
             "trunk_min_sample_num": {
                 "apical": 5,
                 "basal": 20
@@ -12,7 +12,7 @@
         },
         "M1": {
             "terminal_threshold": 1.2,
-            "trunk_floc": 0,
+            "trunk_floc": null,
             "trunk_min_sample_num": {
                 "apical": 5,
                 "basal": 20
@@ -20,7 +20,7 @@
         },
         "M2": {
             "terminal_threshold": 1.2,
-            "trunk_floc": 0,
+            "trunk_floc": null,
             "trunk_min_sample_num": {
                 "apical": 5,
                 "basal": 20
@@ -28,7 +28,7 @@
         },
         "M3": {
             "terminal_threshold": 1.2,
-            "trunk_floc": 0,
+            "trunk_floc": null,
             "trunk_min_sample_num": {
                 "apical": 5,
                 "basal": 20
@@ -36,7 +36,7 @@
         },
         "M4": {
             "terminal_threshold": 1.2,
-            "trunk_floc": 0,
+            "trunk_floc": null,
             "trunk_min_sample_num": {
                 "apical": 5,
                 "basal": 20
@@ -44,7 +44,7 @@
         },
         "M5": {
             "terminal_threshold": 1.2,
-            "trunk_floc": 0,
+            "trunk_floc": null,
             "trunk_min_sample_num": {
                 "apical": 5,
                 "basal": 20
@@ -52,7 +52,7 @@
         },
         "M6": {
             "terminal_threshold": 1.2,
-            "trunk_floc": 0,
+            "trunk_floc": null,
             "trunk_min_sample_num": {
                 "apical": 5,
                 "basal": 20
@@ -60,7 +60,7 @@
         },
         "M7": {
             "terminal_threshold": 1.2,
-            "trunk_floc": 0,
+            "trunk_floc": null,
             "trunk_min_sample_num": {
                 "apical": 5,
                 "basal": 20
@@ -68,7 +68,7 @@
         },
         "M8": {
             "terminal_threshold": 1.2,
-            "trunk_floc": 0,
+            "trunk_floc": null,
             "trunk_min_sample_num": {
                 "apical": 5,
                 "basal": 20
@@ -76,7 +76,7 @@
         },
         "M9": {
             "terminal_threshold": 1.2,
-            "trunk_floc": 0,
+            "trunk_floc": null,
             "trunk_min_sample_num": {
                 "apical": 5,
                 "basal": 20
@@ -85,16 +85,7 @@
     },
     "fig_folder": "figures_all",
     "models": [
-        "M0",
-        "M1",
-        "M2",
-        "M3",
-        "M4",
-        "M5",
-        "M6",
-        "M7",
-        "M8",
-        "M9"
+        "M0"
     ],
     "models_params_file": "model_params_all.json",
     "morph_path": "05_RepairUnravel-asc/",

@@ -20,10 +20,10 @@ colors = {'basal': 'b', 'apical': 'r'}
 def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = '.png'):
     """ plot the fit of the parameter of the distributions """
 
-    fig = plt.figure(figsize=(7,5))
+    fig = plt.figure(figsize=(5,8))
 
     fig.subplots_adjust(hspace=0.0)
-    ax1 = fig.add_subplot(311)
+    ax1 = fig.add_subplot(511)
 
     for neurite_type in neurite_types:
         tpes_model = [*model[neurite_type]['params_data']]
@@ -34,7 +34,7 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
     ax1.set_xlabel('max branching order')
     ax1.set_ylabel('a')
 
-    ax2 = fig.add_subplot(312)
+    ax2 = fig.add_subplot(512)
 
     for neurite_type in neurite_types:
         tpes_model = [*model[neurite_type]['params_data']]
@@ -42,10 +42,9 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
         locs   = [v['loc'] for v in model[neurite_type]['params_data'].values()]
         ax2.plot(tpes_model, locs, '+', c=colors[neurite_type])
 
-    ax2.set_xlabel('max branching order')
     ax2.set_ylabel('loc')
 
-    ax3 = fig.add_subplot(313)
+    ax3 = fig.add_subplot(513)
 
     for neurite_type in neurite_types:
         tpes_model = [*model[neurite_type]['params_data']]
@@ -53,14 +52,36 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
         scales = [v['scale'] for v in model[neurite_type]['params_data'].values()]
         ax3.plot(tpes_model, scales, '+', c=colors[neurite_type])
 
-    ax3.set_xlabel('max branching order')
     ax3.set_ylabel('scale')
+
+    ax4 = fig.add_subplot(514)
+
+    for neurite_type in neurite_types:
+        tpes_model = [*model[neurite_type]['params_data']]
+        ax4.plot(tpes_model, np.poly1d(model[neurite_type]['params']['min'])(tpes_model), c=colors[neurite_type])
+        mins = [v['min'] for v in model[neurite_type]['params_data'].values()]
+        ax4.plot(tpes_model, mins, '+', c=colors[neurite_type])
+
+    ax4.set_ylabel('min')
+
+    ax5 = fig.add_subplot(515)
+
+    for neurite_type in neurite_types:
+        tpes_model = [*model[neurite_type]['params_data']]
+        ax5.plot(tpes_model, np.poly1d(model[neurite_type]['params']['max'])(tpes_model), c=colors[neurite_type])
+        maxs = [v['max'] for v in model[neurite_type]['params_data'].values()]
+        ax5.plot(tpes_model, maxs, '+', c=colors[neurite_type])
+
+    ax5.set_xlabel('max branching order')
+    ax5.set_ylabel('max')
+
+
 
     fig.savefig(fig_name + ext, bbox_inches='tight')
     plt.close(fig)
 
 
-def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '.png', figsize = (5,4)):
+def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '.png', figsize = (5,4), n_bins = 10):
     """ Plot the data distribution and its fit """
     fig = plt.figure(figsize = figsize)
     for neurite_type in neurite_types:
@@ -69,24 +90,37 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
 
                 tpes = np.asarray(data[neurite_type])[:, 1] #collect the type of point (branching order for now)
                 values = np.asarray(data[neurite_type])[:, 0] #collect the data itself
+               
+                bins = utils.set_bins(tpes, n_bins)
+                min_val = 1e10
+                max_val = -1e10
 
-                for tpe in set(tpes):
-
-                    values_tpe = values[tpes==tpe]
-                    bottom_shift = 0.2*tpe
+                for i in range(n_bins-1):
+                    values_tpe = values[(tpes >= bins[i]) & (tpes < bins[i+1]) ] #select the values by its type 
+                    tpe_mean = (bins[i]+bins[i+1])/2.
+             
+                    bottom_shift = tpe_mean
 
                     plt.axhline(bottom_shift, lw=0.2, c='k')
-                    plt.hist(values_tpe, bins = 50, log = False, density = True, histtype='bar', lw=0.5, bottom = bottom_shift, color=colors[neurite_type], alpha=0.2)
 
-                    min_tpe =  np.poly1d(model[neurite_type]['params']['min'])(tpe)
-                    max_tpe =  np.poly1d(model[neurite_type]['params']['max'])(tpe)
-                    x = np.linspace(min_tpe, max_tpe)
+                    min_tpe = np.poly1d(model[neurite_type]['params']['min'])(tpe_mean)
+                    max_tpe = np.poly1d(model[neurite_type]['params']['max'])(tpe_mean)
 
-                    #plt.axvline(min_tpe, ls='--', c='k')
-                    #plt.axvline(max_tpe, ls='--', c='k')
+                    min_val = np.min([min_val, min_tpe])
+                    max_val = np.max([max_val, max_tpe])
+                    values_tpe = values_tpe[values_tpe<max_tpe*1.2] 
+                    values_tpe = values_tpe[values_tpe>min_tpe*0.8] 
 
-                    plt.plot(x, bottom_shift + evaluate_distribution(x, model[neurite_type], tpes = [tpe,])[0], c=colors[neurite_type], lw = 1, ls='--')#, label = neurite_type)
-                plt.gca().set_ylim(0, bottom_shift + 1)
+                    n, b = np.histogram(values_tpe, bins = 20)#, range=(min_tpe*0.8, max_tpe*1.2))
+                    plt.bar(b[:-1], np.array(n)/np.max(n), width = b[1]-b[0], bottom = bottom_shift, color=colors[neurite_type], alpha = 0.5)
+                    #plt.hist(values_tpe, bins = 50, log = False, density = True, histtype='bar', lw=0.5, bottom = bottom_shift, color=colors[neurite_type], alpha=0.2, range=(min_tpe*0.8, max_tpe*1.2))
+
+                    x = np.linspace(min_tpe, max_tpe, 1000)
+                    pdf = evaluate_distribution(x, model[neurite_type], tpes = [tpe_mean,])[0]
+                    plt.plot(x, bottom_shift + pdf/np.max(pdf) , c=colors[neurite_type], lw = 1, ls='--')#, label = neurite_type)
+
+                #plt.gca().set_ylim(0, bottom_shift + 1)
+                #plt.gca().set_xlim(min_val*0.8, max_val*1.2)
 
             else:
 

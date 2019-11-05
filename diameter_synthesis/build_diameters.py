@@ -89,7 +89,7 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
             trunk_diam_frac = 1.
             k = 1
             while wrong_tips:
-                wrong_tips = diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac, taper = extra_params['taper'])
+                wrong_tips = diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac)
                 n_tries += 1
 
                 if n_tries > 10*k: #if we keep failing, slighly reduce the trunk diams
@@ -100,7 +100,7 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
                     print('max tries attained with', neurite_type)
                     wrong_tips = False
 
-def diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac = 1., taper = 0):
+def diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac = 1.):
         """ diametrize a single tree """
 
         trunk_diam = trunk_diam_frac*sample_distribution(params['trunk_diameter'][neurite_type], max_bo)
@@ -123,6 +123,7 @@ def diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac = 1.,
                 terminal_diam = sample_distribution(params['terminal_diameter'][neurite_type])
                 
                 #diametrize a section
+                taper = sample_distribution(params['taper'][neurite_type])
                 diametrize_section(section, init_diam, taper=taper,
                                              min_diam = terminal_diam, max_diam = trunk_diam)
 
@@ -180,7 +181,7 @@ def diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=100
         range_ = range(0, len(section.points) - 1)
 
     # lengths of each segments will be used for scaling of tapering
-    lengths = [0] + utils.section_lengths(section).tolist()
+    lengths = [0] + utils.section_lengths(section)
 
     for i in range_:
         # Taper should be a negative number for decreasing diameters

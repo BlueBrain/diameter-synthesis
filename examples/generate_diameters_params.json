@@ -4,67 +4,66 @@
         "M0": {
             "max_bo_fit": 15,
             "seed": 1,
-            "taper": -0.0005,
-            "trunk_floc": 0
+            "taper": -0.002,
+            "trunk_floc": null
         },
         "M1": {
             "max_bo_fit": 15,
             "seed": 2,
-            "taper": -0.0005,
-            "trunk_floc": 0
+            "taper": -0.002,
+            "trunk_floc": null
         },
         "M2": {
             "max_bo_fit": 15,
             "seed": 3,
-            "taper": -0.0005,
-            "trunk_floc": 0
+            "taper": -0.002,
+            "trunk_floc": null
         },
         "M3": {
             "max_bo_fit": 15,
             "seed": 4,
-            "taper": -0.0005,
-            "trunk_floc": 0
+            "taper": -0.002,
+            "trunk_floc": null
         },
         "M4": {
             "max_bo_fit": 15,
             "seed": 5,
-            "taper": -0.0005,
-            "trunk_floc": 0
+            "taper": -0.002,
+            "trunk_floc": null
         },
         "M5": {
             "max_bo_fit": 15,
             "seed": 6,
-            "taper": -0.0005,
-            "trunk_floc": 0
+            "taper": -0.002,
+            "trunk_floc": null
         },
         "M6": {
             "max_bo_fit": 15,
             "seed": 7,
-            "taper": -0.0005,
-            "trunk_floc": 0
+            "taper": -0.002,
+            "trunk_floc": null
         },
         "M7": {
             "max_bo_fit": 15,
             "seed": 8,
-            "taper": -0.0005,
-            "trunk_floc": 0
+            "taper": -0.002,
+            "trunk_floc": null
         },
         "M8": {
             "max_bo_fit": 15,
             "seed": 9,
-            "taper": -0.0005,
-            "trunk_floc": 0
+            "taper": -0.002,
+            "trunk_floc": null
         },
         "M9": {
             "max_bo_fit": 15,
             "seed": 10,
-            "taper": -0.0005,
-            "trunk_floc": 0
+            "taper": -0.002,
+            "trunk_floc": null
         }
     },
     "models": [
-        "M0",
-        "M1"
+        "M0"
     ],
     "models_params_file": "model_params_all.json",
     "morph_path": "05_RepairUnravel-asc/",

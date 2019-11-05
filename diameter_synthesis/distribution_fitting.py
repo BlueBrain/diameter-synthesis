@@ -47,7 +47,7 @@ def evaluate_distribution(x, model, tpes = []):
 
         fits = []
         for tpe in tpes:
-            fits.append(exponnorm.pdf(x, np.poly1d(params['a'])(tpe), np.poly1d(params['loc'])(tpe), np.poly1d(params['scale'])(tpe)))
+            fits.append(exponnorm.pdf(x, np.poly1d(params['a'])(tpe), loc = np.poly1d(params['loc'])(tpe), scale = np.poly1d(params['scale'])(tpe)))
 
         return fits
     else:
@@ -157,7 +157,6 @@ def fit_distribution_params(params):
     scales = [v['scale'] for v in params_values]
     mins = [v['min'] for v in params_values]
     maxs = [v['max'] for v in params_values]
-
     z_As = np.polyfit(tpes_model, As, 1)
     z_locs = np.polyfit(tpes_model, locs, 1)
     z_scales = np.polyfit(tpes_model, scales, 1)
@@ -166,7 +165,7 @@ def fit_distribution_params(params):
     
     return list(np.round(z_As, ROUND)), list(np.round(z_locs, ROUND)), list(np.round(z_scales, ROUND)), list(np.round(z_mins, ROUND)), list(np.round(z_maxs,ROUND))
 
-def fit_distribution(data, distribution, floc = None, min_sample_num = 10, p = 5):
+def fit_distribution(data, distribution, floc = None, fa = None,  min_sample_num = 10, p = 5, n_bins = 10):
     """ generic function to fit a distribution with scipy """
 
     if len(data) > 0:
@@ -204,21 +203,20 @@ def fit_distribution(data, distribution, floc = None, min_sample_num = 10, p = 5
             tpes = np.asarray(data)[:, 1] #collect the type of point (branching order for now)
             values = np.asarray(data)[:, 0] #collect the data itself
 
+            #set the bins for estimating parameters
+            bins = utils.set_bins(tpes, n_bins, n_min = min_sample_num)
             params = {}
-            for tpe in set(tpes):
-                values_tpe = values[tpes==tpe] #select the values by its type 
-                if len(values_tpe) > min_sample_num: #if enough points, try to fit
+            for i in range(n_bins-1):
+                values_tpe = values[(tpes >= bins[i]) & (tpes < bins[i+1]) ] #select the values by its type 
+                if len(values_tpe) > min_sample_num: #if enough points, try to fit (intermediate bins could be almost empty)
                     if floc is not None:
                         a, loc, scale = exponnorm.fit(values_tpe, floc = floc) 
+                    elif fa is not None:
+                        a, loc, scale = exponnorm.fit(values_tpe, f0 = fa) 
                     else:
                         a, loc, scale = exponnorm.fit(values_tpe)
 
-                    params[tpe] = {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(values_tpe, p), ROUND), 'max': np.round(np.percentile(values_tpe, 100-p), ROUND)}
-
-            if len(params) < 2:
-                #print('Not enough datapoints to fit the distribution with ', len(params), 'points.')
-                params[0.] = {'a': 0., 'loc': 0., 'scale': 0., 'min': 0, 'max': 0}
-                params[1.] = {'a': 0., 'loc': 0., 'scale': 0., 'min': 0, 'max': 0}
+                    params[(bins[i+1] + bins[i])/2.] = {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(values_tpe, p), ROUND), 'max': np.round(np.percentile(values_tpe, 100-p), ROUND)}
 
             return params
 

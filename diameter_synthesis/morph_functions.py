@@ -7,7 +7,7 @@ import numpy as np
 import neurom as nm
 from neurom.core import iter_sections
 
-from diameter_synthesis.utils import get_diameters, set_diameters 
+from diameter_synthesis.utils import get_diameters, set_diameters, section_lengths 
 
 ############################
 ## morphometric functions ##
@@ -77,10 +77,10 @@ def terminal_diameters(neurite, method = 'mean', threshold = 1.0):
     mean_diameter = np.mean(get_diameters(neurite))
 
     if method == 'mean':
-        term_diam = [ np.mean(get_diameters(t)) for t in nm.core.Tree.ileaf(next(iter_sections(neurite))) if np.mean(get_diameters(t)) < threshold * mean_diameter]
+        term_diam = [np.mean(get_diameters(t)) for t in nm.core.Tree.ileaf(next(iter_sections(neurite))) if np.mean(get_diameters(t)) < threshold * mean_diameter]
 
     elif method == 'first':
-        term_diam = [ get_diameters(t)[-1] for t in nm.core.Tree.ileaf(next(iter_sections(neurite))) if get_diameters(t)[-1] < threshold * mean_diameter]
+        term_diam = [get_diameters(t)[-1] for t in nm.core.Tree.ileaf(next(iter_sections(neurite))) if get_diameters(t)[-1] < threshold * mean_diameter]
 
     else:
         raise Exception('Method for singling computation not understood!')
@@ -96,3 +96,25 @@ def trunk_diameter(neurite):
     return [[trunk_diam, max_bo], ]
 
 
+def taper(neurite, min_num_points = 20, fit_order = 1):
+    """ get the taper """
+
+    tapers = []
+    sec_id = [] 
+    for i, section in enumerate(iter_sections(neurite)):
+        lengths = [0] + section_lengths(section)
+
+        #do a linear fit if more than 5 points
+        if len(lengths) > min_num_points:
+            z = np.polyfit(lengths, get_diameters(section), fit_order)
+            tap = z[0]
+            if tap < 0.002 and tap > -0.005:
+                tapers.append(tap)
+                sec_id.append(i)
+        
+    bos = np.array(nm.get('section_branch_orders', neurite))[sec_id]
+
+    #bos = np.array(nm.get('section_path_distances', neurite))[sec_id]
+
+    #return [ [tap, bo ] for tap, bo in zip(tapers, bos)  ]
+    return tapers

@@ -5,7 +5,7 @@ set -e
 rm -rf figures 
 
 #module purge all
-#. ~/diam/bin/activate
+#. ~/base/bin/activate
 
 #module load neuron/7.6.8/python2/serial
 
