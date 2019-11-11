@@ -28,7 +28,11 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
     for neurite_type in neurite_types:
         tpes_model = [*model[neurite_type]['params_data']]
         ax1.plot(tpes_model, np.poly1d(model[neurite_type]['params']['a'])(tpes_model), c=colors[neurite_type])
-        As     = [v['a'] for v in model[neurite_type]['params_data'].values()]
+        As  = np.array([v['a'] for v in model[neurite_type]['params_data'].values()])
+
+        #prevent large values of a from bad fits
+        As[As>utils.A_MAX] = utils.A_MAX
+
         ax1.plot(tpes_model, As, '+', c=colors[neurite_type])
 
     ax1.set_xlabel('max branching order')
@@ -90,37 +94,36 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
 
                 tpes = np.asarray(data[neurite_type])[:, 1] #collect the type of point (branching order for now)
                 values = np.asarray(data[neurite_type])[:, 0] #collect the data itself
-               
+
                 bins = utils.set_bins(tpes, n_bins)
                 min_val = 1e10
                 max_val = -1e10
 
-                for i in range(n_bins-1):
+                for i in range(len(bins)-1):
                     values_tpe = values[(tpes >= bins[i]) & (tpes < bins[i+1]) ] #select the values by its type 
                     tpe_mean = (bins[i]+bins[i+1])/2.
              
                     bottom_shift = tpe_mean
 
                     plt.axhline(bottom_shift, lw=0.2, c='k')
+                    try: #try to plot, may not be a fit to plot
+                        min_tpe = np.poly1d(model[neurite_type]['params']['min'])(tpe_mean)
+                        max_tpe = np.poly1d(model[neurite_type]['params']['max'])(tpe_mean)
 
-                    min_tpe = np.poly1d(model[neurite_type]['params']['min'])(tpe_mean)
-                    max_tpe = np.poly1d(model[neurite_type]['params']['max'])(tpe_mean)
+                        min_val = np.min([min_val, min_tpe])
+                        max_val = np.max([max_val, max_tpe])
+                        values_tpe = values_tpe[values_tpe<max_tpe*1.2] 
+                        values_tpe = values_tpe[values_tpe>min_tpe*0.8] 
 
-                    min_val = np.min([min_val, min_tpe])
-                    max_val = np.max([max_val, max_tpe])
-                    values_tpe = values_tpe[values_tpe<max_tpe*1.2] 
-                    values_tpe = values_tpe[values_tpe>min_tpe*0.8] 
+                        n, b = np.histogram(values_tpe, bins = 20)
+                        plt.bar(b[:-1], np.array(n)/np.max(n), width = b[1]-b[0], bottom = bottom_shift, color=colors[neurite_type], alpha = 0.5)
 
-                    n, b = np.histogram(values_tpe, bins = 20)#, range=(min_tpe*0.8, max_tpe*1.2))
-                    plt.bar(b[:-1], np.array(n)/np.max(n), width = b[1]-b[0], bottom = bottom_shift, color=colors[neurite_type], alpha = 0.5)
-                    #plt.hist(values_tpe, bins = 50, log = False, density = True, histtype='bar', lw=0.5, bottom = bottom_shift, color=colors[neurite_type], alpha=0.2, range=(min_tpe*0.8, max_tpe*1.2))
-
-                    x = np.linspace(min_tpe, max_tpe, 1000)
-                    pdf = evaluate_distribution(x, model[neurite_type], tpes = [tpe_mean,])[0]
-                    plt.plot(x, bottom_shift + pdf/np.max(pdf) , c=colors[neurite_type], lw = 1, ls='--')#, label = neurite_type)
-
-                #plt.gca().set_ylim(0, bottom_shift + 1)
-                #plt.gca().set_xlim(min_val*0.8, max_val*1.2)
+                        x = np.linspace(min_tpe, max_tpe, 1000)
+                        pdf = evaluate_distribution(x, model[neurite_type], tpes = [tpe_mean,])[0]
+                        plt.plot(x, bottom_shift + pdf/np.max(pdf) , c=colors[neurite_type], lw = 1, ls='--')
+                    except: # if not fit, just plot the histrogams
+                        n, b = np.histogram(values_tpe, bins = 20)
+                        plt.bar(b[:-1], np.array(n)/np.max(n), width = b[1]-b[0], bottom = bottom_shift, color=colors[neurite_type], alpha = 0.5)
 
             else:
 
@@ -137,9 +140,12 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
                 plt.gca().set_xlim(min_val*0.8, max_val*1.2)
 
     title_txt = 'Fit parameters:\n'
-    for neurite_type in neurite_types:
-        title_txt += neurite_type +': ' + str(model[neurite_type]['params']) 
-        title_txt += '\n'
+    try:
+        for neurite_type in neurite_types:
+            title_txt += neurite_type +': ' + str(model[neurite_type]['params']) 
+            title_txt += '\n'
+    except:
+        title_txt += ' no parameter could be fitted.'
 
     plt.title(title_txt, fontsize = 8)
 

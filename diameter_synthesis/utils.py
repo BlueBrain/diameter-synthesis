@@ -31,6 +31,9 @@ STR_TO_NEUROM_TYPES = {'apical': NeuriteType.apical_dendrite,
                        'soma': NeuriteType.soma,
                        'axon': NeuriteType.axon}
 
+ROUND = 3 #number of digits for the fitted parameters
+MIN_DATA_POINTS = 5 #minimum number of points to fit a distribution
+A_MAX = 10 #maximum value for the a (shape) parameter of fits (can get really large when low number of points)
 
 ##############################
 ## loading/saving functions ##
@@ -138,6 +141,18 @@ def set_diameters(section, diameters):
     new_points[:, COLS.R] = diameters/2.
     section.points = new_points 
 
+def get_mean_diameter(section):
+    """hack to get diameters with neurom"""
+
+    vecs = np.diff(section.points, axis=0)[:, COLS.XYZ]
+    lengths = [np.sqrt(np.dot(p, p)) for p in vecs]
+
+    segment_mean_diams = section.points[1:, COLS.R] + section.points[:-1, COLS.R]
+    mean_diam = np.sum(segment_mean_diams*lengths)/np.sum(lengths)
+     
+    return mean_diam
+
+
 def get_diameters(section):
     """hack to get diameters with neurom"""
 
@@ -179,17 +194,36 @@ def set_bins(data, n_bins, n_min = 20):
     #try to bin uniformly
     max_data = np.max(data)
     min_data = np.min(data)
+    diff_max = max_data - min_data
+
     values, bins = np.histogram(data, bins = n_bins, range = (min_data, max_data) )
 
-    #if the last bins have to few points, reduce the window
-    while values[-1] < n_min:
-        max_data = bins[-2]
+    def reduce_bounds(values, bins, data):
+        max_data = np.max(data)
+        min_data = np.min(data)
+
+        #if the last bins have to few points, reduce the window
+        while values[-1] < n_min and max_data-min_data>0.1*diff_max: #second condition is to prevent shrinking for ever
+            max_data = bins[-2]
+            values, bins = np.histogram(data, bins = n_bins, range = (min_data, max_data) )
+
+        #if the first bins have to few points, reduce the window
+        while values[0] < n_min and max_data-min_data>0.1*diff_max:
+            min_data = bins[1]
+            values, bins = np.histogram(data, bins = n_bins, range = (min_data, max_data) )
+
+        return values, bins
+
+    #find new bounds
+    values, bins = reduce_bounds(values, bins, data)
+
+    #if bins have zero elements, reduce the number of bins and readjust bounds
+    while len(values[values==0])>0 and n_bins>2:
+        n_bins -= 1
+        max_data = np.max(data)
+        min_data = np.min(data)
         values, bins = np.histogram(data, bins = n_bins, range = (min_data, max_data) )
 
-    #if the first bins have to few points, reduce the window
-    while values[0] < n_min:
-        min_data = bins[1]
-        values, bins = np.histogram(data, bins = n_bins, range = (min_data, max_data) )
-
+        values, bins = reduce_bounds(values, bins, data)
     return bins
 

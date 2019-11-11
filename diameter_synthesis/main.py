@@ -43,7 +43,7 @@ def run_models(config_file):
 
     print('Extracting models parameters...')
     #compute the model
-    models_params = build_models(config['models'], morphologies, config['neurite_types'], config['extra_params'], fig_folder = config['fig_folder'], ext = config['ext'], plot=True)
+    models_params = build_models(config['models'], morphologies, config['neurite_types'], config['extra_params'], fig_folder = config['fig_folder'], ext = config['ext'], plot = config['plot'])
 
     #save the models parameters in a json file
     with open(config['models_params_file'], 'w') as json_file:

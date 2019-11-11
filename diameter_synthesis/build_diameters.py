@@ -57,7 +57,6 @@ def build_diam_pool(all_models, model, models_params, neurite_types, extra_param
 
     fname = neuron_input[0]
     mtype = neuron_input[1]
-
     name, ext = os.path.splitext(fname)
     neuron = nm.load_neuron(morph_path + '/' + fname)
 
@@ -66,7 +65,8 @@ def build_diam_pool(all_models, model, models_params, neurite_types, extra_param
     utils.save_neuron([neuron, name], model, new_morph_path) 
 
     if plot:
-        plotting.plot_diameter_diff(name, morph_path, new_morph_path, model, neurite_types, folder='new_morphologies')
+        folder = 'shapes_' + os.path.basename(new_morph_path[:-1])
+        plotting.plot_diameter_diff(name, morph_path, new_morph_path, model, neurite_types, folder=folder)
 
 def diametrize_model_generic(neuron, params, neurite_types, extra_params):
     '''Corrects the diameters of a morphio-neuron according to the model.
@@ -103,7 +103,7 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
 def diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac = 1.):
         """ diametrize a single tree """
 
-        trunk_diam = trunk_diam_frac*sample_distribution(params['trunk_diameter'][neurite_type], max_bo)
+        trunk_diam = 0.7*trunk_diam_frac*sample_distribution(params['trunk_diameter'][neurite_type], max_bo)
 
         wrong_tips = False
 
@@ -123,7 +123,7 @@ def diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac = 1.)
                 terminal_diam = sample_distribution(params['terminal_diameter'][neurite_type])
                 
                 #diametrize a section
-                taper = sample_distribution(params['taper'][neurite_type])
+                taper = -sample_distribution(params['taper'][neurite_type])
                 diametrize_section(section, init_diam, taper=taper,
                                              min_diam = terminal_diam, max_diam = trunk_diam)
 
@@ -140,6 +140,9 @@ def diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac = 1.)
                         reduc = morph_funcs.Rall_reduction_factor(Rall_deviation = Rall_deviation, siblings_ratio = sibling_ratio)
 
                     d0 = get_diameters(section)[-1]
+                    if d0 < terminal_diam:
+                        terminal_diam = d0
+
                     d1 = reduc * d0
                     d2 = sibling_ratio * d1  
 
@@ -154,7 +157,6 @@ def diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac = 1.)
 
                     for i, ch in enumerate(children):
                         new_diam = d1 if i == 0 else d2
-                        
                         utils.redefine_diameter_section(ch, 0, new_diam)
 
                         active.append(ch)
@@ -170,20 +172,25 @@ def diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac = 1.)
 def diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=100.):
     '''Corrects the diameters of a section'''
 
-    if initial_diam< min_diam:
-        initial_diam = min_diam
-    elif initial_diam> max_diam:
-        initial_diam = max_diam
     diams = [initial_diam]
+
+    #if the initial diameter is not in the range of the sampled terminal diameters, just reset it
+    if initial_diam < min_diam:
+        min_diam = initial_diam
+
+    if initial_diam > max_diam:
+        max_diam = initial_diam
+
     if section.is_root():
-        range_ = range(1, len(section.points))
+        #range_ = range(1, len(section.points))
+        range_ = range(0, len(section.points) - 1)
     else:
         range_ = range(0, len(section.points) - 1)
 
     # lengths of each segments will be used for scaling of tapering
     lengths = [0] + utils.section_lengths(section)
-
-    for i in range_:
+    """
+    for i in range(len(section.points)-1): #range_:
         # Taper should be a negative number for decreasing diameters
         new_diam = diams[-1] + taper * lengths[i]
 
@@ -193,7 +200,11 @@ def diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=100
             diams.append(min_diam)
         else:
             diams.append(new_diam)
+    """
 
+    diams = np.poly1d([taper,initial_diam])(lengths)
+    diams[diams<min_diam] = min_diam
+    diams[diams>max_diam] = max_diam
     set_diameters(section, np.array(diams, dtype=np.float32))
 
 
