@@ -1,12 +1,10 @@
 {
     "mtypes_sort": "mtypes", 
     "ext": ".png", 
-    "new_morph_path": "new_morphologies_super_basal/",
+    "new_morph_path": "new_morphologies_all/",
     "morph_path": "../../examples/05_RepairUnravel-asc/", 
         "models": [
-        "M0",
-        "M1",
-        "M2"
+        "M0"
     ],
     "n_morphs_max": null, 
     "n_mtypes_max": null, 

@@ -26,7 +26,7 @@ STR_TO_NEUROM_TYPES = {'apical': NeuriteType.apical_dendrite,
                        'soma': NeuriteType.soma,
                        'axon': NeuriteType.axon}
 
-def extract_morphometrics(neuron):
+def extract_morphometrics(neuron, neurite_types):
     """ extract some morphometrics of a neuron """
 
     areas = []
@@ -46,7 +46,7 @@ def extract_morphometrics(neuron):
     
     return areas, dists, diams, bos
 
-def plot_morphometrics(morphologies, morphologies_new, folder='figures'):
+def plot_morphometrics(morphologies, morphologies_new, neurite_types, folder='figures'):
     """ plot morphometrics per mtypes""" 
 
     for morph in morphologies:
@@ -65,7 +65,7 @@ def plot_morphometrics(morphologies, morphologies_new, folder='figures'):
         if len(morphologies_new[morph])>0:
 
             for i, neuron in enumerate(morphologies[morph]):
-                areas, dists, diams, bos = extract_morphometrics(neuron[0])
+                areas, dists, diams, bos = extract_morphometrics(neuron[0], neurite_types)
 
                 diams_tot += diams 
                 areas_tot += areas 
@@ -73,7 +73,7 @@ def plot_morphometrics(morphologies, morphologies_new, folder='figures'):
                 bos_tot += bos 
 
             for i, neuron in enumerate(morphologies_new[morph]):
-                areas_new, dists_new, diams_new, bos_new = extract_morphometrics(neuron[0])
+                areas_new, dists_new, diams_new, bos_new = extract_morphometrics(neuron[0], neurite_types)
 
                 diams_tot_new += diams_new 
                 areas_tot_new += areas_new 
@@ -177,7 +177,7 @@ if __name__ == '__main__':
 
 
     shutil.copy(config['morph_path']+'/neuronDB.xml', config['new_morph_path']+'/neuronDB.xml') 
-    neurite_types = ['basal',]
+    neurite_types = config['neurite_types']
     folder = 'figures_'+config['new_morph_path']
 
     if os.path.isdir(folder): 
@@ -195,11 +195,11 @@ if __name__ == '__main__':
         os.mkdir(folder+'path_areas')
 
     #Load morphologies
-    morphologies = utils.load_morphologies(config['morph_path'], n_morphs_max = config['n_morphs_max'], by_mtypes = config['by_mtypes'], n_mtypes_max = config['n_mtypes_max'])
-
+    morphologies = utils.load_morphologies(config['morph_path'], n_morphs_max = config['n_morphs_max'], mtypes_sort = config['mtypes_sort'], n_mtypes_max = config['n_mtypes_max'])
     morphologies_new = {}
     for prefix in config['models']:
-        morphologies_new_tmp = utils.load_morphologies(config['new_morph_path'], n_morphs_max = config['n_morphs_max'], by_mtypes = config['by_mtypes'], n_mtypes_max = config['n_mtypes_max'], prefix=prefix+'_')
+        print(prefix)
+        morphologies_new_tmp = utils.load_morphologies(config['new_morph_path'], n_morphs_max = config['n_morphs_max'], mtypes_sort = config['mtypes_sort'], n_mtypes_max = config['n_mtypes_max'], prefix=prefix+'_')
         for morph in morphologies_new_tmp:
             if morph in morphologies_new:
                 morphologies_new[morph] += morphologies_new_tmp[morph]
@@ -207,4 +207,4 @@ if __name__ == '__main__':
                 morphologies_new[morph] = morphologies_new_tmp[morph]
 
     #plot the diameter vs distance
-    plot_morphometrics(morphologies, morphologies_new, folder)
+    plot_morphometrics(morphologies, morphologies_new, neurite_types, folder)

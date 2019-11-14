@@ -65,8 +65,8 @@ def extract_test_morphologies(config_file, final_json, emodel_etype_map):
         if ext in {'.h5', '.asc', '.swc'} and find_etypes_emodels(os.path.splitext(fname)[0], emodel_morph_map, emodel_etype_map): #check if the etype exists for this neuron
             shutil.copyfile(config['rep_morph_path']+fname, config['morph_path']+fname)
             n+=1
-        else:
-            print('no corresponding emodel for '+ name)
+        #else:
+        #    print('no corresponding emodel for '+ name)
     print('Found ' + str(n) + ' matching morphologies.')
 
 

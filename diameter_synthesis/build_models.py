@@ -79,15 +79,17 @@ def sampling_model_generic(morphologies, neurite_types, extra_params, tqdm_disab
         #trunk diameters
         trunk_diameters_models[neurite_type] = {} 
         trunk_diameters_models[neurite_type]['distribution'] =  'exponnorm_sequence'
-        trunk_diameters_models[neurite_type]['params'] =  fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], min_sample_num = extra_params['trunk_min_sample_num'][neurite_type], floc = extra_params['trunk_floc'], p = 20)
+        trunk_diameters_models[neurite_type]['params'] =  fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], min_sample_num = extra_params['trunk_min_sample_num'][neurite_type], floc = extra_params['trunk_floc'])
         trunk_diameters_models[neurite_type] = update_params_fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type], orders = extra_params['orders'])
 
         #taper
         tapers_models[neurite_type] = {} 
         tapers_models[neurite_type]['distribution'] =  'exponnorm'
         tapers_models[neurite_type]['params'] =  fit_distribution(tapers[neurite_type], tapers_models[neurite_type]['distribution'], min_sample_num = extra_params['trunk_min_sample_num'][neurite_type])#, p=0)
-        tapers_models['basal']['params'] = {'a': 1, 'loc': 0.0010, 'scale': 0.0005, 'min':0, 'max': 0.0030}
-        #tapers_models['apical']['params'] = {'a': 1, 'loc': 0.0005, 'scale': 0.0001, 'min':0, 'max': 0.001}
+        if neurite_type == 'basal':
+            tapers_models[neurite_type]['params'] = {'a': 1, 'loc': 0.0010, 'scale': 0.0005, 'min':0, 'max': 0.0030}
+        if neurite_type == 'apical':
+            tapers_models[neurite_type]['params'] = {'a': 1, 'loc': 0.0005, 'scale': 0.00025, 'min':0, 'max': 0.0015}
 
 
     #collect all models in one dictionary
@@ -117,7 +119,7 @@ def build_models(models, morphologies, neurite_types, extra_params, fig_folder =
     for model in models:
         all_models[model]  = sampling_model_generic
     
-    tqdm_1, tqdm_2 = utils.tqdm_disable(morphologies) #to have a single progression bar
+    tqdm_2, tqdm_1 = utils.tqdm_disable(morphologies) #to have a single progression bar
 
     #extract the data and the models
     models_params = {} #dictionary of model parameters for each mtype

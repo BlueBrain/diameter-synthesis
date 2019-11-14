@@ -32,8 +32,10 @@ STR_TO_NEUROM_TYPES = {'apical': NeuriteType.apical_dendrite,
                        'axon': NeuriteType.axon}
 
 ROUND = 3 #number of digits for the fitted parameters
-MIN_DATA_POINTS = 5 #minimum number of points to fit a distribution
-A_MAX = 10 #maximum value for the a (shape) parameter of fits (can get really large when low number of points)
+MIN_DATA_POINTS = 20 #minimum number of points to fit a distribution
+A_MAX = 4 #maximum value for the a (shape) parameter of fits (can get really large when low number of points)
+
+FORBIDDEN_MTYPES = ['L4_NGC', 'L4_CHC', 'L6_CHC', 'L6_DBC', ]
 
 ##############################
 ## loading/saving functions ##
@@ -52,64 +54,72 @@ def load_morphologies_from_dict(morph_path, name_dict):
             if ext in {'.h5', '.asc', '.swc'} and os.path.exists(morph_path + '/' + fname):
                 neuron = nm.load_neuron(morph_path + '/' + fname)
                 morphologies[mtype].append([neuron, name])
-                neurite_types =['basal']
-                for neurite_type in neurite_types:
-                    neurites = (neurite for neurite in neuron.neurites if neurite.type == STR_TO_TYPES[neurite_type])
 
     return morphologies 
 
-def create_morphologies_dict(morph_path, by_mtypes = True, n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix = ""):
+def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix = ""):
     """ Create dict to load the morphologies from a directory, by mtypes or all at once """
-    
-    #load morphologies by mtypes, one list of morphologies for each type
-    if by_mtypes:
 
-        #if not max number of mtypes, take all
-        if not n_mtypes_max:
-            n_mtypes_max =  1e10
+    #first load the neuronDB.xml file 
+    from xml.etree import ElementTree as ET
+    FileDB = ET.parse(morph_path + xml_file)
+    root = FileDB.findall('listing')[0]
+    morphs = root.findall('morphology')
+ 
 
-        from xml.etree import ElementTree as ET
-        FileDB = ET.parse(morph_path + xml_file)
-        root = FileDB.findall('listing')[0]
-        morphs = root.findall('morphology')
-    
-        name_dict = {}
-        for m in morphs:
-            try:
-                # Define mtypes
-                mtype = m.find('mtype').text
-                # Define subtypes (if they exist)
-                if m.find('msubtype').text:
-                    mtype = mtype + ':' + m.find('msubtype').text
+    #if not max number of mtypes, take all
+    if not n_mtypes_max:
+        n_mtypes_max =  1e10
+    if not n_morphs_max:
+        n_morphs_max =  1e10
 
-                #if it is a new mtype, add en entry to name_dict
-                if mtype not in name_dict.keys() and len(name_dict) < n_mtypes_max:
-                    name_dict[mtype] = [prefix + m.find('name').text + ext]
-                elif mtype in name_dict.keys():
-                    name_dict[mtype] += [prefix + m.find('name').text + ext]
+    name_dict = {}
+    if mtypes_sort == 'all':
+        name_dict['all_types'] = []
 
-            except:
-                print('Failed to process', m)
+    for m in morphs:
+        try:
+            # Define mtypes
+            mtype = m.find('mtype').text
+            # Define subtypes (if they exist)
+            if m.find('msubtype').text:
+                mtype = mtype + ':' + m.find('msubtype').text
 
-    #load all the morphologies together
-    else:
-        name_dict = {}
-        if n_morphs_max is not None:
-            morph_paths = os.listdir(morph_path)[:n_morphs_max]
-        else:
-            morph_paths = os.listdir(morph_path)
+            if mtype not in FORBIDDEN_MTYPES: #hack to not consider some bad mtypes
 
-        for i,mp in enumerate(morph_paths):
-            morph_paths[i] = prefix + mp 
+                #load morphologies by mtypes, one list of morphologies for each type
+                if mtypes_sort == 'mtypes':
+                    #if it is a new mtype, add en entry to name_dict
+                    if mtype not in name_dict.keys() and len(name_dict) < n_mtypes_max:
+                        name_dict[mtype] = [prefix + m.find('name').text + ext]
+                    elif mtype in name_dict.keys():
+                        name_dict[mtype] += [prefix + m.find('name').text + ext]
 
-        name_dict['all_types'] = morph_paths
+                #collect all of the mtypes in a single dict entry
+                elif mtypes_sort == 'all' and len(name_dict['all_types']) < n_morphs_max:
+                    name_dict['all_types'] += prefix + mp
+                    name_dict['all_types'] += [prefix + m.find('name').text + ext]
+                
+                #use super_mtypes if precomputed
+                elif mtypes_sort == 'super_mtypes':
+                    super_mtypes_file = morph_path + '/super_mtypes.json'
+                    with open(super_mtypes_file, 'r') as f:
+                        super_mtypes_dict = json.load(f)
+                    super_mtype = super_mtypes_dict[mtype]
+
+                    if super_mtype not in name_dict.keys():
+                        name_dict[super_mtype] = [prefix + m.find('name').text + ext]
+                    elif super_mtype in name_dict.keys():
+                        name_dict[super_mtype] += [prefix + m.find('name').text + ext]
+        except Exception as e:
+            print('Failed to process', e)
 
     return name_dict
 
-def load_morphologies(morph_path, by_mtypes = True, n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix = ""):
+def load_morphologies(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix = ""):
     """ Load the morphologies from a directory, by mtypes or all at once """
 
-    name_dict = create_morphologies_dict(morph_path, by_mtypes = by_mtypes, n_morphs_max = n_morphs_max, n_mtypes_max = n_mtypes_max, xml_file = xml_file, ext = ext, prefix = prefix)
+    name_dict = create_morphologies_dict(morph_path, mtypes_sort = mtypes_sort, n_morphs_max = n_morphs_max, n_mtypes_max = n_mtypes_max, xml_file = xml_file, ext = ext, prefix = prefix)
 
     return load_morphologies_from_dict(morph_path, name_dict)
  
@@ -225,5 +235,6 @@ def set_bins(data, n_bins, n_min = 20):
         values, bins = np.histogram(data, bins = n_bins, range = (min_data, max_data) )
 
         values, bins = reduce_bounds(values, bins, data)
-    return bins
+
+    return bins, values
 

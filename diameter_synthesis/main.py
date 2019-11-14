@@ -39,7 +39,7 @@ def run_models(config_file):
 
     print('Loading morphologies...')
     #load all the morphologies 
-    morphologies = utils.load_morphologies(config['morph_path'], n_morphs_max = config['n_morphs_max'], by_mtypes = config['by_mtypes'], n_mtypes_max = config['n_mtypes_max'])
+    morphologies = utils.load_morphologies(config['morph_path'], n_morphs_max = config['n_morphs_max'], mtypes_sort = config['mtypes_sort'], n_mtypes_max = config['n_mtypes_max'])
 
     print('Extracting models parameters...')
     #compute the model
@@ -60,9 +60,7 @@ def run_diameters(config_file):
 
     print('Loading morphologies...')
     #load all the morphologies 
-    #morphologies = utils.load_morphologies(config['morph_path'], n_morphs_max = config['n_morphs_max'], by_mtypes = config['by_mtypes'], n_mtypes_max = config['n_mtypes_max'])
-
-    morphologies_dict = utils.create_morphologies_dict(config['morph_path'], n_morphs_max = config['n_morphs_max'], by_mtypes = config['by_mtypes'], n_mtypes_max = config['n_mtypes_max'])
+    morphologies_dict = utils.create_morphologies_dict(config['morph_path'], n_morphs_max = config['n_morphs_max'], mtypes_sort = config['mtypes_sort'], n_mtypes_max = config['n_mtypes_max'])
 
     print('Generate diameters...')
     with open(config['models_params_file'], 'r') as f:

@@ -3,6 +3,7 @@ import json
 from tqdm import tqdm
 
 import numpy as np
+from numpy.polynomial import polynomial as polynomial
 
 import neurom as nm
 from neurom.core import iter_sections
@@ -45,7 +46,7 @@ def evaluate_distribution(x, model, tpes = []):
 
         fits = []
         for tpe in tpes:
-            fits.append(exponnorm.pdf(x, np.poly1d(params['a'])(tpe), loc = np.poly1d(params['loc'])(tpe), scale = np.poly1d(params['scale'])(tpe)))
+            fits.append(exponnorm.pdf(x, polynomial.polyval(tpe, params['a']), loc = polynomial.polyval(tpe, params['loc']), scale = polynomial.polyval(tpe, params['scale'])))
 
         return fits
     else:
@@ -117,24 +118,24 @@ def sample_distribution(model, tpe = 0):
         if params['a'][0]<0:
             params['a'][0] = 1
 
-        a = np.poly1d(params['a'])(tpe)
-        loc = np.poly1d(params['loc'])(tpe)
+        a = polynomial.polyval(tpe, params['a'])
+        loc = polynomial.polyval(tpe, params['loc'])
 
         if params['scale'][0]<0:
             params['scale'][0] = 1
 
-        scale = np.poly1d(params['scale'])(tpe)
-        Min = np.poly1d(params['min'])(tpe)
-        Max = np.poly1d(params['max'])(tpe)
+        scale = polynomial.polyval(tpe, params['scale'])
+        Min = polynomial.polyval(tpe, params['min'])
+        Max = polynomial.polyval(tpe, params['max'])
 
         #hack to use the all data values if the fit failed
         if [*params.values()][0][0] == 0. or a < 0 or loc <0  or scale <0 or Min < 0 or Max<0:
 
-            a = np.poly1d(params_all['a'])(tpe)
-            loc = np.poly1d(params_all['loc'])(tpe)
-            scale = np.poly1d(params_all['scale'])(tpe)
-            Min = np.poly1d(params_all['min'])(tpe)
-            Max = np.poly1d(params_all['max'])(tpe)
+            a = polynomial.polyval(tpe, params_all['a'])
+            loc = polynomial.polyval(tpe, params_all['loc'])
+            scale = polynomial.polyval(tpe, params_all['scale'])
+            Min = polynomial.polyval(tpe, params_all['min'])
+            Max = polynomial.polyval(tpe, params_all['max'])
 
         try: 
             return truncate(lambda: exponnorm.rvs(a, loc, scale), Min, Max)
@@ -143,7 +144,7 @@ def sample_distribution(model, tpe = 0):
     else:
         raise Exception('Distribution not understood')
 
-def fit_distribution(data, distribution, floc = None, fa = None,  min_sample_num = 10, p = 5, n_bins = 15):
+def fit_distribution(data, distribution, floc = None, fa = None,  min_sample_num = 10, p = 5, n_bins = 10):
     """ generic function to fit a distribution with scipy """
 
     if len(data) > MIN_DATA_POINTS:
@@ -182,7 +183,7 @@ def fit_distribution(data, distribution, floc = None, fa = None,  min_sample_num
             values = np.asarray(data)[:, 0] #collect the data itself
 
             #set the bins for estimating parameters if we can otherwise use two bins to be able to fit later 
-            bins = utils.set_bins(tpes, n_bins, n_min = min_sample_num)
+            bins, num_values = utils.set_bins(tpes, n_bins, n_min = min_sample_num)
 
             params = {}
             for i in range(len(bins)-1):
@@ -195,8 +196,10 @@ def fit_distribution(data, distribution, floc = None, fa = None,  min_sample_num
                     else:
                         a, loc, scale = exponnorm.fit(values_tpe)
 
-                    params[(bins[i+1] + bins[i])/2.] = {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(values_tpe, p), ROUND), 'max': np.round(np.percentile(values_tpe, 100-p), ROUND)}
+                    params[(bins[i+1] + bins[i])/2.] = {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(values_tpe, p), ROUND), 'max': np.round(np.percentile(values_tpe, 100-p), ROUND), 'num_value': num_values[i]}
 
+                    #params['num_values'] = num_values #store the number of values for each bin, as weights for later fit
+            #print(params)
             return params
 
         else:
@@ -224,15 +227,16 @@ def update_params_fit_distribution(data, model, orders = {'a':1, 'loc':1, 'scale
         scales = np.array([v['scale'] for v in params_values])
         mins = np.array([v['min'] for v in params_values])
         maxs = np.array([v['max'] for v in params_values])
-        
+        w = np.array([v['num_value'] for v in params_values])
+
         #prevent large values of a from bad fits
         As[As>A_MAX] = A_MAX
-
-        z_As = np.polyfit(tpes_model, As, orders['a'])
-        z_locs = np.polyfit(tpes_model, locs, orders['loc'])
-        z_scales = np.polyfit(tpes_model, scales, orders['scale'])
-        z_mins = np.polyfit(tpes_model, mins, orders['min'])
-        z_maxs = np.polyfit(tpes_model, maxs, orders['max'])
+    
+        z_As = polynomial.polyfit(tpes_model, As, orders['a'], w = w)
+        z_locs = polynomial.polyfit(tpes_model, locs, orders['loc'], w = w)
+        z_scales = polynomial.polyfit(tpes_model, scales, orders['scale'], w = w)
+        z_mins = polynomial.polyfit(tpes_model, mins, orders['min'], w = w)
+        z_maxs = polynomial.polyfit(tpes_model, maxs, orders['max'], w = w)
         
         model['params'] = {'a': list(np.round(z_As, ROUND)), 
                         'loc': list(np.round(z_locs, ROUND)),

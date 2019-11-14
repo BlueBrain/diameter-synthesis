@@ -42,7 +42,7 @@ def build_diameters(models, models_params, morphologies_dict, neurite_types, new
         for mtype in morphologies_dict:
             for neuron in morphologies_dict[mtype]:
                 name, ext = os.path.splitext(neuron)
-                if ext in {'.h5', '.asc', '.swc'}:
+                if ext in {'.h5', '.asc', '.swc'} and os.path.exists(morph_path + '/' + neuron):
                     neurons.append([neuron, mtype])
         
         #set all parameters
@@ -80,16 +80,18 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
 
         for neurite in neurites: 
 
-            max_bo = np.max(nm.get('section_term_branch_orders', neurite)) 
-            if max_bo > extra_params['max_bo_fit']: #too few such branches, so we stick to the same parameters
-                max_bo = extra_params['max_bo_fit']
+            #max_bo = np.max(nm.get('section_term_branch_orders', neurite)) 
+            #if max_bo > extra_params['max_bo_fit']: #too few such branches, so we stick to the same parameters
+            #    max_bo = extra_params['max_bo_fit']
+
+            max_path_dist = np.max(nm.get('section_path_distances', neurite))
 
             wrong_tips = True
             n_tries = 0
             trunk_diam_frac = 1.
             k = 1
             while wrong_tips:
-                wrong_tips = diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac)
+                wrong_tips = diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_frac)
                 n_tries += 1
 
                 if n_tries > 10*k: #if we keep failing, slighly reduce the trunk diams
@@ -100,10 +102,10 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
                     print('max tries attained with', neurite_type)
                     wrong_tips = False
 
-def diametrize_tree(neurite, params, neurite_type, max_bo, trunk_diam_frac = 1.):
+def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_frac = 1.):
         """ diametrize a single tree """
 
-        trunk_diam = 0.7*trunk_diam_frac*sample_distribution(params['trunk_diameter'][neurite_type], max_bo)
+        trunk_diam = trunk_diam_frac*sample_distribution(params['trunk_diameter'][neurite_type], max_path_dist)
 
         wrong_tips = False
 
