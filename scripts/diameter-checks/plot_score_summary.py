@@ -22,7 +22,7 @@ CLIP_LIMIT = 10
 def plot_scores_summary(plot_dir):
 
     csv_path = 'output/scores.csv'
-    pdf_path = os.path.join(plot_dir, 'scores_test_super_mtype.pdf')
+    pdf_path = os.path.join(plot_dir, 'scores_test_mtype.pdf')
     print('Plotting scores to %s' % pdf_path)
 
     scores = pd.read_csv(csv_path)

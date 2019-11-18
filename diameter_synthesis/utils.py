@@ -11,6 +11,9 @@ from neurom.core import iter_sections
 from neurom import NeuriteType
 from morphio import SectionType
 
+import logging 
+L = logging.getLogger(__name__)
+
 STR_TO_TYPES = {'apical': SectionType.apical_dendrite,
                 'basal': SectionType.basal_dendrite,
                 'axon': SectionType.axon}
@@ -41,6 +44,21 @@ FORBIDDEN_MTYPES = ['L4_NGC', 'L4_CHC', 'L6_CHC', 'L6_DBC', ]
 ## loading/saving functions ##
 ##############################
 
+def load_morphologies_from_folder(morph_path):
+    """ Load the morphologies from a list of files in a folder """
+
+
+    morphologies = {}
+    morphologies['generic_type'] = []
+    for fname in tqdm(os.listdir(morph_path)):
+        filepath = os.path.join(morph_path, fname)
+        if fname.endswith(('.h5', '.asc', '.swc')) and os.path.exists(filepath):
+            neuron = nm.load_neuron(filepath)
+            morphologies['generic_type'].append([neuron, os.path.splitext(fname)[0]])
+
+    return morphologies 
+
+
 def load_morphologies_from_dict(morph_path, name_dict):
     """ Load the morphologies from a list of files """
 
@@ -50,14 +68,14 @@ def load_morphologies_from_dict(morph_path, name_dict):
     for mtype in tqdm(name_dict, disable = tqdm_1):
         morphologies[mtype] = []
         for fname in tqdm(name_dict[mtype], disable = tqdm_2):
-            name, ext = os.path.splitext(fname)
-            if ext in {'.h5', '.asc', '.swc'} and os.path.exists(morph_path + '/' + fname):
-                neuron = nm.load_neuron(morph_path + '/' + fname)
-                morphologies[mtype].append([neuron, name])
+            filepath = os.path.join(morph_path, fname)
+            if fname.endswith(('.h5', '.asc', '.swc')) and os.path.exists(filepath):
+                neuron = nm.load_neuron(filepath)
+                morphologies[mtype].append([neuron, os.path.splitext(fname)[0]])
 
     return morphologies 
 
-def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix = "", super_mtypes_path='../scripts/diameter_types/'):
+def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mtypes_max = None, xml_file = 'neuronDB.xml', ext = '.asc', prefix = "", super_mtypes_path='../scripts/diameter_types/'):
     """ Create dict to load the morphologies from a directory, by mtypes or all at once """
 
     #first load the neuronDB.xml file 
@@ -65,7 +83,6 @@ def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = Non
     FileDB = ET.parse(morph_path + xml_file)
     root = FileDB.findall('listing')[0]
     morphs = root.findall('morphology')
- 
 
     #if not max number of mtypes, take all
     if not n_mtypes_max:
@@ -76,51 +93,59 @@ def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = Non
     name_dict = {}
     if mtypes_sort == 'all':
         name_dict['all_types'] = []
+    
+    if len(morphs)>0:
+        for m in morphs:
+            try:
+                # Define mtypes
+                mtype = m.find('mtype').text
+                # Define subtypes (if they exist)
+                if m.find('msubtype').text:
+                    mtype = mtype + ':' + m.find('msubtype').text
 
-    for m in morphs:
-        try:
-            # Define mtypes
-            mtype = m.find('mtype').text
-            # Define subtypes (if they exist)
-            if m.find('msubtype').text:
-                mtype = mtype + ':' + m.find('msubtype').text
+                if mtype not in FORBIDDEN_MTYPES: #hack to not consider some bad mtypes
 
-            if mtype not in FORBIDDEN_MTYPES: #hack to not consider some bad mtypes
+                    #load morphologies by mtypes, one list of morphologies for each type
+                    if mtypes_sort == 'mtypes':
+                        #if it is a new mtype, add en entry to name_dict
+                        if mtype not in name_dict and len(name_dict) < n_mtypes_max:
+                            name_dict[mtype] = [prefix + m.find('name').text + ext]
+                        elif mtype in name_dict:
+                            name_dict[mtype] += [prefix + m.find('name').text + ext]
 
-                #load morphologies by mtypes, one list of morphologies for each type
-                if mtypes_sort == 'mtypes':
-                    #if it is a new mtype, add en entry to name_dict
-                    if mtype not in name_dict.keys() and len(name_dict) < n_mtypes_max:
-                        name_dict[mtype] = [prefix + m.find('name').text + ext]
-                    elif mtype in name_dict.keys():
-                        name_dict[mtype] += [prefix + m.find('name').text + ext]
+                    #collect all of the mtypes in a single dict entry
+                    elif mtypes_sort == 'all' and len(name_dict['all_types']) < n_morphs_max:
+                        name_dict['all_types'] += [prefix + m.find('name').text + ext]
+                    
+                    #use super_mtypes if precomputed
+                    elif mtypes_sort == 'super_mtypes':
+                        super_mtypes_file = super_mtypes_path + 'super_mtypes.json'
+                        with open(super_mtypes_file, 'r') as f:
+                            super_mtypes_dict = json.load(f)
+                        super_mtype = super_mtypes_dict[mtype]
 
-                #collect all of the mtypes in a single dict entry
-                elif mtypes_sort == 'all' and len(name_dict['all_types']) < n_morphs_max:
-                    name_dict['all_types'] += [prefix + m.find('name').text + ext]
-                
-                #use super_mtypes if precomputed
-                elif mtypes_sort == 'super_mtypes':
-                    super_mtypes_file = super_mtypes_path + 'super_mtypes.json'
-                    with open(super_mtypes_file, 'r') as f:
-                        super_mtypes_dict = json.load(f)
-                    super_mtype = super_mtypes_dict[mtype]
-
-                    if super_mtype not in name_dict.keys():
-                        name_dict[super_mtype] = [prefix + m.find('name').text + ext]
-                    elif super_mtype in name_dict.keys():
-                        name_dict[super_mtype] += [prefix + m.find('name').text + ext]
-        except Exception as e:
-            print('Failed to process', e)
+                        if super_mtype not in name_dict:
+                            name_dict[super_mtype] = [prefix + m.find('name').text + ext]
+                        elif super_mtype in name_dict:
+                            name_dict[super_mtype] += [prefix + m.find('name').text + ext]
+            except Exception as e:
+                print('Failed to process', e)
 
     return name_dict
 
 def load_morphologies(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix = ""):
     """ Load the morphologies from a directory, by mtypes or all at once """
 
-    name_dict = create_morphologies_dict(morph_path, mtypes_sort = mtypes_sort, n_morphs_max = n_morphs_max, n_mtypes_max = n_mtypes_max, xml_file = xml_file, ext = ext, prefix = prefix)
+    # try to load the file, if there is no file, set a constant mtype
+    try: 
+        name_dict = create_morphologies_dict(morph_path, mtypes_sort = mtypes_sort, n_morphs_max = n_morphs_max, n_mtypes_max = n_mtypes_max, xml_file = xml_file, ext = ext, prefix = prefix)
+        return load_morphologies_from_dict(morph_path, name_dict)
+    except:
+        L.warning('No neuronDB.xml file found, use same mtype for all')
+        return load_morphologies_from_folder(morph_path)
 
-    return load_morphologies_from_dict(morph_path, name_dict)
+
+
  
 def save_neuron(neuron, model, folder):
         """ save the neuron morphology for later analysis """

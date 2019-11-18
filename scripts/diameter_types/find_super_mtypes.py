@@ -88,13 +88,17 @@ if __name__ == '__main__':
     #for i, val1 in enumerate(areas.values()):
     for i, mtype in enumerate(areas):
         val1 = areas[mtype]
+        val1 = np.array(val1)[np.array(dists[mtype])<100]
 
         plt.figure()
         plt.hist(val1, range = (0,10**2.5), density=True, bins = 50) 
         plt.savefig('distributions/dist_'+mtype+'.png')
         plt.close()
-        for j, val2 in enumerate(areas.values()):
+
+        for j, mtype2 in enumerate(areas):
             #diam_distances[i,j] = st.wasserstein_distance(val1, val2) 
+            val2 = areas[mtype2]
+            val2 = np.array(val2)[np.array(dists[mtype2])<100]
             area_distances[i,j] = st.energy_distance(val1, val2) 
 
     import scipy.cluster.hierarchy as hierarchy
@@ -138,7 +142,7 @@ if __name__ == '__main__':
     G = nx.Graph(A)
 
     from RMST import RMST
-    G = RMST(G, gamma = 0.8, n_cpu = 1)
+    G = RMST(G, gamma = 0.5, n_cpu = 1)
 
     A = nx.to_numpy_matrix(G)
     plt.figure()
@@ -146,7 +150,7 @@ if __name__ == '__main__':
     plt.colorbar()
     plt.savefig('A.png')
 
-    louvain_runs = 500
+    louvain_runs = 100
     precision = 1e-8
 
     #continuous_combinatorial
@@ -157,10 +161,10 @@ if __name__ == '__main__':
     stability.n_processes_louv = 5
     stability.n_processes_mi = 5
 
-    stability.post_process = False #apply the postprocessing
-
     #scan over a time interval
-    times = np.logspace(-1.3, -0.9, 200)
+    times = np.logspace(-1.0, 0.5, 100)
+
+    stability.post_process = False #apply the postprocessing
     stability.n_neigh = len(times) #but here, this is supposed to only look for a few neighbour times for the postprocess
 
     stability.scan_stability(times, disp=False)
@@ -169,7 +173,7 @@ if __name__ == '__main__':
 
     plt.savefig('louv_clust.png',bbox_inches='tight')
 
-    stability.run_single_stability(time = 10**(-1.2) )
+    stability.run_single_stability(time = 10**(-0.2) )
     stability.print_single_result(1, 1)
    
     comm_id = np.array(stability.single_stability_result['community_id'])
