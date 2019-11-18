@@ -138,7 +138,7 @@ def plot_morphometrics(morphologies, morphologies_new, neurite_types, folder='fi
             plt.contour(counts.transpose(), extent=[xbins[0],xbins[-1],ybins[0],ybins[-1]],
                 linewidths=1, cmap = plt.cm.rainbow, levels = [0.01, 0.1, 0.3])
 
-            plt.colorbar(label='sampled areas')
+            #plt.colorbar(label='sampled areas')
 
             plt.scatter(dists_tot, np.log10(areas_tot), s=0.1, color='k', label='original surface areas')
 
@@ -150,7 +150,7 @@ def plot_morphometrics(morphologies, morphologies_new, neurite_types, folder='fi
 
             #plot the energy distances between bins of distributions
             plt.twinx()
-            bins, vals = utils.set_bins(dists_tot, 10, n_min = 10)
+            bins, vals = utils.set_bins(dists_tot, 10, n_min = 5)
             dists = []
             bins_plot = []
             for i in range(len(bins)-1):
@@ -162,7 +162,11 @@ def plot_morphometrics(morphologies, morphologies_new, neurite_types, folder='fi
 
             plt.title('Median energy distance = '+ str(np.round(np.median(dists),3)))
             plt.plot(bins_plot, dists, '-o', c='C0')
-            plt.gca().set_ylim(0,np.max(dists))
+            try:
+                plt.gca().set_ylim(0,np.max(dists))
+            except:
+                print(dists)
+
             plt.ylabel('Energy distance between sampled and biological')
             plt.savefig(folder+'/path_areas/path_areas_'+morph+'.png', bbox_inches='tight')
             plt.close()
