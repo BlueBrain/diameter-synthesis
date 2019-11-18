@@ -5,6 +5,7 @@ import matplotlib
 matplotlib.use('Agg')
 import pylab as plt
 import numpy as np
+import scipy.stats as st
 
 #diable warnings
 import morphio
@@ -129,6 +130,7 @@ def plot_morphometrics(morphologies, morphologies_new, neurite_types, folder='fi
             plt.close()
 
 
+
             plt.figure(figsize=(5,4))
 
             counts, xbins, ybins = np.histogram2d(dists_tot_new, np.log10(areas_tot_new), bins = 30)
@@ -144,8 +146,27 @@ def plot_morphometrics(morphologies, morphologies_new, neurite_types, folder='fi
             plt.xlabel('path distance')
             plt.ylabel('log10(section mean surface area)')
             plt.legend()
+
+
+            #plot the energy distances between bins of distributions
+            plt.twinx()
+            bins, vals = utils.set_bins(dists_tot, 10, n_min = 10)
+            dists = []
+            bins_plot = []
+            for i in range(len(bins)-1):
+                areas_tot_bin =  np.array(areas_tot)[(dists_tot < bins[i+1]) & (dists_tot >= bins[i])]
+                areas_tot_new_bin = np.array(areas_tot_new)[(dists_tot_new < bins[i+1]) & (dists_tot_new >= bins[i])]
+                if len(areas_tot_bin)>0 and len(areas_tot_new_bin)>0:
+                    dists.append(st.energy_distance(areas_tot_bin, areas_tot_new_bin) )
+                    bins_plot.append(0.5*(bins[i+1]+bins[i]))
+
+            plt.title('Median energy distance = '+ str(np.round(np.median(dists),3)))
+            plt.plot(bins_plot, dists, '-o', c='C0')
+            plt.gca().set_ylim(0,np.max(dists))
+            plt.ylabel('Energy distance between sampled and biological')
             plt.savefig(folder+'/path_areas/path_areas_'+morph+'.png', bbox_inches='tight')
             plt.close()
+
 
 
             plt.figure(figsize=(5,4))

@@ -31,7 +31,7 @@ STR_TO_NEUROM_TYPES = {'apical': NeuriteType.apical_dendrite,
                        'soma': NeuriteType.soma,
                        'axon': NeuriteType.axon}
 
-ROUND = 3 #number of digits for the fitted parameters
+ROUND = 4 #number of digits for the fitted parameters
 MIN_DATA_POINTS = 20 #minimum number of points to fit a distribution
 A_MAX = 4 #maximum value for the a (shape) parameter of fits (can get really large when low number of points)
 
@@ -57,7 +57,7 @@ def load_morphologies_from_dict(morph_path, name_dict):
 
     return morphologies 
 
-def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix = ""):
+def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix = "", super_mtypes_path='../scripts/diameter_types/'):
     """ Create dict to load the morphologies from a directory, by mtypes or all at once """
 
     #first load the neuronDB.xml file 
@@ -97,12 +97,11 @@ def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = Non
 
                 #collect all of the mtypes in a single dict entry
                 elif mtypes_sort == 'all' and len(name_dict['all_types']) < n_morphs_max:
-                    name_dict['all_types'] += prefix + mp
                     name_dict['all_types'] += [prefix + m.find('name').text + ext]
                 
                 #use super_mtypes if precomputed
                 elif mtypes_sort == 'super_mtypes':
-                    super_mtypes_file = morph_path + '/super_mtypes.json'
+                    super_mtypes_file = super_mtypes_path + 'super_mtypes.json'
                     with open(super_mtypes_file, 'r') as f:
                         super_mtypes_dict = json.load(f)
                     super_mtype = super_mtypes_dict[mtype]
@@ -127,7 +126,7 @@ def save_neuron(neuron, model, folder):
         """ save the neuron morphology for later analysis """
 
         if not os.path.isdir(folder):
-                os.mkdir(folder)
+            os.mkdir(folder)
 
         neuron[0].write(folder + '/' + model + '_' + neuron[1] + '.asc')
   
@@ -227,8 +226,8 @@ def set_bins(data, n_bins, n_min = 20):
     #find new bounds
     values, bins = reduce_bounds(values, bins, data)
 
-    #if bins have zero elements, reduce the number of bins and readjust bounds
-    while len(values[values==0])>0 and n_bins>2:
+    #if bins have to few elements, reduce the number of bins and readjust bounds
+    while len(values[values<n_min])>0 and n_bins>2:
         n_bins -= 1
         max_data = np.max(data)
         min_data = np.min(data)

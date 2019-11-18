@@ -1,34 +1,34 @@
 {
     "extra_params": {
         "M0": {
-            "seed": 1
+            "seed": 0
         },
         "M1": {
-            "seed": 2
+            "seed": 1
         },
         "M2": {
-            "seed": 3
+            "seed": 2
         },
         "M3": {
-            "seed": 4
+            "seed": 3
         },
         "M4": {
-            "seed": 5
+            "seed": 4
         },
         "M5": {
-            "seed": 6
+            "seed": 5
         },
         "M6": {
-            "seed": 7
+            "seed": 6
         },
         "M7": {
-            "seed": 8
+            "seed": 7
         },
         "M8": {
-            "seed": 9
+            "seed": 8
         },
         "M9": {
-            "seed": 10
+            "seed": 9
         }
     },
     "models": [
@@ -43,15 +43,15 @@
         "M8",
         "M9"
     ],
-    "models_params_file": "model_params_super_basal.json",
-    "morph_path": "../scripts/extract_morphologies/selected_morphologies/",
-    "mtypes_sort": "super_mtypes",
+    "models_params_file": "model_params_mtypes.json",
+    "morph_path": "05_RepairUnravel-asc/",
+    "mtypes_sort": "mtypes",
     "n_cpu": 10,
     "n_morphs_max": null,
     "n_mtypes_max": 60,
     "neurite_types": [
         "basal"
     ],
-    "new_morph_path": "../scripts/diameter-checks/new_morphologies_super_basal/",
+    "new_morph_path": "../scripts/extract_morphometrics/new_morphologies_mtypes/",
     "plot": false
 }

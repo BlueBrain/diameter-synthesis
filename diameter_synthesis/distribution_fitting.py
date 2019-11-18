@@ -76,6 +76,7 @@ def sample_distribution(model, tpe = 0):
         return truncate(lambda: exponnorm.rvs(params['a'], params['loc'], params['scale']), params['min'], params['max'])
 
 
+
     elif model['distribution'] == 'gamma':
         from scipy.stats import gamma
 
@@ -88,30 +89,8 @@ def sample_distribution(model, tpe = 0):
 
     elif model['distribution'] == 'exponnorm_sequence':
         from scipy.stats import exponnorm
-
-        params_all =  {                                                                          
-                   "a": [
-                            0.086, 
-                            2.921
-                        ], 
-                        "loc": [
-                            0.0, 
-                            0.0
-                        ], 
-                        "max": [
-                            0.45, 
-                            2.068
-                        ], 
-                        "min": [
-                            0.1, 
-                            0.457
-                        ], 
-                        "scale": [
-                            0.055, 
-                            0.355
-                        ]
-                    }
- 
+        
+       
         if tpe == 0:
             tpe = 1
 
@@ -128,8 +107,15 @@ def sample_distribution(model, tpe = 0):
         Min = polynomial.polyval(tpe, params['min'])
         Max = polynomial.polyval(tpe, params['max'])
 
-        #hack to use the all data values if the fit failed
+        #hack to use the all data values if the fit failed (only basal)
         if [*params.values()][0][0] == 0. or a < 0 or loc <0  or scale <0 or Min < 0 or Max<0:
+            try:
+                with open('./model_params_all.json', 'r') as f:
+                    params_all = json.load(f)
+                params_all = params_all['all_types']['M0']['trunk_diameter']['basal']['params']
+            except Exception as e:
+                print(e)
+                raise Exception('Could not load params_all.json, please create it or have more cells in each class.')
 
             a = polynomial.polyval(tpe, params_all['a'])
             loc = polynomial.polyval(tpe, params_all['loc'])
@@ -159,11 +145,19 @@ def fit_distribution(data, distribution, floc = None, fa = None,  min_sample_num
             from scipy.stats import exponnorm
             a, loc, scale = exponnorm.fit(data) 
 
+            #refit if we get crazy values for a
+            if a > utils.A_MAX:
+                a, loc, scale = exponnorm.fit(data, f0 = A_MAX) 
+
             return {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': np.round(np.percentile(data, 100-p), ROUND)}
 
         elif distribution == 'skewnorm':
             from scipy.stats import skewnorm 
             a, loc, scale = skewnorm.fit(data) 
+
+            #refit if we get crazy values for a
+            if a > utils.A_MAX:
+                a, loc, scale = skewnorm.fit(data, f0 = A_MAX) 
 
             return {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': np.round(np.percentile(data, 100-p), ROUND)}
 
@@ -171,8 +165,14 @@ def fit_distribution(data, distribution, floc = None, fa = None,  min_sample_num
             from scipy.stats import gamma
             if floc is not None:
                 a, loc, scale = gamma.fit(data, floc = floc) 
+                #refit if we get crazy values for a
+                if a > utils.A_MAX:
+                    a, loc, scale = gamma.fit(data, floc = floc, f0 = A_MAX) 
             else:
                 a, loc, scale = gamma.fit(data)
+                #refit if we get crazy values for a
+                if a > utils.A_MAX:
+                    a, loc, scale = gamma.fit(data, f0 = A_MAX) 
 
             return {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': np.round(np.percentile(data, 100-p), ROUND)}
 
@@ -191,15 +191,23 @@ def fit_distribution(data, distribution, floc = None, fa = None,  min_sample_num
                 if len(values_tpe)>0:
                     if floc is not None:
                         a, loc, scale = exponnorm.fit(values_tpe, floc = floc) 
+                        #refit if we get crazy values for a
+                        if a > utils.A_MAX:
+                            a, loc, scale = exponnorm.fit(values_tpe, floc = floc, f0 = A_MAX) 
                     elif fa is not None:
                         a, loc, scale = exponnorm.fit(values_tpe, f0 = fa) 
+
                     else:
                         a, loc, scale = exponnorm.fit(values_tpe)
+                        #refit if we get crazy values for a
+                        if a > utils.A_MAX:
+                            a, loc, scale = exponnorm.fit(values_tpe, f0 = A_MAX) 
 
                     params[(bins[i+1] + bins[i])/2.] = {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(values_tpe, p), ROUND), 'max': np.round(np.percentile(values_tpe, 100-p), ROUND), 'num_value': num_values[i]}
 
-                    #params['num_values'] = num_values #store the number of values for each bin, as weights for later fit
-            #print(params)
+                else:
+                    print("WARNING: could not fit anything, because of a lack of data points!")
+
             return params
 
         else:

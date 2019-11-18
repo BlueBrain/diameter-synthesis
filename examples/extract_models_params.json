@@ -27,7 +27,7 @@
             "terminal_threshold": 1.0,
             "trunk_floc": null,
             "trunk_min_sample_num": {
-                "apical": 5,
+                "apical": 10,
                 "basal": 10
             }
         },
@@ -42,7 +42,7 @@
             "terminal_threshold": 1.0,
             "trunk_floc": null,
             "trunk_min_sample_num": {
-                "apical": 5,
+                "apical": 10,
                 "basal": 10
             }
         },
@@ -57,7 +57,7 @@
             "terminal_threshold": 1.0,
             "trunk_floc": null,
             "trunk_min_sample_num": {
-                "apical": 5,
+                "apical": 10,
                 "basal": 10
             }
         },
@@ -72,7 +72,7 @@
             "terminal_threshold": 1.0,
             "trunk_floc": null,
             "trunk_min_sample_num": {
-                "apical": 5,
+                "apical": 10,
                 "basal": 10
             }
         },
@@ -87,7 +87,7 @@
             "terminal_threshold": 1.0,
             "trunk_floc": null,
             "trunk_min_sample_num": {
-                "apical": 5,
+                "apical": 10,
                 "basal": 10
             }
         },
@@ -102,7 +102,7 @@
             "terminal_threshold": 1.0,
             "trunk_floc": null,
             "trunk_min_sample_num": {
-                "apical": 5,
+                "apical": 10,
                 "basal": 10
             }
         },
@@ -117,7 +117,7 @@
             "terminal_threshold": 1.0,
             "trunk_floc": null,
             "trunk_min_sample_num": {
-                "apical": 5,
+                "apical": 10,
                 "basal": 10
             }
         },
@@ -132,7 +132,7 @@
             "terminal_threshold": 1.0,
             "trunk_floc": null,
             "trunk_min_sample_num": {
-                "apical": 5,
+                "apical": 10,
                 "basal": 10
             }
         },
@@ -147,12 +147,12 @@
             "terminal_threshold": 1.0,
             "trunk_floc": null,
             "trunk_min_sample_num": {
-                "apical": 5,
+                "apical": 10,
                 "basal": 10
             }
         }
     },
-    "fig_folder": "figures_basal_super",
+    "fig_folder": "figures_mtypes",
     "models": [
         "M0",
         "M1",
@@ -165,13 +165,13 @@
         "M8",
         "M9"
     ],
-    "models_params_file": "model_params_super_basal.json",
+    "models_params_file": "model_params_mtypes.json",
     "morph_path": "05_RepairUnravel-asc/",
-    "mtypes_sort": "super_mtypes",
+    "mtypes_sort": "mtypes",
     "n_morphs_max": null,
     "n_mtypes_max": 60,
     "neurite_types": [
         "basal"
     ],
-    "plot": true
+    "plot": false
 }

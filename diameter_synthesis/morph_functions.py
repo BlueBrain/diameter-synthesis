@@ -3,6 +3,7 @@ import json
 from tqdm import tqdm
 
 import numpy as np
+from numpy.polynomial import polynomial as polynomial
 
 import neurom as nm
 from neurom.core import iter_sections
@@ -121,7 +122,8 @@ def taper(neurite, min_num_points = 20, fit_order = 1, j=0):
 
         #do a linear fit if more than 5 points
         if len(lengths) > min_num_points:
-            z = np.polyfit(lengths, get_diameters(section), fit_order, full=True)
+            z = polynomial.polyfit(lengths, get_diameters(section), fit_order, full=True)
+
             """
             plt.figure()
             plt.plot(lengths, get_diameters(section),'+')
@@ -130,12 +132,15 @@ def taper(neurite, min_num_points = 20, fit_order = 1, j=0):
             plt.savefig('taper/fig_'+str(i)+'.png')
             plt.close()
             """
-            tap = z[0][0]
+
+            tap = z[0][-1]
+
             #print(z)
             #if tap < 0.010 and tap > -0.01 and abs(tap)>1e-8:
-            if z[1][0]<100 and abs(tap)>1e-8:# and tap < 0.0000 and tap > -0.005:
+            if z[1][0]<10 and abs(tap)>1e-8 and -tap < 0.005 and -tap > -0.0025:
                 tapers.append(-tap)
                 sec_id.append(i)
+
     """ 
     bos = np.array(nm.get('section_branch_orders', neurite))[sec_id]
     lens =np.array(nm.get('section_lengths', neurite))[sec_id]
@@ -149,6 +154,6 @@ def taper(neurite, min_num_points = 20, fit_order = 1, j=0):
     """ 
     
     #bos = np.array(nm.get('section_path_distances', neurite))[sec_id]
-
     #return [ [tap, bo ] for tap, bo in zip(tapers, bos)  ]
+
     return  tapers

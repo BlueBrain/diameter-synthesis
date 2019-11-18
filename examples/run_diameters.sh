@@ -15,5 +15,7 @@ export OMP_NUM_THREADS=1
 
 python create_jsons.py
 
+#python -m cProfile -o profile_diameter diameter_run.py
+
 diameter-synthesis run_diameters generate_diameters_params.json
 

@@ -13,5 +13,7 @@ export OMP_NUM_THREADS=1
 
 python create_jsons.py
 
+#python -m cProfile -o profile_model model_run.py
+
 diameter-synthesis run_models extract_models_params.json
 

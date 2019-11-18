@@ -95,17 +95,31 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
                 n_tries += 1
 
                 if n_tries > 10*k: #if we keep failing, slighly reduce the trunk diams
-                    trunk_diam_frac -= 0.01
+                    trunk_diam_frac -= 0.1
                     k+=1
 
-                if n_tries > 900: #don't try to much, and complain
+                if n_tries > 90: #don't try to much, and complain
                     print('max tries attained with', neurite_type)
                     wrong_tips = False
+
+def replace_params(param_type, param_all_name='./model_params_all.json', model='M0'): 
+    """replace the param file with the all neuron fit"""
+
+    with open(param_all_name, 'r') as f:
+        params_all = json.load(f)
+
+    return params_all['all_types'][model][param_type]
+
 
 def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_frac = 1.):
         """ diametrize a single tree """
 
-        trunk_diam = trunk_diam_frac*sample_distribution(params['trunk_diameter'][neurite_type], max_path_dist)
+        if params['trunk_diameter'][neurite_type]['params']['a'][0] == 0:
+            params_tmp = replace_params('trunk_diameter')[neurite_type]
+        else:
+            params_tmp = params['trunk_diameter'][neurite_type]
+
+        trunk_diam = trunk_diam_frac*sample_distribution(params_tmp, max_path_dist)
 
         wrong_tips = False
 
@@ -122,10 +136,22 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
                     init_diam = get_diameters(section)[0]
                 
                 #sample a terminal diameter
-                terminal_diam = sample_distribution(params['terminal_diameter'][neurite_type])
+                if params['terminal_diameter'][neurite_type]['params']['a'] == 0:
+                    params_tmp = replace_params('terminal_diameter')[neurite_type]
+                else:
+                    params_tmp = params['terminal_diameter'][neurite_type]
+
+                min_diam = params_tmp['params']['min']
+                max_diam = params_tmp['params']['max']
+                terminal_diam = sample_distribution(params_tmp)
                 
                 #diametrize a section
-                taper = -sample_distribution(params['taper'][neurite_type])
+                if params['taper'][neurite_type]['params']['a'] == 0:
+                    params_tmp = replace_params('taper')[neurite_type]
+                else:
+                    params_tmp = params['taper'][neurite_type]
+
+                taper = -abs(sample_distribution(params_tmp)) #prevent positive tapers
                 diametrize_section(section, init_diam, taper=taper,
                                              min_diam = terminal_diam, max_diam = trunk_diam)
 
@@ -137,8 +163,18 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
                     
                     reduc = 2. 
                     while reduc > 1.: #try until we get a reduction of diameter in the branching
-                        sibling_ratio = sample_distribution(params['sibling_ratio'][neurite_type])
-                        Rall_deviation = sample_distribution(params['Rall_deviation'][neurite_type])
+                        if params['sibling_ratio'][neurite_type]['params']['scale'] == 0.0:
+                            params_tmp = replace_params('sibling_ratio')[neurite_type]
+                        else:
+                            params_tmp = params['sibling_ratio'][neurite_type]
+                        sibling_ratio = sample_distribution(params_tmp)
+
+                        if params['Rall_deviation'][neurite_type]['params']['a'] == 0:
+                            params_tmp = replace_params('Rall_deviation')[neurite_type]
+                        else:
+                            params_tmp = params['Rall_deviation'][neurite_type]
+
+                        Rall_deviation = sample_distribution(params_tmp)
                         reduc = morph_funcs.Rall_reduction_factor(Rall_deviation = Rall_deviation, siblings_ratio = sibling_ratio)
 
                     d0 = get_diameters(section)[-1]
@@ -165,7 +201,7 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
 
                 #if we are at a tip, check tip diameters and stop
                 else:
-                    if get_diameters(section)[-1] < params['terminal_diameter'][neurite_type]['params']['min'] or get_diameters(section)[-1]  > params['terminal_diameter'][neurite_type]['params']['max']:
+                    if get_diameters(section)[-1] < min_diam or get_diameters(section)[-1]  > max_diam:
                         wrong_tips = True
 
         return wrong_tips
