@@ -203,7 +203,7 @@ def fit_distribution(data, distribution, floc = None, fa = None,  min_sample_num
                         if a > utils.A_MAX:
                             a, loc, scale = exponnorm.fit(values_tpe, f0 = A_MAX) 
 
-                    params[(bins[i+1] + bins[i])/2.] = {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(values_tpe, p), ROUND), 'max': np.round(np.percentile(values_tpe, 100-p), ROUND), 'num_value': num_values[i]}
+                    params[np.round((bins[i+1] + bins[i])/2., ROUND)] = {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(values_tpe, p), ROUND), 'max': np.round(np.percentile(values_tpe, 100-p), ROUND), 'num_value': num_values[i]}
 
                 else:
                     print("WARNING: could not fit anything, because of a lack of data points!")
@@ -215,7 +215,7 @@ def fit_distribution(data, distribution, floc = None, fa = None,  min_sample_num
     else:
         # if no data, return null parameters (for neurons without apical dentrites)
         if distribution == 'exponnorm_sequence':
-            return {0. : {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1 }}
+            return {0. : {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1 , 'num_value': 0}}
         else:
             return {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1 }
 

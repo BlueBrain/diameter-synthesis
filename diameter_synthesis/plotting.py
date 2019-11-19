@@ -16,7 +16,7 @@ import diameter_synthesis.utils as utils
 ## plotting functions ##
 ########################
 
-colors = {'basal': 'b', 'apical': 'r'}
+colors = {'basal': 'r', 'apical': 'm', 'axon': 'b'}
 
 def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = '.png'):
     """ plot the fit of the parameter of the distributions """

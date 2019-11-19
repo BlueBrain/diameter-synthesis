@@ -43,15 +43,15 @@
         "M8",
         "M9"
     ],
-    "models_params_file": "model_params_mtypes.json",
-    "morph_path": "05_RepairUnravel-asc/",
-    "mtypes_sort": "mtypes",
+    "models_params_file": "model_params_super_mtypes.json",
+    "morph_path": "../scripts/extract_morphologies/selected_morphologies/",
+    "mtypes_sort": "super_mtypes",
     "n_cpu": 10,
     "n_morphs_max": null,
     "n_mtypes_max": 60,
     "neurite_types": [
         "basal"
     ],
-    "new_morph_path": "../scripts/extract_morphometrics/new_morphologies_mtypes/",
-    "plot": false
+    "new_morph_path": "../scripts/diameter-checks/new_morphologies_super_mtypes/",
+    "plot": true
 }

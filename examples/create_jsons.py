@@ -5,14 +5,14 @@ np.random.seed(1)
 extract_models_params = {
     'morph_path': '05_RepairUnravel-asc/', 
     #'morph_path': '/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/', 
-    'mtypes_sort': 'mtypes', 
+    'mtypes_sort': 'super_mtypes', 
     'n_morphs_max': None, 
     'n_mtypes_max': 60,
     'models': ['M0', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9'],
     'neurite_types': ['basal'],
-    'models_params_file': 'model_params_mtypes.json',
-    'plot': False,
-    'fig_folder': 'figures_mtypes', 
+    'models_params_file': 'model_params_super_mtypes.json',
+    'plot': True,
+    'fig_folder': 'figures_all', 
     'ext': '.png',
     'extra_params': {}
 
@@ -23,7 +23,8 @@ for model in extract_models_params['models']:
                 'terminal_threshold': 1., 
                 'trunk_min_sample_num': {'basal': 10, 'apical': 10},
                 'trunk_floc': None, 
-                'orders': {'a': 1, 'loc':1, 'scale':1, 'min':1, 'max':1}
+                'orders': {'a': 1, 'loc':1, 'scale':1, 'min':1, 'max':1},
+                'taper': {'max_residual': 10, 'zeros':1e-8, 'max': 0.005, 'min': -0.0025}
                 }
 
 with open('extract_models_params.json', 'w') as json_file:
@@ -31,17 +32,17 @@ with open('extract_models_params.json', 'w') as json_file:
 
 
 generate_diameters_params = {
-    #'morph_path': '../scripts/extract_morphologies/selected_morphologies/',
-    'morph_path': '05_RepairUnravel-asc/', 
-    'mtypes_sort': 'mtypes',
+    'morph_path': '../scripts/extract_morphologies/selected_morphologies/',
+    #'morph_path': '05_RepairUnravel-asc/', 
+    'mtypes_sort': 'super_mtypes',
     'n_morphs_max': None, 
     'n_mtypes_max': 60,
     'models': ['M0', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9'],
     'neurite_types': ['basal'],
-    'models_params_file': 'model_params_mtypes.json',
-    #'new_morph_path': '../scripts/diameter-checks/new_morphologies_mtypes/', 
-    'new_morph_path': '../scripts/extract_morphometrics/new_morphologies_mtypes/', 
-    'plot': False, 
+    'models_params_file': 'model_params_super_mtypes.json',
+    'new_morph_path': '../scripts/diameter-checks/new_morphologies_super_mtypes/', 
+    #'new_morph_path': '../scripts/extract_morphometrics/new_morphologies_super_mtypes/', 
+    'plot': True, 
     'n_cpu': 10, 
     'extra_params': {}
 }

@@ -110,7 +110,7 @@ def trunk_diameter(neurite):
     return [[trunk_diam, max_path_dist], ]
 
 
-def taper(neurite, min_num_points = 20, fit_order = 1, j=0):
+def taper(neurite, min_num_points = 20, fit_order = 1, params = None):
     """ get the taper """
 
     import pylab as plt
@@ -137,7 +137,7 @@ def taper(neurite, min_num_points = 20, fit_order = 1, j=0):
 
             #print(z)
             #if tap < 0.010 and tap > -0.01 and abs(tap)>1e-8:
-            if z[1][0]<10 and abs(tap)>1e-8 and -tap < 0.005 and -tap > -0.0025:
+            if z[1][0]<params['max_residual'] and abs(tap)>params['zeros'] and params['min'] < -tap < params['max'] :
                 tapers.append(-tap)
                 sec_id.append(i)
 

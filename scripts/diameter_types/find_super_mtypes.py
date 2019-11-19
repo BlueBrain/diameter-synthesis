@@ -82,24 +82,36 @@ if __name__ == '__main__':
     dists, areas = morphometric_distances(morphologies, config['neurite_types'])
 
     area_distances = np.zeros([len(areas), len(areas)])
-
+    bins = np.arange(0, 200, 50)
     if not os.path.isdir('distributions'):
         os.mkdir('distributions')
-    #for i, val1 in enumerate(areas.values()):
-    for i, mtype in enumerate(areas):
-        val1 = areas[mtype]
-        val1 = np.array(val1)[np.array(dists[mtype])<100]
 
-        plt.figure()
-        plt.hist(val1, range = (0,10**2.5), density=True, bins = 50) 
-        plt.savefig('distributions/dist_'+mtype+'.png')
-        plt.close()
+    DIST_MAX = 10 
+
+    for i, mtype in enumerate(areas):
+        area1 = np.array(areas[mtype])
+        dist1 = np.array(dists[mtype])
+
+        #plt.figure()
+        #plt.hist(val1, range = (0,10**2.5), density=True, bins = 50) 
+        #plt.savefig('distributions/dist_'+mtype+'.png')
+        #plt.close()
 
         for j, mtype2 in enumerate(areas):
-            #diam_distances[i,j] = st.wasserstein_distance(val1, val2) 
-            val2 = areas[mtype2]
-            val2 = np.array(val2)[np.array(dists[mtype2])<100]
-            area_distances[i,j] = st.energy_distance(val1, val2) 
+            area2 = np.array(areas[mtype2])
+            dist2 = np.array(dists[mtype2])
+            
+            dists_tmp = []
+            for bi in range(len(bins)-1):
+                area1_tmp = area1[ (dist1 >= bins[bi]) & (dist1 < bins[bi+1])]
+                area2_tmp = area2[ (dist2 >= bins[bi]) & (dist2 < bins[bi+1])]
+                if len(area1_tmp) == 0 or len(area2_tmp) == 0:
+                    dist_tmp = DIST_MAX
+                else:
+                    dists_tmp.append(np.min([DIST_MAX,st.energy_distance(area1_tmp, area2_tmp)]))
+
+            area_distances[i,j] = np.mean(dists_tmp)
+
 
     import scipy.cluster.hierarchy as hierarchy
     import scipy.spatial.distance as distance
@@ -142,7 +154,7 @@ if __name__ == '__main__':
     G = nx.Graph(A)
 
     from RMST import RMST
-    G = RMST(G, gamma = 0.5, n_cpu = 1)
+    G = RMST(G, gamma = 0.25, n_cpu = 1)
 
     A = nx.to_numpy_matrix(G)
     plt.figure()
@@ -162,10 +174,10 @@ if __name__ == '__main__':
     stability.n_processes_mi = 5
 
     #scan over a time interval
-    times = np.logspace(-1.0, 0.5, 100)
+    times = np.logspace(-0.25, 1.25, 200)
 
-    stability.post_process = False #apply the postprocessing
-    stability.n_neigh = len(times) #but here, this is supposed to only look for a few neighbour times for the postprocess
+    stability.post_process = True#apply the postprocessing
+    stability.n_neigh = 30 #but here, this is supposed to only look for a few neighbour times for the postprocess
 
     stability.scan_stability(times, disp=False)
 
@@ -173,11 +185,13 @@ if __name__ == '__main__':
 
     plt.savefig('louv_clust.png',bbox_inches='tight')
 
-    stability.run_single_stability(time = 10**(-0.2) )
+    stability.run_single_stability(time = 10**(0.0) )
     stability.print_single_result(1, 1)
    
     comm_id = np.array(stability.single_stability_result['community_id'])
     
+    """
+    #this merge some singletons, but a bit artificially
     for i in set(comm_id):
         ids = np.argwhere(comm_id==i).flatten()
 
@@ -186,6 +200,7 @@ if __name__ == '__main__':
                 comm_id[ids] = i+1 
             else:
                 comm_id[ids] = i-1
+    """
 
     ordering = [] 
     for i in set(comm_id):
@@ -199,6 +214,7 @@ if __name__ == '__main__':
     comm_id_str = []
     for c in comm_id:
         comm_id_str.append(str(c))
+
     super_mtypes = dict(zip(list(areas.keys()), comm_id_str ))
 
     with open('super_mtypes.json', 'w') as json_file:

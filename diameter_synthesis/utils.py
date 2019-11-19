@@ -35,7 +35,7 @@ STR_TO_NEUROM_TYPES = {'apical': NeuriteType.apical_dendrite,
                        'axon': NeuriteType.axon}
 
 ROUND = 4 #number of digits for the fitted parameters
-MIN_DATA_POINTS = 20 #minimum number of points to fit a distribution
+MIN_DATA_POINTS = 10 #minimum number of points to fit a distribution
 A_MAX = 4 #maximum value for the a (shape) parameter of fits (can get really large when low number of points)
 
 FORBIDDEN_MTYPES = ['L4_NGC', 'L4_CHC', 'L6_CHC', 'L6_DBC', ]
