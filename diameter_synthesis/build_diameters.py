@@ -114,8 +114,11 @@ def replace_params(param_type, param_all_name='./model_params_all.json', model='
 def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_frac = 1.):
         """ diametrize a single tree """
 
-        if params['trunk_diameter'][neurite_type]['params']['a'][0] == 0:
-            params_tmp = replace_params('trunk_diameter')[neurite_type]
+        if params['trunk_diameter'][neurite_type]['distribution'] == 'exponnorm_sequence':
+            if params['trunk_diameter'][neurite_type]['params']['a'][0] == 0:
+                params_tmp = replace_params('trunk_diameter')[neurite_type]
+            else:
+                params_tmp = params['trunk_diameter'][neurite_type]
         else:
             params_tmp = params['trunk_diameter'][neurite_type]
 
