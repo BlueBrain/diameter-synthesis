@@ -36,7 +36,7 @@ generate_diameters_params = {
     'n_morphs_max': None, 
     'n_mtypes_max': 60,
     'models': ['M0'],
-    'neurite_types': ['basal',],
+    'neurite_types': ['basal', 'apical'],
     'models_params_file': 'model_params.json',
     'new_morph_path': 'new_morphologies/', 
     #'new_morph_path': '../scripts/extract_morphometrics/new_morphologies_super_mtypes/', 
