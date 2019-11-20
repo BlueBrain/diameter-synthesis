@@ -3,14 +3,14 @@ import numpy as np
 np.random.seed(1)
 
 extract_models_params = {
-    'morph_path': '05_RepairUnravel-asc/', 
+    'morph_path': '05_RepairUnravel-asc_test/', 
     #'morph_path': '/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/', 
-    'mtypes_sort': 'super_mtypes', 
+    'mtypes_sort': 'all', 
     'n_morphs_max': None, 
     'n_mtypes_max': 60,
-    'models': ['M0', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9'],
+    'models': ['M0',], # 'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9'],
     'neurite_types': ['basal'],
-    'models_params_file': 'model_params_super_mtypes.json',
+    'models_params_file': 'model_params_all.json',
     'plot': True,
     'fig_folder': 'figures_all', 
     'ext': '.png',
@@ -32,14 +32,14 @@ with open('extract_models_params.json', 'w') as json_file:
 
 
 generate_diameters_params = {
-    'morph_path': '../scripts/extract_morphologies/selected_morphologies/',
-    #'morph_path': '05_RepairUnravel-asc/', 
-    'mtypes_sort': 'super_mtypes',
+    #'morph_path': '../scripts/extract_morphologies/selected_morphologies/',
+    'morph_path': '05_RepairUnravel-asc_test/', 
+    'mtypes_sort': 'all',
     'n_morphs_max': None, 
     'n_mtypes_max': 60,
-    'models': ['M0', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9'],
+    'models': ['M0'], #, 'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9'],
     'neurite_types': ['basal'],
-    'models_params_file': 'model_params_super_mtypes.json',
+    'models_params_file': 'model_params_all.json',
     'new_morph_path': '../scripts/diameter-checks/new_morphologies_super_mtypes/', 
     #'new_morph_path': '../scripts/extract_morphometrics/new_morphologies_super_mtypes/', 
     'plot': True, 

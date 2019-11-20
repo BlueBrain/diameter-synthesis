@@ -73,6 +73,9 @@ if __name__ == '__main__':
     with open(config_file, 'r') as f:
         config = json.load(f)
 
+    if not os.path.isdir(config['new_morph_path']):
+        os.mkdir(config['new_morph_path'])
+
     shutil.copy(config['morph_path']+'/neuronDB.xml', config['new_morph_path']+'/neuronDB.xml') 
 
     #Load morphologies

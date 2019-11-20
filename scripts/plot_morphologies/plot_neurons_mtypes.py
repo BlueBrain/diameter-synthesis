@@ -1,7 +1,6 @@
 from xml.etree import ElementTree as ET
 import os
 import shutil
-import tmd
 from tqdm import tqdm
 
 #diable warnings
@@ -37,7 +36,7 @@ def plot_neurons_per_mtype_from_xml(folder = '.', filename='neuronDB.xml', outpu
                 mtype = mtype + ':' + m.find('msubtype').text
             mtypes.add(mtype)
         except:
-            print 'Failed to process', m
+            print('Failed to process', m)
 
     # Create a directory for each m-type, subtype
     for m in mtypes:
@@ -62,4 +61,4 @@ if __name__ == '__main__':
         shutil.rmtree('neuron_plots/')
         os.mkdir('neuron_plots')
 
-    plot_neurons_per_mtype_from_xml(folder='/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/', output_dir='neuron_plots/', ext = '.png')
+    plot_neurons_per_mtype_from_xml(folder='../../examples/05_RepairUnravel-asc/', output_dir='neuron_plots/', ext = '.png')

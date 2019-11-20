@@ -2,50 +2,14 @@
     "extra_params": {
         "M0": {
             "seed": 0
-        },
-        "M1": {
-            "seed": 1
-        },
-        "M2": {
-            "seed": 2
-        },
-        "M3": {
-            "seed": 3
-        },
-        "M4": {
-            "seed": 4
-        },
-        "M5": {
-            "seed": 5
-        },
-        "M6": {
-            "seed": 6
-        },
-        "M7": {
-            "seed": 7
-        },
-        "M8": {
-            "seed": 8
-        },
-        "M9": {
-            "seed": 9
         }
     },
     "models": [
-        "M0",
-        "M1",
-        "M2",
-        "M3",
-        "M4",
-        "M5",
-        "M6",
-        "M7",
-        "M8",
-        "M9"
+        "M0"
     ],
-    "models_params_file": "model_params_super_mtypes.json",
-    "morph_path": "../scripts/extract_morphologies/selected_morphologies/",
-    "mtypes_sort": "super_mtypes",
+    "models_params_file": "model_params_all.json",
+    "morph_path": "05_RepairUnravel-asc_test/",
+    "mtypes_sort": "all",
     "n_cpu": 10,
     "n_morphs_max": null,
     "n_mtypes_max": 60,
