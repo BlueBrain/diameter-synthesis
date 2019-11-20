@@ -10,7 +10,9 @@ from neurom import COLS
 from neurom.core import iter_sections
 from neurom import viewer
 
-from diameter_synthesis.utils import STR_TO_TYPES, TYPE_TO_STR
+from diameter_synthesis import io
+
+from diameter_synthesis.types import STR_TO_TYPES, TYPE_TO_STR
 import diameter_synthesis.utils as utils 
 import diameter_synthesis.morph_functions as morph_funcs
 from diameter_synthesis.distribution_fitting import sample_distribution
@@ -58,11 +60,13 @@ def build_diam_pool(all_models, model, models_params, neurite_types, extra_param
     fname = neuron_input[0]
     mtype = neuron_input[1]
     name, ext = os.path.splitext(fname)
-    neuron = nm.load_neuron(morph_path + '/' + fname)
+
+    filepath = os.path.join(morph_path, fname)
+    neuron = io.load_morphology(filepath)
 
     all_models[model](neuron, models_params[mtype][model], neurite_types, extra_params[model])
 
-    utils.save_neuron([neuron, name], model, new_morph_path) 
+    io.save_neuron([neuron, name], model, new_morph_path) 
 
     if plot:
         folder = 'shapes_' + os.path.basename(new_morph_path[:-1])

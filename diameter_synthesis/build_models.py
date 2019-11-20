@@ -8,7 +8,7 @@ import neurom as nm
 from neurom import COLS
 from neurom.core import iter_sections
 
-from diameter_synthesis.utils import STR_TO_TYPES, TYPE_TO_STR 
+from diameter_synthesis.types import STR_TO_TYPES, TYPE_TO_STR 
 
 import diameter_synthesis.utils as utils 
 from diameter_synthesis.distribution_fitting import fit_distribution, update_params_fit_distribution

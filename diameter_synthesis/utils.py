@@ -7,6 +7,7 @@ import numpy as np
 import neurom as nm
 from neurom import COLS
 from neurom.core import iter_sections
+from .io import load_morphologies_from_dict
 
 from neurom import NeuriteType
 from morphio import SectionType
@@ -14,25 +15,6 @@ from morphio import SectionType
 import logging 
 L = logging.getLogger(__name__)
 
-STR_TO_TYPES = {'apical': SectionType.apical_dendrite,
-                'basal': SectionType.basal_dendrite,
-                'axon': SectionType.axon}
-
-TYPE_TO_STR = {SectionType.apical_dendrite: 'apical',
-               SectionType.basal_dendrite: 'basal',
-               SectionType.axon: 'axon',
-               SectionType.soma: 'soma'}
-
-
-NEUROM_TYPE_TO_STR = {NeuriteType.apical_dendrite: 'apical',
-                      NeuriteType.basal_dendrite: 'basal',
-                      NeuriteType.soma: 'soma',
-                      NeuriteType.axon: 'axon'}
-
-STR_TO_NEUROM_TYPES = {'apical': NeuriteType.apical_dendrite,
-                       'basal': NeuriteType.basal_dendrite,
-                       'soma': NeuriteType.soma,
-                       'axon': NeuriteType.axon}
 
 ROUND = 4 #number of digits for the fitted parameters
 MIN_DATA_POINTS = 10 #minimum number of points to fit a distribution
@@ -40,41 +22,6 @@ A_MAX = 4 #maximum value for the a (shape) parameter of fits (can get really lar
 
 FORBIDDEN_MTYPES = ['L4_NGC', 'L4_CHC', 'L6_CHC', 'L6_DBC', ]
 
-##############################
-## loading/saving functions ##
-##############################
-
-def load_morphologies_from_folder(morph_path, n_morphs_max = None):
-    """ Load the morphologies from a list of files in a folder """
-
-    n_morphs = 0
-    morphologies = {}
-    morphologies['generic_type'] = []
-    for fname in tqdm(os.listdir(morph_path)):
-        filepath = os.path.join(morph_path, fname)
-        if fname.endswith(('.h5', '.asc', '.swc')) and os.path.exists(filepath) and n_morphs < n_morphs_max:
-            neuron = nm.load_neuron(filepath)
-            morphologies['generic_type'].append([neuron, os.path.splitext(fname)[0]])
-            n_morphs +=1
-
-    return morphologies 
-
-
-def load_morphologies_from_dict(morph_path, name_dict):
-    """ Load the morphologies from a list of files """
-
-    tqdm_1, tqdm_2 = tqdm_disable(name_dict) #to have a single progression bar
-    # just to get single progression bar 
-    morphologies = {}
-    for mtype in tqdm(name_dict, disable = tqdm_1):
-        morphologies[mtype] = []
-        for fname in tqdm(name_dict[mtype], disable = tqdm_2):
-            filepath = os.path.join(morph_path, fname)
-            if fname.endswith(('.h5', '.asc', '.swc')) and os.path.exists(filepath):
-                neuron = nm.load_neuron(filepath)
-                morphologies[mtype].append([neuron, os.path.splitext(fname)[0]])
-
-    return morphologies 
 
 def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mtypes_max = None, xml_file = 'neuronDB.xml', ext = '.asc', prefix = "", super_mtypes_path='../scripts/diameter_types/'):
     """ Create dict to load the morphologies from a directory, by mtypes or all at once """
@@ -155,25 +102,7 @@ def load_morphologies(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mt
 
     name_dict = create_morphologies_dict(morph_path, mtypes_sort = mtypes_sort, n_morphs_max = n_morphs_max, n_mtypes_max = n_mtypes_max, xml_file = xml_file, ext = ext, prefix = prefix)
 
-    return load_morphologies_from_dict(morph_path, name_dict)
-
-
- 
-def save_neuron(neuron, model, folder):
-        """ save the neuron morphology for later analysis """
-
-        if not os.path.isdir(folder):
-            os.mkdir(folder)
-
-        neuron[0].write(folder + '/' + model + '_' + neuron[1] + '.asc')
-  
-def load_neuron(fname, model, folder):
-        """ load the neuron morphology for later analysis """
-        if model:
-            return nm.load_neuron(folder + '/' + model + '_' + fname + '.asc')
-        else:
-            return nm.load_neuron(folder + '/' + fname + '.asc')
-           
+    return {mtype: [[c, c.name] for c in cells] for mtype, cells in load_morphologies_from_dict(morph_path, name_dict).items()}
 
  
 #################################

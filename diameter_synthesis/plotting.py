@@ -9,8 +9,11 @@ import pylab as plt
 from neurom.core import iter_sections
 from neurom import viewer
 
+from diameter_synthesis.types import STR_TO_TYPES
 from diameter_synthesis.distribution_fitting import evaluate_distribution
 import diameter_synthesis.utils as utils 
+from diameter_synthesis import io
+
 
 ########################
 ## plotting functions ##
@@ -342,10 +345,10 @@ def plot_diameter_diff(neuron_name, morph_path, new_morph_path, model, neurite_t
     if not os.path.isdir(folder):
         os.mkdir(folder)
 
-    neuron_orig     = utils.load_neuron(neuron_name, None, morph_path)
-    neuron_diff_pos = utils.load_neuron(neuron_name, None, morph_path)
-    neuron_diff_neg = utils.load_neuron(neuron_name, None, morph_path)
-    neuron_new      = utils.load_neuron(neuron_name, model, new_morph_path)
+    neuron_orig     = io.load_neuron(neuron_name, None, morph_path)
+    neuron_diff_pos = io.load_neuron(neuron_name, None, morph_path)
+    neuron_diff_neg = io.load_neuron(neuron_name, None, morph_path)
+    neuron_new      = io.load_neuron(neuron_name, model, new_morph_path)
 
     fig, axs = plt.subplots(2, 2, figsize=(10,10))
 
@@ -357,10 +360,10 @@ def plot_diameter_diff(neuron_name, morph_path, new_morph_path, model, neurite_t
 
     neurite_types = ['basal', 'axon', 'apical']
     for neurite_type in neurite_types:
-        neurites = [neurite for neurite in neuron_orig.neurites if neurite.type == utils.STR_TO_TYPES[neurite_type]]
-        neurites_new = [neurite for neurite in neuron_new.neurites if neurite.type == utils.STR_TO_TYPES[neurite_type]]
-        neurites_diff_neg = [neurite for neurite in neuron_diff_neg.neurites if neurite.type == utils.STR_TO_TYPES[neurite_type]]
-        neurites_diff_pos = [neurite for neurite in neuron_diff_pos.neurites if neurite.type == utils.STR_TO_TYPES[neurite_type]]
+        neurites = [neurite for neurite in neuron_orig.neurites if neurite.type == STR_TO_TYPES[neurite_type]]
+        neurites_new = [neurite for neurite in neuron_new.neurites if neurite.type == STR_TO_TYPES[neurite_type]]
+        neurites_diff_neg = [neurite for neurite in neuron_diff_neg.neurites if neurite.type == STR_TO_TYPES[neurite_type]]
+        neurites_diff_pos = [neurite for neurite in neuron_diff_pos.neurites if neurite.type == STR_TO_TYPES[neurite_type]]
 
         for i, neurite in enumerate(neurites):
 
