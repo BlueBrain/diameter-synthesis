@@ -100,14 +100,16 @@ def terminal_diameters(neurite, method = 'mean', threshold = 1.0):
 
     return term_diam
 
-def trunk_diameter(neurite):
+def trunk_diameter(neurite, with_path = True):
     """ get the trunc diameters """
 
     trunk_diam =  get_diameters(neurite.root_node)[0] 
-    #max_bo = np.max(nm.get('section_term_branch_orders', neurite))
     max_path_dist = np.max(nm.get('section_path_distances', neurite))
 
-    return [[trunk_diam, max_path_dist], ]
+    if with_path:
+        return [[trunk_diam, max_path_dist], ]
+    else:
+        return [trunk_diam,]
 
 
 def taper(neurite, min_num_points = 20, fit_order = 1, params = None):

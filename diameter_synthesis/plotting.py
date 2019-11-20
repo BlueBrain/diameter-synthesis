@@ -92,7 +92,8 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
     fig = plt.figure(figsize = figsize)
     for neurite_type in neurite_types:
         if len(data[neurite_type]) > 0:
-            if isinstance(data[neurite_type][0], list): #if the fits are done as a function of a type
+            #if isinstance(data[neurite_type][0], list): #if the fits are done as a function of a type
+            if model[neurite_type]['distribution'] == 'exponnorm_sequence':
 
                 tpes = np.asarray(data[neurite_type])[:, 1] #collect the type of point (branching order for now)
                 values = np.asarray(data[neurite_type])[:, 0] #collect the data itself
@@ -137,7 +138,10 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
                 max_val = model[neurite_type]['params']['max']
 
                 if len(data[neurite_type]) >0:
-                    plt.hist(data[neurite_type], bins = 50 , log = False, density = True, histtype='bar', lw=0.5, color=colors[neurite_type], alpha=0.5, range=[min_val*0.8, max_val*1.2])
+                    if len(np.shape(data[neurite_type])) > 1:
+                        plt.hist(np.array(data[neurite_type])[:,0], bins = 50 , log = False, density = True, histtype='bar', lw=0.5, color=colors[neurite_type], alpha=0.5, range=[min_val*0.8, max_val*1.2])
+                    else:
+                        plt.hist(data[neurite_type], bins = 50 , log = False, density = True, histtype='bar', lw=0.5, color=colors[neurite_type], alpha=0.5, range=[min_val*0.8, max_val*1.2])
 
                     x = np.linspace(min_val, max_val, 1000)
                     plt.plot(x, evaluate_distribution(x, model[neurite_type]), c=colors[neurite_type], lw = 3, ls='--', label = neurite_type)
@@ -158,7 +162,8 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
     plt.savefig(fig_name + ext, bbox_inches='tight')
     plt.close(fig)
 
-    if isinstance(data[neurite_types[0]][0], list): #if the fits are done as a function of a type
+    if model[neurite_type]['distribution'] == 'exponnorm_sequence':
+    #if isinstance(data[neurite_types[0]][0], list): #if the fits are done as a function of a type
         plot_fit_distribution_params(model, neurite_types, fig_name = fig_name+  '_param_fit', ext = ext)
 
 def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', figname = 'test', ext = '.png', figsize = (6,3)):
@@ -208,7 +213,6 @@ def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', fig
                     data[bo + '_' + params] = []
 
 
-    print(data)
     for mtype in model_params:
         for fit in  model_params[mtype][model]:
             if fit == 'trunk_diameter':

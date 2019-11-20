@@ -132,7 +132,6 @@ def sample_distribution(model, tpe = 0):
 
 def fit_distribution(data, distribution, floc = None, fa = None,  min_sample_num = 10, p = 5, n_bins = 10):
     """ generic function to fit a distribution with scipy """
-
     if len(data) > MIN_DATA_POINTS:
 
         if distribution == 'expon_rev':

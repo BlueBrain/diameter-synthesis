@@ -49,7 +49,7 @@ def sampling_model_simple_trunk(morphologies, neurite_types, extra_params, tqdm_
                     sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(neurite)
                     Rall_deviations[neurite_type] += morph_funcs.Rall_deviations(neurite)
                     terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite, threshold = extra_params['terminal_threshold'])
-                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite)
+                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite, with_path = False)
                     tapers[neurite_type] += morph_funcs.taper(neurite, params = extra_params['taper'])
   
     #do the fits of each morphological values
@@ -197,8 +197,8 @@ def build_models(models, morphologies, neurite_types, extra_params, fig_folder =
 
     all_models = {}
     for model in models:
-        all_models[model]  = sampling_model_generic
-        #all_models[model]  = sampling_model_simple_trunk
+        #all_models[model]  = sampling_model_generic
+        all_models[model]  = sampling_model_simple_trunk
     
     tqdm_1, tqdm_2 = utils.tqdm_disable(morphologies) #to have a single progression bar
 
