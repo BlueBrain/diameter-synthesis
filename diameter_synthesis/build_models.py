@@ -50,7 +50,7 @@ def sampling_model_simple_trunk(morphologies, neurite_types, extra_params, tqdm_
                     Rall_deviations[neurite_type] += morph_funcs.Rall_deviations(neurite)
                     terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite, threshold = extra_params['terminal_threshold'])
                     trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite)
-                    tapers[neurite_type] += morph_funcs.taper(neurite, extra_params['taper'])
+                    tapers[neurite_type] += morph_funcs.taper(neurite, params = extra_params['taper'])
   
     #do the fits of each morphological values
     sibling_ratio_models = {}
