@@ -31,7 +31,7 @@ from functools import partial
 ##################################
 
 def build_diameters(models, models_params, morphologies_dict, neurite_types, new_morph_path, extra_params, morph_path, plot = True, n_cpu = 1):
-    """ Building the diameters from the generated diameter models"""  
+    """ Building the diameters from the generated diameter models"""
 
     all_models = {}
     for model in models:
@@ -66,7 +66,7 @@ def build_diam_pool(all_models, model, models_params, neurite_types, extra_param
 
     all_models[model](neuron, models_params[mtype][model], neurite_types, extra_params[model])
 
-    io.save_neuron([neuron, name], model, new_morph_path) 
+    io.save_neuron([neuron, name], model, new_morph_path)
 
     if plot:
         folder = 'shapes_' + os.path.basename(new_morph_path[:-1])
@@ -82,11 +82,7 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
     for neurite_type in neurite_types:
         neurites = (neurite for neurite in neuron.neurites if neurite.type == STR_TO_TYPES[neurite_type])
 
-        for neurite in neurites: 
-
-            #max_bo = np.max(nm.get('section_term_branch_orders', neurite)) 
-            #if max_bo > extra_params['max_bo_fit']: #too few such branches, so we stick to the same parameters
-            #    max_bo = extra_params['max_bo_fit']
+        for neurite in neurites:
 
             max_path_dist = np.max(nm.get('section_path_distances', neurite))
 
@@ -168,7 +164,7 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
                 #if branching points has children, keep looping
                 if len(children) > 1:
                     
-                    reduc = 2. 
+                    reduc = 2.
                     while reduc > 1.: #try until we get a reduction of diameter in the branching
                         if params['sibling_ratio'][neurite_type]['params']['scale'] == 0.0:
                             params_tmp = replace_params('sibling_ratio')[neurite_type]
@@ -189,7 +185,7 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
                         terminal_diam = d0
 
                     d1 = reduc * d0
-                    d2 = sibling_ratio * d1  
+                    d2 = sibling_ratio * d1
 
                     if d1 < terminal_diam:
                         d1 = terminal_diam
@@ -234,22 +230,8 @@ def diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=100
 
     # lengths of each segments will be used for scaling of tapering
     lengths = [0] + utils.section_lengths(section)
-    """
-    for i in range(len(section.points)-1): #range_:
-        # Taper should be a negative number for decreasing diameters
-        new_diam = diams[-1] + taper * lengths[i]
-
-        if new_diam >= max_diam:
-            diams.append(max_diam)
-        elif new_diam <= min_diam:
-            diams.append(min_diam)
-        else:
-            diams.append(new_diam)
-    """
 
     diams = np.poly1d([taper,initial_diam])(lengths)
     diams[diams<min_diam] = min_diam
     diams[diams>max_diam] = max_diam
     set_diameters(section, np.array(diams, dtype=np.float32))
-
-

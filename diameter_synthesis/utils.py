@@ -12,7 +12,7 @@ from .io import load_morphologies_from_dict
 from neurom import NeuriteType
 from morphio import SectionType
 
-import logging 
+import logging
 L = logging.getLogger(__name__)
 
 
@@ -36,7 +36,7 @@ def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = Non
     # try to load the files, if there is no neuronDB, set a constant mtype
     try:
 
-        #first load the neuronDB.xml file 
+        #first load the neuronDB.xml file
         from xml.etree import ElementTree as ET
         FileDB = ET.parse(morph_path + xml_file)
         root = FileDB.findall('listing')[0]
@@ -102,8 +102,7 @@ def load_morphologies(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mt
 
     name_dict = create_morphologies_dict(morph_path, mtypes_sort = mtypes_sort, n_morphs_max = n_morphs_max, n_mtypes_max = n_mtypes_max, xml_file = xml_file, ext = ext, prefix = prefix)
 
-    return {mtype: [[c, c.name] for c in cells] for mtype, cells in load_morphologies_from_dict(morph_path, name_dict).items()}
-
+    return {mtype: [c for c in cells] for mtype, cells in load_morphologies_from_dict(morph_path, name_dict).items()}
  
 #################################
 ## diameter handling functions ##
@@ -114,7 +113,7 @@ def set_diameters(section, diameters):
 
     new_points = section.points
     new_points[:, COLS.R] = diameters/2.
-    section.points = new_points 
+    section.points = new_points
 
 def get_mean_diameter(section):
     """hack to get diameters with neurom"""
@@ -138,7 +137,7 @@ def redefine_diameter_section(section, diam_ind, diam_new):
 
     diameters = get_diameters(section)
     diameters[diam_ind] = diam_new
-    set_diameters(section, diameters)      
+    set_diameters(section, diameters)
 
 ##########################
 ## additional functions ##

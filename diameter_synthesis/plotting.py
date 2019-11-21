@@ -14,7 +14,6 @@ from diameter_synthesis.distribution_fitting import evaluate_distribution
 import diameter_synthesis.utils as utils 
 from diameter_synthesis import io
 
-
 ########################
 ## plotting functions ##
 ########################
@@ -37,44 +36,35 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
 
         #prevent large values of a from bad fitting
         As[As>utils.A_MAX] = utils.A_MAX
-
         ax1.scatter(tpes_model, As, s=w, edgecolors=colors[neurite_type], facecolors='none' )
-
     ax1.set_xlabel('max path distance')
     ax1.set_ylabel('a')
 
     ax2 = fig.add_subplot(512)
-
     for neurite_type in neurite_types:
         tpes_model = [*model[neurite_type]['params_data']]
         ax2.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['loc']), c=colors[neurite_type])
         locs   = [v['loc'] for v in model[neurite_type]['params_data'].values()]
         ax2.scatter(tpes_model, locs, s=w, edgecolors=colors[neurite_type], facecolors='none' )
-
     ax2.set_ylabel('loc')
 
     ax3 = fig.add_subplot(513)
-
     for neurite_type in neurite_types:
         tpes_model = [*model[neurite_type]['params_data']]
         ax3.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['scale']), c=colors[neurite_type])
         scales = [v['scale'] for v in model[neurite_type]['params_data'].values()]
         ax3.scatter(tpes_model, scales, s=w, edgecolors=colors[neurite_type], facecolors='none' )
-
     ax3.set_ylabel('scale')
 
     ax4 = fig.add_subplot(514)
-
     for neurite_type in neurite_types:
         tpes_model = [*model[neurite_type]['params_data']]
         ax4.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['min']), c=colors[neurite_type])
         mins = [v['min'] for v in model[neurite_type]['params_data'].values()]
         ax4.scatter(tpes_model, mins, s=w, edgecolors=colors[neurite_type], facecolors='none' )
-
     ax4.set_ylabel('min')
 
     ax5 = fig.add_subplot(515)
-
     for neurite_type in neurite_types:
         tpes_model = [*model[neurite_type]['params_data']]
         ax5.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['max']), c=colors[neurite_type])
@@ -84,11 +74,8 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
     ax5.set_xlabel('max branching order')
     ax5.set_ylabel('max')
 
-
-
     fig.savefig(fig_name + ext, bbox_inches='tight')
     plt.close(fig)
-
 
 def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '.png', figsize = (5,4), n_bins = 10):
     """ Plot the data distribution and its fit """
@@ -107,7 +94,7 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
                 max_val = -1e10
 
                 for i in range(len(bins)-1):
-                    values_tpe = values[(tpes >= bins[i]) & (tpes < bins[i+1]) ] #select the values by its type 
+                    values_tpe = values[(tpes >= bins[i]) & (tpes < bins[i+1]) ] #select the values by its type
                     tpe_mean = (bins[i]+bins[i+1])/2.
              
                     bottom_shift = tpe_mean
@@ -155,7 +142,7 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
     title_txt = 'Fit parameters:\n'
     try:
         for neurite_type in neurite_types:
-            title_txt += neurite_type +': ' + str(model[neurite_type]['params']) 
+            title_txt += neurite_type +': ' + str(model[neurite_type]['params'])
             title_txt += '\n'
     except:
         title_txt += ' no parameter could be fitted.'
@@ -172,8 +159,8 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
 def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', figname = 'test', ext = '.png', figsize = (6,3)):
     """ box plots for the fits of the model parameters """
 
-    import collections 
-    data = collections.OrderedDict() 
+    import collections
+    data = collections.OrderedDict()
 
     mtype = [*model_params][0]
     for fit in  model_params[mtype][model]:
@@ -185,8 +172,6 @@ def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', fig
                 data[fit + '_' + params + '_0'] = []
                 data[fit + '_' + params + '_1'] = []
 
-
-
     for mtype in model_params:
         for fit in  model_params[mtype][model]:
             if fit != 'trunk_diameter':
@@ -196,7 +181,6 @@ def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', fig
                 for params in model_params[mtype][model][fit][neurite_type]['params']:
                     data[fit+'_' + params + '_0'].append(model_params[mtype][model][fit][neurite_type]['params'][params][0])
                     data[fit+'_' + params + '_1'].append(model_params[mtype][model][fit][neurite_type]['params'][params][1])
-
 
     plt.figure(figsize = figsize)
     plt.boxplot(data.values())
@@ -214,7 +198,6 @@ def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', fig
             for params in model_params[mtype][model][fit][neurite_type]['params_data']['0.0']:
                 for bo in bos:
                     data[bo + '_' + params] = []
-
 
     for mtype in model_params:
         for fit in  model_params[mtype][model]:
@@ -237,8 +220,8 @@ def plot_neuron(neuron, folder, ext = '.png'):
     if not os.path.isdir(folder):
             os.mkdir(folder)
 
-    fig, ax = viewer.draw(neuron[0])
-    plt.savefig(folder + '/' + neuron[1] + '_' + folder + ext, dpi = 500)
+    fig, ax = viewer.draw(neuron)
+    plt.savefig(folder + '/' + neuron.name + '_' + folder + ext, dpi = 500)
     plt.close()
 
 
@@ -297,7 +280,6 @@ def draw_axis(obj, mode='2d', ax = None, **kwargs):
         >>> fig3d.show()
         >>> fig, _ = viewer.draw(nrn.neurites[0]) # 2d plot of neurite tree
         >>> dend, _ = viewer.draw(nrn, mode='dendrogram')
-
     '''
 
     if mode not in MODES:
@@ -338,9 +320,8 @@ def draw_axis(obj, mode='2d', ax = None, **kwargs):
 
     return fig, ax
 
-
 def plot_diameter_diff(neuron_name, morph_path, new_morph_path, model, neurite_types, folder):
-    """ plot original morphology, new one and differences """    
+    """ plot original morphology, new one and differences """
 
     if not os.path.isdir(folder):
         os.mkdir(folder)
@@ -378,15 +359,14 @@ def plot_diameter_diff(neuron_name, morph_path, new_morph_path, model, neurite_t
             for j, s in enumerate(iter_sections(neurites_diff_pos[i])):
                 diff = diam_new[j] - diam_orig[j]
                 diff_pos = diff.copy()
-                diff_pos[diff_pos<0] = 0 
+                diff_pos[diff_pos<0] = 0
                 utils.set_diameters(s, diff_pos)
 
             for j, s in enumerate(iter_sections(neurites_diff_neg[i])):
                 diff = diam_new[j] - diam_orig[j]
                 diff_neg = -diff.copy()
-                diff_neg[diff_neg<0] = 0 
+                diff_neg[diff_neg<0] = 0
                 utils.set_diameters(s, diff_neg)
-
 
     draw_axis(neuron_diff_pos, ax= axs[1,0])
     axs[1,0].set_title('Positive diameter differences')
@@ -395,5 +375,3 @@ def plot_diameter_diff(neuron_name, morph_path, new_morph_path, model, neurite_t
 
     fig.savefig(folder + '/' + neuron_name + '_' + folder+'_'+ model + '.png', dpi = 500)
     plt.close('all')
-
-
