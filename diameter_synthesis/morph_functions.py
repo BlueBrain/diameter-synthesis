@@ -14,19 +14,15 @@ from diameter_synthesis.utils import get_diameters, set_diameters, section_lengt
 ## morphometric functions ##
 ############################
 
-def sibling_ratios(neurite, method = 'mean'):
+def sibling_ratios(neurite, method = 'mean', seq = None):
     """ compute the siblig ratios of a neurite"""
 
     s_ratios = []
     #loop over bifuraction points
     for bif_point in nm.core.Tree.ibifurcation_point(next(iter_sections(neurite))):
         if len(bif_point.children) == 2:
-
             if method == 'mean':
                 #take the average diameter of children to smooth noise out
-                #d1 = np.mean(get_diameters(bif_point.children[0]))
-                #d2 = np.mean(get_diameters(bif_point.children[1]))
-
                 d1 = get_mean_diameter(bif_point.children[0])
                 d2 = get_mean_diameter(bif_point.children[1])
 
@@ -36,17 +32,32 @@ def sibling_ratios(neurite, method = 'mean'):
                 d2 = get_diameters(bif_point.children[1])[0]
 
             else:
-                raise Exception('Method for singling computation not understood!')
+                raise Exception('Method for sibling computation not understood!')
 
-            
+            #print(nm.features.bifurcationfunc.partition_pair(bif_point))
             s_ratios.append(np.min([d1,d2]) / np.max([d1,d2]))
 
         elif len(bif_point.children) > 2:
             raise Exception('Number of children is '+ str(len(bif_point.children)) + '!')
 
-    return s_ratios
+    #print('kl', nm.get('partition_asymmetry', neurite), s_ratios)
+    #return s_ratios
+    return sequential(s_ratios, seq, neurite)
 
-def Rall_deviations(neurite, method = 'mean'):
+def sequential(data, seq_type, neurite):
+    """ from a data and a type of sequential slicing, return both """
+    if not isinstance(seq_type, str):
+        return data 
+
+    elif seq_type == 'asymmetry': 
+        return [[s, pa] for s, pa in zip(data, nm.get('partition_asymmetry', neurite)) if s < 1-1e-5]
+
+    elif seq_type == 'max_path':
+        return [[s, pa] for s, pa in zip(data, [np.max(nm.get('section_path_distances', neurite)),]) if s < 1-1e-5]
+    else:
+        raise Exception('unknown sequential type')
+
+def Rall_deviations(neurite, method = 'mean', seq = None):
     """Returns the Rall deviation the diameters
        of the segments of a tree. """
     
@@ -55,10 +66,6 @@ def Rall_deviations(neurite, method = 'mean'):
         if len(bif_point.children) == 2:
 
             if method == 'mean':
-                #d_0 = np.mean(get_diameters(bif_point))
-                #d_1 = np.mean(get_diameters(bif_point.children[0]))
-                #d_2 = np.mean(get_diameters(bif_point.children[1]))
-
                 d_0 = get_mean_diameter(bif_point)
                 d_1 = get_mean_diameter(bif_point.children[0])
                 d_2 = get_mean_diameter(bif_point.children[1])
@@ -77,14 +84,14 @@ def Rall_deviations(neurite, method = 'mean'):
         elif len(bif_point.children) > 2:
             raise Exception('Number of children is '+ str(len(bif_point.children)) + '!')
 
-    return Rall_deviations
+    return sequential(Rall_deviations, seq, neurite)
 
-def Rall_reduction_factor(Rall_deviation, siblings_ratio):
+def Rall_reduction_factor(Rall_deviation, siblings_ratio, seq = None):
     '''Returns the reduction factor for bifurcation diameter'''
 
     return (Rall_deviation / (1. + siblings_ratio**(3./2.) ) )**(2./3.)
 
-def terminal_diameters(neurite, method = 'mean', threshold = 1.0):
+def terminal_diameters(neurite, method = 'mean', threshold = 1.0, seq = None):
     """Returns the model for the terminations"""
 
     mean_diameter = np.mean(get_diameters(neurite))
@@ -98,24 +105,19 @@ def terminal_diameters(neurite, method = 'mean', threshold = 1.0):
     else:
         raise Exception('Method for singling computation not understood!')
 
-    return term_diam
+    return sequential(term_diam, seq, neurite)
 
-def trunk_diameter(neurite, with_path = True):
+def trunk_diameter(neurite, seq = None):
     """ get the trunc diameters """
 
     trunk_diam =  get_diameters(neurite.root_node)[0] 
-    max_path_dist = np.max(nm.get('section_path_distances', neurite))
 
-    if with_path:
-        return [[trunk_diam, max_path_dist], ]
-    else:
-        return [trunk_diam,]
+    return sequential([trunk_diam,], seq, neurite)
 
-
-def taper(neurite, min_num_points = 20, fit_order = 1, params = None):
+def taper(neurite, min_num_points = 20, fit_order = 1, params = None, seq = None):
     """ get the taper """
 
-    import pylab as plt
+    #import pylab as plt
 
     tapers = []
     sec_id = [] 

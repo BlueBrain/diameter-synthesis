@@ -222,12 +222,6 @@ def diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=100
     if initial_diam > max_diam:
         max_diam = initial_diam
 
-    if section.is_root():
-        #range_ = range(1, len(section.points))
-        range_ = range(0, len(section.points) - 1)
-    else:
-        range_ = range(0, len(section.points) - 1)
-
     # lengths of each segments will be used for scaling of tapering
     lengths = [0] + utils.section_lengths(section)
 

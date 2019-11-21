@@ -8,7 +8,7 @@ extract_models_params = {
     'n_morphs_max': None, 
     'n_mtypes_max': 60,
     'models': ['M0',], 
-    'neurite_types': ['basal', 'apical'],
+    'neurite_types': ['basal',],
     'models_params_file': 'model_params.json',
     'plot': True,
     'fig_folder': 'figures', 
@@ -22,7 +22,7 @@ for model in extract_models_params['models']:
                 'terminal_threshold': 1., 
                 'trunk_min_sample_num': {'basal': 10, 'apical': 10},
                 'trunk_floc': None, 
-                'orders': {'a': 1, 'loc':1, 'scale':1, 'min':1, 'max':1},
+                'orders': {'a': 0, 'loc':1, 'scale':1, 'min':1, 'max':1},
                 'taper': {'max_residual': 10, 'zeros':1e-8, 'max': 0.005, 'min': -0.0025}
                 }
 
@@ -36,7 +36,7 @@ generate_diameters_params = {
     'n_morphs_max': None, 
     'n_mtypes_max': 60,
     'models': ['M0'],
-    'neurite_types': ['basal', 'apical'],
+    'neurite_types': ['basal',],
     'models_params_file': 'model_params.json',
     'new_morph_path': 'new_morphologies/', 
     #'new_morph_path': '../scripts/extract_morphometrics/new_morphologies_super_mtypes/', 
