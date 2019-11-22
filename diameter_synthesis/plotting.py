@@ -29,10 +29,10 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
     ax1 = fig.add_subplot(511)
 
     for neurite_type in neurite_types:
-        tpes_model = [*model[neurite_type]['params_data']]
+        tpes_model = [*model[neurite_type]['params']['params_data']]
         ax1.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['a']), c=colors[neurite_type])
-        As  = np.array([v['a'] for v in model[neurite_type]['params_data'].values()])
-        w  = np.array([v['num_value'] for v in model[neurite_type]['params_data'].values()])
+        As  = np.array([v['a'] for v in model[neurite_type]['params']['params_data'].values()])
+        w  = np.array([v['num_value'] for v in model[neurite_type]['params']['params_data'].values()])
 
         #prevent large values of a from bad fitting
         As[As>utils.A_MAX] = utils.A_MAX
@@ -42,33 +42,33 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
 
     ax2 = fig.add_subplot(512)
     for neurite_type in neurite_types:
-        tpes_model = [*model[neurite_type]['params_data']]
+        tpes_model = [*model[neurite_type]['params']['params_data']]
         ax2.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['loc']), c=colors[neurite_type])
-        locs   = [v['loc'] for v in model[neurite_type]['params_data'].values()]
+        locs   = [v['loc'] for v in model[neurite_type]['params']['params_data'].values()]
         ax2.scatter(tpes_model, locs, s=w, edgecolors=colors[neurite_type], facecolors='none' )
     ax2.set_ylabel('loc')
 
     ax3 = fig.add_subplot(513)
     for neurite_type in neurite_types:
-        tpes_model = [*model[neurite_type]['params_data']]
+        tpes_model = [*model[neurite_type]['params']['params_data']]
         ax3.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['scale']), c=colors[neurite_type])
-        scales = [v['scale'] for v in model[neurite_type]['params_data'].values()]
+        scales = [v['scale'] for v in model[neurite_type]['params']['params_data'].values()]
         ax3.scatter(tpes_model, scales, s=w, edgecolors=colors[neurite_type], facecolors='none' )
     ax3.set_ylabel('scale')
 
     ax4 = fig.add_subplot(514)
     for neurite_type in neurite_types:
-        tpes_model = [*model[neurite_type]['params_data']]
+        tpes_model = [*model[neurite_type]['params']['params_data']]
         ax4.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['min']), c=colors[neurite_type])
-        mins = [v['min'] for v in model[neurite_type]['params_data'].values()]
+        mins = [v['min'] for v in model[neurite_type]['params']['params_data'].values()]
         ax4.scatter(tpes_model, mins, s=w, edgecolors=colors[neurite_type], facecolors='none' )
     ax4.set_ylabel('min')
 
     ax5 = fig.add_subplot(515)
     for neurite_type in neurite_types:
-        tpes_model = [*model[neurite_type]['params_data']]
+        tpes_model = [*model[neurite_type]['params']['params_data']]
         ax5.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['max']), c=colors[neurite_type])
-        maxs = [v['max'] for v in model[neurite_type]['params_data'].values()]
+        maxs = [v['max'] for v in model[neurite_type]['params']['params_data'].values()]
         ax5.scatter(tpes_model, maxs, s=w, edgecolors=colors[neurite_type], facecolors='none' )
 
     ax5.set_xlabel('max branching order')
@@ -159,8 +159,7 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
     plt.savefig(fig_name + ext, bbox_inches='tight')
     plt.close(fig)
 
-    if model[neurite_type]['distribution'] == 'exponnorm_sequence':
-    #if isinstance(data[neurite_types[0]][0], list): #if the fits are done as a function of a type
+    if isinstance(model[neurite_type]['sequential'], str): #if the fits are done sequantially
         plot_fit_distribution_params(model, neurite_types, fig_name = fig_name+  '_param_fit', ext = ext)
 
 def plot_fit_param_boxes(model_params, model = 'M0', neurite_type = 'basal', figname = 'test', ext = '.png', figsize = (6,3)):
@@ -230,8 +229,6 @@ def plot_neuron(neuron, folder, ext = '.png'):
     fig, ax = viewer.draw(neuron)
     plt.savefig(folder + '/' + neuron.name + '_' + folder + ext, dpi = 500)
     plt.close()
-
-
 
 
 from neurom.view import (plot_neuron, plot_neuron3d,

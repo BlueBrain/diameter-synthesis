@@ -44,16 +44,54 @@ def sibling_ratios(neurite, method = 'mean', seq = None):
     #return s_ratios
     return sequential(s_ratios, seq, neurite)
 
-def sequential(data, seq_type, neurite):
+def sequential_single(seq, neurite = None, section = None):
+    """ return the value for sequencial slicing"""
+
+    if seq == 'asymmetry': 
+
+        if neurite is not None and section is None:
+            return nm.get('partition_asymmetry', neurite)
+        elif section is not None and neurite is None:
+            try:
+                return [nm.features.bifurcationfunc.partition_asymmetry(section),]
+            except:
+                #cathing the fact that some bifurcation are triple
+                print('triple bifurcation for partition asymetry')
+                return [0.]
+        else:
+            raise Exception('Please provide either a neurite or a section, not both')
+
+    if seq == 'asymmetry_pair': 
+
+        if section is not None and neurite is None:
+            try:
+                return [nm.features.bifurcationfunc.partition_pair(section),]
+            except:
+                #cathing the fact that some bifurcation are triple
+                print('triple bifurcation for partition asymetry')
+                return [(0.5,1)]
+        else:
+            raise Exception('Please provide either a section only')
+
+    elif seq == 'max_path':
+        if neurite is not None and section is None:
+            return [np.max(nm.get('section_path_distances', neurite)),]
+        else:
+            raise Exception('Please provide only a neuritet')
+
+    else:
+        return [0,] #not the best way to do that...
+
+def sequential(data, seq, neurite):
     """ from a data and a type of sequential slicing, return both """
-    if not isinstance(seq_type, str):
+    if not isinstance(seq, str):
         return data 
 
-    elif seq_type == 'asymmetry': 
-        return [[s, pa] for s, pa in zip(data, nm.get('partition_asymmetry', neurite)) if s < 1-1e-5]
+    elif seq == 'asymmetry': 
+        return [[d, s] for d, s in zip(data, sequential_single(seq, neurite)) if s < 1-1e-5]
 
-    elif seq_type == 'max_path':
-        return [[s, pa] for s, pa in zip(data, [np.max(nm.get('section_path_distances', neurite)),]) if s < 1-1e-5]
+    elif seq == 'max_path':
+        return [[d, s] for d, s in zip(data, sequential_single(seq, neurite)) if s < 1-1e-5]
     else:
         raise Exception('unknown sequential type')
 
@@ -78,7 +116,7 @@ def Rall_deviations(neurite, method = 'mean', seq = None):
             Rall_deviation = (d_1/d_0)**(3./2.) + (d_2/d_0)**(3./2.) 
 
             #don't consider cases with larger diameters of daughters 
-            if Rall_deviation < 1.8:
+            if Rall_deviation < 100.8:
                 Rall_deviations.append(Rall_deviation)
 
         elif len(bif_point.children) > 2:
@@ -160,4 +198,4 @@ def taper(neurite, min_num_points = 20, fit_order = 1, params = None, seq = None
     #bos = np.array(nm.get('section_path_distances', neurite))[sec_id]
     #return [ [tap, bo ] for tap, bo in zip(tapers, bos)  ]
 
-    return  tapers
+    return sequential(tapers, seq, neurite)

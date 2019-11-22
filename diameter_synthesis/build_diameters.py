@@ -123,13 +123,13 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
         else:
             params_tmp = params['trunk_diameter'][neurite_type]
 
-        trunk_diam = trunk_diam_frac*sample_distribution(params_tmp, max_path_dist)
+        tpe = morph_funcs.sequential_single(params_tmp['sequential'], neurite = neurite)
+        trunk_diam = trunk_diam_frac*sample_distribution(params_tmp, tpe[0])
 
         wrong_tips = False
 
         status = {s.id: False for s in iter_sections(neurite)}
         active = [neurite.root_node]
-
 
         while active:
             for section in list(active):
@@ -147,7 +147,8 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
 
                 min_diam = params_tmp['params']['min']
                 max_diam = params_tmp['params']['max']
-                terminal_diam = sample_distribution(params_tmp)
+                tpe = morph_funcs.sequential_single(params_tmp['sequential'],neurite = neurite)
+                terminal_diam = sample_distribution(params_tmp, tpe[0])
                 
                 #diametrize a section
                 if params['taper'][neurite_type]['params']['a'] == 0:
@@ -155,7 +156,8 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
                 else:
                     params_tmp = params['taper'][neurite_type]
 
-                taper = -abs(sample_distribution(params_tmp)) #prevent positive tapers
+                tpe = morph_funcs.sequential_single(params_tmp['sequential'], section = section)
+                taper = -0*abs(sample_distribution(params_tmp, tpe[0])) #prevent positive tapers
                 diametrize_section(section, init_diam, taper=taper,
                                              min_diam = terminal_diam, max_diam = trunk_diam)
 
@@ -171,14 +173,17 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
                             params_tmp = replace_params('sibling_ratio')[neurite_type]
                         else:
                             params_tmp = params['sibling_ratio'][neurite_type]
-                        sibling_ratio = sample_distribution(params_tmp)
+                        tpe = morph_funcs.sequential_single(params_tmp['sequential'], section = section)
+                        sibling_ratio = sample_distribution(params_tmp, tpe[0])
 
                         if params['Rall_deviation'][neurite_type]['params']['a'] == 0:
                             params_tmp = replace_params('Rall_deviation')[neurite_type]
                         else:
                             params_tmp = params['Rall_deviation'][neurite_type]
 
-                        Rall_deviation = sample_distribution(params_tmp)
+                        tpe = morph_funcs.sequential_single(params_tmp['sequential'], section = section)
+                        Rall_deviation = sample_distribution(params_tmp, tpe[0])
+
                         reduc = morph_funcs.Rall_reduction_factor(Rall_deviation = Rall_deviation, siblings_ratio = sibling_ratio)
 
                     d0 = get_diameters(section)[-1]
@@ -193,6 +198,11 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
 
                     if d2 < terminal_diam:
                         d2 = terminal_diam
+
+                    #if the asymetry pair is opposite to d1>d2, swith diameters
+                    ass_pair = morph_funcs.sequential_single('asymmetry_pair', section = section)[0]
+                    if ass_pair[1]> ass_pair[0]:
+                        d1, d2 = d2, d1
 
                     #if len(children)>2:
                     #    print(len(children), 'children for this branch')

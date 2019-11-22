@@ -28,7 +28,6 @@ def evaluate_distribution(x, distribution, params):
 
         return exponnorm.pdf(x, params['a'], params['loc'], params['scale'])
 
-
     elif distribution == 'gamma':
         from scipy.stats import gamma
 
@@ -50,7 +49,6 @@ def truncate(sample_func, min_value, max_value):
         sample = sample_func()
 
     return sample 
-
 
 def sample_distribution_single(model):
     """ sample from a distribution (no slicing)"""

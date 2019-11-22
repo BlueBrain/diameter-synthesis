@@ -23,7 +23,7 @@ def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, 
     """ test for sampling models """
   
     sibling_sequential = 'asymmetry'
-    Rall_deviation_sequential = None 
+    Rall_deviation_sequential = 'asymmetry'
     terminal_diameters_sequential = None
     trunk_diameters_sequential = None
     tapers_sequential = None
