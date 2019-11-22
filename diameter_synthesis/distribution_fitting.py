@@ -42,16 +42,18 @@ def evaluate_distribution(x, distribution, params):
     else:
         raise Exception('Distribution not understood')
 
-def sample_distribution(model, tpe = 0):
-    """ sample from a distribution"""
+def truncate(sample_func, min_value, max_value):
+    """ truncatet a sampled distribution """
+    sample = sample_func()
 
-    def truncate(sample_func, min_value, max_value):
+    while sample > max_value or sample < min_value:
         sample = sample_func()
 
-        while sample > max_value or sample < min_value:
-            sample = sample_func()
+    return sample 
 
-        return sample 
+
+def sample_distribution_single(model):
+    """ sample from a distribution (no slicing)"""
 
     params = model['params']
 
@@ -75,26 +77,26 @@ def sample_distribution(model, tpe = 0):
 
         return truncate(lambda: skewnorm.rvs(params['a'], params['loc'], params['scale']), params['min'], params['max'])
 
-    elif model['distribution'] == 'exponnorm_sequence':
-        from scipy.stats import exponnorm
+    else:
+        raise Exception('Distribution not understood')
 
-        if tpe == 0:
-            tpe = 1
+def sample_distribution(model, tpe = 0):
+    """ sample from a distribution"""
 
-        if params['a'][0]<0:
-            params['a'][0] = 1
+    if not isinstance(model['sequential'], str): #if no sequential fitting needed
+        return sample_distribution_single(model)
+    else:
+        model_tpe = {}
+        model_tpe['params'] = {}
+        model_tpe['distribution'] = model['distribution']
+        model_tpe['params']['a'] = polynomial.polyval(tpe, model['params']['a'])
+        model_tpe['params']['loc'] = polynomial.polyval(tpe, model['params']['loc'])
+        model_tpe['params']['scale'] = polynomial.polyval(tpe, model['params']['scale'])
+        model_tpe['params']['min'] = polynomial.polyval(tpe, model['params']['min'])
+        model_tpe['params']['max'] = polynomial.polyval(tpe, model['params']['max'])
 
-        a = polynomial.polyval(tpe, params['a'])
-        loc = polynomial.polyval(tpe, params['loc'])
-
-        if params['scale'][0]<0:
-            params['scale'][0] = 1
-
-        scale = polynomial.polyval(tpe, params['scale'])
-        Min = polynomial.polyval(tpe, params['min'])
-        Max = polynomial.polyval(tpe, params['max'])
-
-        #hack to use the all data values if the fit failed (only basal)
+        #TODO: update the hack to use the all data values if the fit failed (only basal)
+        """
         if [*params.values()][0][0] == 0. or a < 0 or loc <0  or scale <0 or Min < 0 or Max<0:
             try:
                 with open('./model_params_all.json', 'r') as f:
@@ -109,13 +111,11 @@ def sample_distribution(model, tpe = 0):
             scale = polynomial.polyval(tpe, params_all['scale'])
             Min = polynomial.polyval(tpe, params_all['min'])
             Max = polynomial.polyval(tpe, params_all['max'])
-
+        """
         try: 
-            return truncate(lambda: exponnorm.rvs(a, loc, scale), Min, Max)
+            return sample_distribution_single(model_tpe)
         except:
-            print('error in parameters for tpe',tpe, 'with params', [a, loc, scale, Min, Max], 'and', params)
-    else:
-        raise Exception('Distribution not understood')
+            raise Exception('error in parameters for tpe ', tpe, ' with model ', model_tpe)
 
 def fit_distribution_single(data, distribution, p = 5):
     """ generic function to fit a distribution with scipy (single slice)"""
@@ -123,7 +123,7 @@ def fit_distribution_single(data, distribution, p = 5):
 
         if distribution == 'expon_rev':
             from scipy.stats import expon
-            loc, scale = expon.fit(1 - np.array(data)) 
+            loc, scale = expon.fit(1 - np.array(data))
 
             return {'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': 1, 'num_value': len(data)}
 

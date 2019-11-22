@@ -3,7 +3,7 @@ import numpy as np
 np.random.seed(1)
 
 extract_models_params = {
-    'morph_path': '/gpfs/bbp.cscs.ch/home/arnaudon/data_tests/L5_TPC:A',
+    'morph_path': '/home/arnaudon/Dropbox/BBP/data_tests/L5_TPC:A',
     'mtypes_sort': 'all', 
     'n_morphs_max': None, 
     'n_mtypes_max': 60,
@@ -31,7 +31,7 @@ with open('extract_models_params.json', 'w') as json_file:
 
 
 generate_diameters_params = {
-    'morph_path': '/gpfs/bbp.cscs.ch/home/arnaudon/data_tests/L5_TPC:A',
+    'morph_path': '/home/arnaudon/Dropbox/BBP/data_tests/L5_TPC:A',
     'mtypes_sort': 'all',
     'n_morphs_max': None, 
     'n_mtypes_max': 60,

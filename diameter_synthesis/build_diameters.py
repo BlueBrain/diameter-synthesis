@@ -3,6 +3,7 @@ import json
 from tqdm import tqdm
 
 import numpy as np
+from numpy.polynomial import polynomial as polynomial
 
 import neurom as nm
 
@@ -225,7 +226,7 @@ def diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=100
     # lengths of each segments will be used for scaling of tapering
     lengths = [0] + utils.section_lengths(section)
 
-    diams = np.poly1d([taper,initial_diam])(lengths)
+    diams = polynomial.polyval(lengths, [initial_diam, taper])
     diams[diams<min_diam] = min_diam
     diams[diams>max_diam] = max_diam
     set_diameters(section, np.array(diams, dtype=np.float32))
