@@ -157,7 +157,7 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
                     params_tmp = params['taper'][neurite_type]
 
                 tpe = morph_funcs.sequential_single(params_tmp['sequential'], section = section)
-                taper = -0*abs(sample_distribution(params_tmp, tpe[0])) #prevent positive tapers
+                taper = -(sample_distribution(params_tmp, tpe[0])) #prevent positive tapers
                 diametrize_section(section, init_diam, taper=taper,
                                              min_diam = terminal_diam, max_diam = trunk_diam)
 
