@@ -1,11 +1,13 @@
 import os, glob, shutil
 import numpy as np
+from scipy import stats
 from numpy.polynomial import polynomial as polynomial
 
 import matplotlib
 matplotlib.use('Agg')
 import pylab as plt
 
+import neurom
 from neurom.core import iter_sections
 from neurom import viewer
 
@@ -13,6 +15,7 @@ from diameter_synthesis.types import STR_TO_TYPES
 from diameter_synthesis.distribution_fitting import evaluate_distribution
 import diameter_synthesis.utils as utils 
 from diameter_synthesis import io
+
 
 ########################
 ## plotting functions ##
@@ -379,3 +382,91 @@ def plot_diameter_diff(neuron_name, morph_path, new_morph_path, model, neurite_t
 
     fig.savefig(folder + '/' + neuron_name + '_' + folder+'_'+ model + '.png', dpi = 500)
     plt.close('all')
+
+
+def _create_data(feature1, feature2, original_cells, diametrized_cells, step_size, neurite_types):
+
+    def feature_data(cell):
+        return [(neurom.get(feature1, cell, neurite_type=STR_TO_TYPES[t]), 
+                 neurom.get(feature2, cell, neurite_type=STR_TO_TYPES[t])) for t in neurite_types]
+
+    def find_upper_bound(data1, data2):
+        raw_max_value = max(vals.max() for cell_data in data1 for vals, _ in cell_data)
+        syn_max_value = max(vals.max() for cell_data in data2 for vals, _ in cell_data)
+        return max(raw_max_value, syn_max_value)
+
+    def create_bins(step_size, max_value):
+        bins = np.arange(0., max_value + step_size, step_size)
+        bin_centers = 0.5 * step_size + bins[:-1]
+        return bin_centers, bins
+
+    def statistic_from_data(data, bins, max_value):
+
+        per_cell_dat = np.empty(shape=(len(data), len(neurite_types), len(bins) - 1))
+
+        for i, cell_data in enumerate(data):
+            for j, (vals, data) in enumerate(cell_data):
+                res = stats.binned_statistic(vals, data, statistic='sum', bins=bins, range=(0, max_value))
+                per_cell_dat[i, j] = np.cumsum(res.statistic)
+
+        return per_cell_dat
+
+    raw_cells_data = list(map(feature_data, original_cells))
+    syn_cells_data = list(map(feature_data, diametrized_cells))
+
+    upper_bound = find_upper_bound(raw_cells_data, syn_cells_data)
+
+    bin_centers, bins = create_bins(step_size, upper_bound)
+
+    return (bin_centers,
+            statistic_from_data(raw_cells_data, bins, upper_bound),
+            statistic_from_data(syn_cells_data, bins, upper_bound))
+
+
+def plot_cumulative_distribution(original_cells, diametrized_cells, feature1, feature2, neurite_types, step_size=1.0):
+    """
+    Plot the cumulative distribution of feature2 with respect to the metric values determined via feature1
+
+    Args:
+        original_cells: list of NeuroM objects
+        diametrized_cells: list of NeuroM objects
+            The new cell with the changed diameters.
+        neurite_types: string
+            The list neurite types to be considered. e.g. ['basal', 'axon']
+        step_size: float
+            The step size of the cumulative histogram
+
+    Examples of metric features (feature1):
+        - segment_radial_distances
+        - segment_path_distances (not implemented yet)
+
+    Examples of cumulative distribution features (feature2):
+        - segment_volumes
+        - segment_surface_areas (not implemented yet)
+    """
+    f, ax = plt.subplots(1, 1, figsize=(10, 5))
+
+    bin_centers, per_cell_raw, per_cell_syn = _create_data(
+            feature1, feature2, original_cells, diametrized_cells, step_size, neurite_types)
+
+    for j, neurite_type in enumerate(neurite_types):
+        #for i in range(n_raw_cells):
+        #    ax.plot(bin_centers, per_cell_raw[i, j], c=neurite_colors[j], linestyle='-', alpha=0.1)
+        #for i in range(n_syn_cells):
+        #    ax.plot(bin_centers, per_cell_syn[i, j], c=neurite_colors[j], linestyle='--', alpha=0.1)
+
+        color = colors[neurite_type]
+
+        means = per_cell_raw[:, j, :].mean(axis=0)
+        sdevs = per_cell_raw[:, j, :].std(axis=0)
+
+        ax.plot(bin_centers, means, c=color, linestyle='-')
+        ax.fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.2)
+
+        means = per_cell_syn[:, j, :].mean(axis=0)
+        sdevs = per_cell_syn[:, j, :].std(axis=0)
+
+        ax.plot(bin_centers, means, c=color, linestyle='--')
+        ax.fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.2)
+
+    return f, ax

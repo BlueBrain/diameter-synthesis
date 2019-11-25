@@ -108,29 +108,34 @@ def load_morphologies(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mt
 ## diameter handling functions ##
 #################################
 
+
 def set_diameters(section, diameters):
     """hack to set diameters with neurom"""
 
     new_points = section.points
-    new_points[:, COLS.R] = diameters/2.
+    new_points[:, COLS.R] = 0.5 * diameters
     section.points = new_points
 
+
 def get_mean_diameter(section):
-    """hack to get diameters with neurom"""
+    """ Section mean diameter by averaging the segment truncated cone
+    diameters and weighting them by their length.
+    """
+    points = section.points[:, COLS.XYZ]
+    radii = section.points[:, COLS.R]
 
-    vecs = np.diff(section.points, axis=0)[:, COLS.XYZ]
-    lengths = [np.sqrt(np.dot(p, p)) for p in vecs]
+    segment_lengths = np.linalg.norm(points[1:] - points[:-1], axis=1)
 
-    segment_mean_diams = section.points[1:, COLS.R] + section.points[:-1, COLS.R]
-    mean_diam = np.sum(segment_mean_diams*lengths)/np.sum(lengths)
-     
-    return mean_diam
+    # mean_diameter_i = (2.0 * r_(i+1) + 2.0 * r_(i)) / 2.0
+    segment_mean_diams = radii[1:] + radii[:-1]
+
+    return np.sum(segment_mean_diams * segment_lengths) / segment_lengths.sum()
 
 
 def get_diameters(section):
     """hack to get diameters with neurom"""
+    return 2. * section.points[:, COLS.R]
 
-    return section.points[:, COLS.R]*2 
 
 def redefine_diameter_section(section, diam_ind, diam_new):
     """Hack to replace one diameter at index diam_ind with value diam_new"""
@@ -138,6 +143,7 @@ def redefine_diameter_section(section, diam_ind, diam_new):
     diameters = get_diameters(section)
     diameters[diam_ind] = diam_new
     set_diameters(section, diameters)
+
 
 ##########################
 ## additional functions ##

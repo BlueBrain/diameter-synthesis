@@ -11,8 +11,18 @@ from neurom.exceptions import UnknownFileType
 L = logging.getLogger(__name__)
 
 
-def _iter_filepaths(directory, filenames):
-    """ Returns a generator of filepaths by joining directory path and filenames """
+def _is_valid_spec(filename):
+    return filename.endswith(('.h5', '.asc', '.swc'))
+
+
+def iter_morphology_filenames(directory):
+    """ Returns an iterator on morphology filenames """
+    return filter(_is_valid_spec, os.listdir(directory))
+
+
+def iter_morphology_filepaths(directory, filenames=None):
+    """ Returns a generator of morphology filepaths by joining directory path and filenames """
+    filenames = filenames or iter_morphology_filenames(directory)
     return (os.path.join(directory, filename) for filename in filenames)
 
 
@@ -43,7 +53,9 @@ def load_morphologies(filepaths):
 
 def load_morphologies_from_folder(directory, filenames, n_morphs_max=None):
     """ Load the morphologies from a list of files in a folder """
-    morphs_it = load_morphologies(_iter_filepaths(directory, filenames))
+
+    filepath_it = iter_morphology_filepaths(directory, filenames=filenames)
+    morphs_it = load_morphologies(filepaths_it)
 
     if n_morphs_max is None:
         return list(morphs_it)

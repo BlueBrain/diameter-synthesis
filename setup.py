@@ -29,14 +29,13 @@ setup(
     ],
     #dependency_links=[,],
     entry_points={
-        'console_scripts': ['diameter-synthesis=diameter_synthesis.main:cli'],
+        'console_scripts': ['diameter-synthesis-app=diameter_synthesis.app.__main__:app',
+                            'diameter-synthesis=diameter_synthesis.main:cli'],
     },
     packages=find_packages(),
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
     ],
