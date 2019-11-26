@@ -85,31 +85,34 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
 
         for neurite in neurites:
 
-            max_path_dist = np.max(nm.get('section_path_distances', neurite))
-
             wrong_tips = True
             n_tries = 0
             trunk_diam_frac = 1.
             k = 1
             while wrong_tips:
-                wrong_tips = diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_frac)
+
+                #smple a trunk diameter
+                params_tmp = params['trunk_diameter'][neurite_type]
+                tpe = morph_funcs.sequential_single(params_tmp['sequential'], neurite = neurite)
+                trunk_diam = trunk_diam_frac*sample_distribution(params_tmp, tpe[0])
+
+                #try to diametrize the neurite
+                wrong_tips = diametrize_tree(neurite, params, neurite_type, trunk_diam)
+                
+                #if we can't get a good model, reduce the trunk diameter progressively
                 n_tries += 1
-                if n_tries > 10*k: #if we keep failing, slighly reduce the trunk diams
-                    trunk_diam_frac -= 0.1
+                if n_tries > 2*k: #if we keep failing, slighly reduce the trunk diams
+                    trunk_diam_frac -= 0.10
                     k+=1
 
-                if n_tries > 90: #don't try to much, and complain
+                #don't try to much and keep the latest try
+                if n_tries > 90: 
                     print('max tries attained with', neurite_type)
                     wrong_tips = False
-            #print(n_tries, 'tries')
 
-def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_frac = 1.):
+            #print(n_tries, 'tries for ', neurite_type, trunk_diam_frac)
+def diametrize_tree(neurite, params, neurite_type, trunk_diam):
         """ diametrize a single tree """
-
-        #smple a trunk diameter
-        params_tmp = params['trunk_diameter'][neurite_type]
-        tpe = morph_funcs.sequential_single(params_tmp['sequential'], neurite = neurite)
-        trunk_diam = trunk_diam_frac*sample_distribution(params_tmp, tpe[0])
 
         #initialise status variables
         wrong_tips = False # used to run until terminal diameters are thin enough
@@ -126,7 +129,7 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
                 
                 #sample a terminal diameter
                 params_tmp = params['terminal_diameter'][neurite_type]
-                tpe = morph_funcs.sequential_single(params_tmp['sequential'],neurite = neurite)
+                tpe = morph_funcs.sequential_single(params_tmp['sequential'], neurite = neurite)
                 terminal_diam = sample_distribution(params_tmp, tpe[0])
                
                 #remember the min and max diam for later
@@ -136,19 +139,19 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
                 #sample a taper rate
                 params_tmp = params['taper'][neurite_type]
                 tpe = morph_funcs.sequential_single(params_tmp['sequential'], section = section)
-                taper = -0.00#*(sample_distribution(params_tmp, tpe[0])) #prevent positive tapers
+                taper = sample_distribution(params_tmp, tpe[0]) #prevent positive tapers
 
                 #diametrize a section
                 diametrize_section(section, init_diam, taper=taper,
                                              min_diam = terminal_diam, max_diam = trunk_diam)
 
-                #remove section from list of section to treattt
+                #remove section from list of section to treat
                 active.remove(section)
 
                 #if branching points has children, keep looping
                 if len(section.children) > 1:
                     
-                    reduc_max = 1.0 # if set to larger than 1, we allow increase of diameters 
+                    reduc_max = 1.2 # if set to larger than 1, we allow increase of diameters 
                     reduc = reduc_max + 1
                     while reduc > reduc_max: #try until we get a reduction of diameter in the branching
 
@@ -157,7 +160,7 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
                    
                         ########### HARDCODED !!!! #############
                         if params_tmp['sequential'] == 'asymmetry':
-                            if tpe < -1.0:
+                            if tpe < -0.8:
                                 if neurite_type =='apical':
                                     tpe = -2.0
                                 else:
@@ -192,8 +195,7 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
                         d2 = terminal_diam
 
                     #if the asymetry of partition is opposite to d1 > d2, switch diameters
-
-                    #first computte the partition of each child
+                    #first compute the partition of each child
                     part = []
                     for child in range(len(section.children)):
                         part.append(float(sum(1 for _ in section.children[child].ipreorder())))
@@ -204,15 +206,17 @@ def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_fra
                     
                     #set diameters
                     for i, ch in enumerate(section.children):
+
                         if len(section.children) == 1:
                             print('single child')
+
                         utils.redefine_diameter_section(ch, 0, ds[child_sort[i]])
                         active.append(ch)
 
                 #if we are at a tip, check tip diameters to restart if too large
-                else:
-                    if get_diameters(section)[-1]  > max_diam:
-                        wrong_tips = True
+                elif get_diameters(section)[-1]  > max_diam:
+                    wrong_tips = True
+
         return wrong_tips
 
 

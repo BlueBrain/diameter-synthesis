@@ -54,7 +54,7 @@ def load_morphologies(filepaths):
 def load_morphologies_from_folder(directory, filenames, n_morphs_max=None):
     """ Load the morphologies from a list of files in a folder """
 
-    filepath_it = iter_morphology_filepaths(directory, filenames=filenames)
+    filepaths_it = iter_morphology_filepaths(directory, filenames=filenames)
     morphs_it = load_morphologies(filepaths_it)
 
     if n_morphs_max is None:

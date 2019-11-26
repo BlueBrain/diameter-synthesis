@@ -428,7 +428,6 @@ def _create_data(feature1, feature2, original_cells, diametrized_cells, step_siz
 
     n_cells = len(original_cells)
     iter_neurite_data = per_neurite_data(original_cells, diametrized_cells, neurite_types)
-
     for n, data_pairs in enumerate(iter_neurite_data):
 
         upper_bound = find_upper_bound(data_pairs)
@@ -480,25 +479,29 @@ def plot_cumulative_distribution(original_cells, diametrized_cells, feature1, fe
     for i, (bin_centers, stats1, stats2) in enumerate(data_generator):
 
         color = colors[neurite_types[i]]
-
         means = stats1.mean(axis=0)
-        sdevs = stats1.mean(axis=0)
 
         axes[0].plot(bin_centers, means, c=color, linestyle='-')
-        axes[0].fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.2)
+        
+        if len(stats1)>1: #don't plot std if there is only one curve
+            sdevs = stats1.mean(axis=0)
+            axes[0].fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.2)
 
         means = stats2.mean(axis=0)
-        sdevs = stats2.mean(axis=0)
 
         axes[0].plot(bin_centers, means, c=color, linestyle='--')
-        axes[0].fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.2)
+
+        if len(stats2)>1:
+            sdevs = stats2.mean(axis=0)
+            axes[0].fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.2)
 
         diffs = np.abs((stats2 - stats1) / stats1)
 
         diff_means = diffs.mean(axis=0)
-        diff_sdevs = diffs.mean(axis=0)
 
         axes[1].plot(bin_centers, diff_means, c=color, linestyle='-')
-        axes[1].fill_between(bin_centers, diff_means - diff_sdevs, diff_means + diff_sdevs, color=color, alpha=0.2)
 
+        if len(diffs)>1:
+            diff_sdevs = diffs.mean(axis=0)
+            axes[1].fill_between(bin_centers, diff_means - diff_sdevs, diff_means + diff_sdevs, color=color, alpha=0.2)
     return f, axes

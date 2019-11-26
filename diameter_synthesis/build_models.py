@@ -318,9 +318,9 @@ def build_models(models, morphologies, neurite_types, extra_params, fig_folder =
 
     all_models = {}
     for model in models:
-        all_models[model]  = sampling_model_generic
+        #all_models[model]  = sampling_model_generic
         #all_models[model]  = sampling_model_trunk_path
-        #all_models[model]  = sampling_model_sibling_asymmetry
+        all_models[model]  = sampling_model_sibling_asymmetry
     
     tqdm_1, tqdm_2 = utils.tqdm_disable(morphologies) #to have a single progression bar
 

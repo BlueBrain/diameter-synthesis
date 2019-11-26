@@ -23,7 +23,7 @@ for model in extract_models_params['models']:
                 'trunk_min_sample_num': {'basal': 10, 'apical': 10},
                 'trunk_floc': None, 
                 'orders': {'a': 4, 'loc':4, 'scale':4, 'min':4, 'max':4},
-                'taper': {'max_residual': 10, 'zeros':1e-8, 'max': 0.005, 'min': -0.0025}
+                'taper': {'max_residual': 10, 'zeros':-1e-8, 'max': 0.000005, 'min': -0.0000025}
                 }
 
 with open('extract_models_params.json', 'w') as json_file:
@@ -47,7 +47,7 @@ generate_diameters_params = {
 
 for i, model in enumerate(generate_diameters_params['models']):
     generate_diameters_params['extra_params'][model] = {
-                'seed': 10
+                'seed': 1
                }
 
 with open('generate_diameters_params.json', 'w') as json_file:

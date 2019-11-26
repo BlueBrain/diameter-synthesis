@@ -212,11 +212,9 @@ def taper(neurite, min_num_points = 20, fit_order = 1, params = None, seq = None
             """
 
             tap = z[0][-1]
-
-            #print(z)
-            #if tap < 0.010 and tap > -0.01 and abs(tap)>1e-8:
-            if z[1][0]<params['max_residual'] and abs(tap)>params['zeros'] and params['min'] < -tap < params['max'] :
-                tapers.append(-tap)
+            residual = z[1][0]
+            if residual < params['max_residual'] and abs(tap) > params['zeros'] and params['min'] < tap < params['max'] :
+                tapers.append(tap)
                 sec_id.append(i)
 
     """ 

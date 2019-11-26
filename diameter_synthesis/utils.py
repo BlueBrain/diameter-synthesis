@@ -33,7 +33,6 @@ def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = Non
     if not n_morphs_max:
         n_morphs_max =  1e10
 
-
     # try to load the files, if there is no neuronDB, set a constant mtype
     try:
 
