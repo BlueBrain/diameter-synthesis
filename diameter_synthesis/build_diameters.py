@@ -64,7 +64,7 @@ def build_diam_pool(all_models, model, models_params, neurite_types, extra_param
 
     filepath = os.path.join(morph_path, fname)
     neuron = io.load_morphology(filepath)
-
+    print(neuron.name)
     all_models[model](neuron, models_params[mtype][model], neurite_types, extra_params[model])
 
     io.save_neuron([neuron, name], model, new_morph_path)
@@ -94,7 +94,6 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
             while wrong_tips:
                 wrong_tips = diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_frac)
                 n_tries += 1
-
                 if n_tries > 10*k: #if we keep failing, slighly reduce the trunk diams
                     trunk_diam_frac -= 0.1
                     k+=1
@@ -102,122 +101,118 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
                 if n_tries > 90: #don't try to much, and complain
                     print('max tries attained with', neurite_type)
                     wrong_tips = False
-
-def replace_params(param_type, param_all_name='./model_params_all.json', model='M0'): 
-    """replace the param file with the all neuron fit"""
-
-    with open(param_all_name, 'r') as f:
-        params_all = json.load(f)
-
-    return params_all['all_types'][model][param_type]
-
+            #print(n_tries, 'tries')
 
 def diametrize_tree(neurite, params, neurite_type, max_path_dist, trunk_diam_frac = 1.):
         """ diametrize a single tree """
 
-        if params['trunk_diameter'][neurite_type]['distribution'] == 'exponnorm_sequence':
-            if params['trunk_diameter'][neurite_type]['params']['a'][0] == 0:
-                params_tmp = replace_params('trunk_diameter')[neurite_type]
-            else:
-                params_tmp = params['trunk_diameter'][neurite_type]
-        else:
-            params_tmp = params['trunk_diameter'][neurite_type]
-
+        #smple a trunk diameter
+        params_tmp = params['trunk_diameter'][neurite_type]
         tpe = morph_funcs.sequential_single(params_tmp['sequential'], neurite = neurite)
         trunk_diam = trunk_diam_frac*sample_distribution(params_tmp, tpe[0])
 
-        wrong_tips = False
-
-        status = {s.id: False for s in iter_sections(neurite)}
-        active = [neurite.root_node]
+        #initialise status variables
+        wrong_tips = False # used to run until terminal diameters are thin enough
+        active = [neurite.root_node] # list of sections to diametrize
 
         while active:
             for section in list(active):
-
+                
+                #set trunk diam if trunk, or first diam of the section otherwise
                 if section.is_root():
                     init_diam = trunk_diam
                 else:
                     init_diam = get_diameters(section)[0]
                 
                 #sample a terminal diameter
-                if params['terminal_diameter'][neurite_type]['params']['a'] == 0:
-                    params_tmp = replace_params('terminal_diameter')[neurite_type]
-                else:
-                    params_tmp = params['terminal_diameter'][neurite_type]
-
-                min_diam = params_tmp['params']['min']
-                max_diam = params_tmp['params']['max']
+                params_tmp = params['terminal_diameter'][neurite_type]
                 tpe = morph_funcs.sequential_single(params_tmp['sequential'],neurite = neurite)
                 terminal_diam = sample_distribution(params_tmp, tpe[0])
-                
-                #diametrize a section
-                if params['taper'][neurite_type]['params']['a'] == 0:
-                    params_tmp = replace_params('taper')[neurite_type]
-                else:
-                    params_tmp = params['taper'][neurite_type]
-
+               
+                #remember the min and max diam for later
+                min_diam = params_tmp['params']['min']
+                max_diam = params_tmp['params']['max']
+               
+                #sample a taper rate
+                params_tmp = params['taper'][neurite_type]
                 tpe = morph_funcs.sequential_single(params_tmp['sequential'], section = section)
-                taper = -(sample_distribution(params_tmp, tpe[0])) #prevent positive tapers
+                taper = -0.00#*(sample_distribution(params_tmp, tpe[0])) #prevent positive tapers
+
+                #diametrize a section
                 diametrize_section(section, init_diam, taper=taper,
                                              min_diam = terminal_diam, max_diam = trunk_diam)
 
-                status[section.id] = True  # Tapering of section complete.
+                #remove section from list of section to treattt
                 active.remove(section)
-                children = np.array(section.children)
+
                 #if branching points has children, keep looping
-                if len(children) > 1:
+                if len(section.children) > 1:
                     
-                    reduc = 2.
-                    while reduc > 1.: #try until we get a reduction of diameter in the branching
-                        if params['sibling_ratio'][neurite_type]['params']['scale'] == 0.0:
-                            params_tmp = replace_params('sibling_ratio')[neurite_type]
-                        else:
-                            params_tmp = params['sibling_ratio'][neurite_type]
+                    reduc_max = 1.0 # if set to larger than 1, we allow increase of diameters 
+                    reduc = reduc_max + 1
+                    while reduc > reduc_max: #try until we get a reduction of diameter in the branching
+
+                        params_tmp = params['sibling_ratio'][neurite_type]
                         tpe = morph_funcs.sequential_single(params_tmp['sequential'], section = section)
-                        sibling_ratio = sample_distribution(params_tmp, tpe[0])
+                   
+                        ########### HARDCODED !!!! #############
+                        if params_tmp['sequential'] == 'asymmetry':
+                            if tpe < -1.0:
+                                if neurite_type =='apical':
+                                    tpe = -2.0
+                                else:
+                                    tpe = -1.
+                            else:
+                                tpe = -0.1
+                        ##########################################
 
-                        if params['Rall_deviation'][neurite_type]['params']['a'] == 0:
-                            params_tmp = replace_params('Rall_deviation')[neurite_type]
-                        else:
-                            params_tmp = params['Rall_deviation'][neurite_type]
+                        sibling_ratio = sample_distribution(params_tmp, tpe)
 
+                        #sample a Rall deviation
+                        params_tmp = params['Rall_deviation'][neurite_type]
                         tpe = morph_funcs.sequential_single(params_tmp['sequential'], section = section)
-                        Rall_deviation = sample_distribution(params_tmp, tpe[0])
+                        Rall_deviation = sample_distribution(params_tmp, tpe)
 
+                        #compute the reduction factor
                         reduc = morph_funcs.Rall_reduction_factor(Rall_deviation = Rall_deviation, siblings_ratio = sibling_ratio)
 
+                    #set new diameters to firt points of children
                     d0 = get_diameters(section)[-1]
                     if d0 < terminal_diam:
                         terminal_diam = d0
 
                     d1 = reduc * d0
                     d2 = sibling_ratio * d1
-
+                    
+                    #set minimum values if too small
                     if d1 < terminal_diam:
                         d1 = terminal_diam
 
                     if d2 < terminal_diam:
                         d2 = terminal_diam
 
-                    #if the asymetry pair is opposite to d1>d2, swith diameters
-                    ass_pair = morph_funcs.sequential_single('asymmetry_pair', section = section)[0]
-                    if ass_pair[1]> ass_pair[0]:
-                        d1, d2 = d2, d1
+                    #if the asymetry of partition is opposite to d1 > d2, switch diameters
 
-                    #if len(children)>2:
-                    #    print(len(children), 'children for this branch')
+                    #first computte the partition of each child
+                    part = []
+                    for child in range(len(section.children)):
+                        part.append(float(sum(1 for _ in section.children[child].ipreorder())))
 
-                    for i, ch in enumerate(children):
-                        new_diam = d1 if i == 0 else d2
-                        utils.redefine_diameter_section(ch, 0, new_diam)
-
+                    #sort them by larger first and create a list of diameters
+                    child_sort = np.argsort(part)[::-1]
+                    ds = [d1] + (len(section.children)-1)*[d2]
+                    
+                    #set diameters
+                    for i, ch in enumerate(section.children):
+                        if len(section.children) == 1:
+                            print('single child')
+                        utils.redefine_diameter_section(ch, 0, ds[child_sort[i]])
                         active.append(ch)
 
-                #if we are at a tip, check tip diameters and stop
+                #if we are at a tip, check tip diameters to restart if too large
                 else:
-                    if get_diameters(section)[-1] < min_diam or get_diameters(section)[-1]  > max_diam:
+                    if get_diameters(section)[-1]  > max_diam:
                         wrong_tips = True
-
         return wrong_tips
 
 
@@ -240,3 +235,14 @@ def diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=100
     diams[diams<min_diam] = min_diam
     diams[diams>max_diam] = max_diam
     set_diameters(section, np.array(diams, dtype=np.float32))
+
+def replace_params(param_type, param_all_name='./model_params_all.json', model='M0'): 
+    """replace the param file with the all neuron fit"""
+
+    with open(param_all_name, 'r') as f:
+        params_all = json.load(f)
+
+    return params_all['all_types'][model][param_type]
+
+
+

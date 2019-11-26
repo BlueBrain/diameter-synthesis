@@ -2,7 +2,7 @@
 
 set -e
 
-rm -rf figures 
+#rm -rf figures 
 
 #module purge all
 #. ~/base/bin/activate

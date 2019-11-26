@@ -42,26 +42,56 @@ def sibling_ratios(neurite, method = 'mean', seq = None):
 
     #print('kl', nm.get('partition_asymmetry', neurite), s_ratios)
     #return s_ratios
-    return sequential(s_ratios, seq, neurite)
+    return sequential(s_ratios, seq, neurite, bounds = [0, 1-1e-5])
 
 def sequential_single(seq, neurite = None, section = None):
     """ return the value for sequencial slicing"""
 
     if seq == 'asymmetry': 
-
         if neurite is not None and section is None:
-            return nm.get('partition_asymmetry', neurite)
+            val_min = -2
+            out = []
+            for bif_point in iter_sections(neurite):
+
+                if len(bif_point.children) > 1:
+
+                    n = float(np.sum([sec.area for sec in bif_point.children[0].ipreorder()]))
+                    m = float(np.sum([sec.area for sec in bif_point.children[1].ipreorder()]))
+
+                    if len(bif_point.children) == 3:
+                        m2 = float(np.sum([sec.area for sec in bif_point.children[2].ipreorder()]))
+
+                        value = np.log10(np.min([n,m,m2]) / np.max([n,m,m2]))
+                        out.append(max(val_min, value))
+                    else:
+                        value = np.log10(min(n,m) / max(n,m))
+                        out.append(max(val_min, value))
+
+                elif len(bif_point.children) == 1:
+                    print('single child!')
+
+            #print(out_max, np.mean(out_mean))
+            return np.array(out)#/out_max#*out_max/np.mean(out_mean))
+
         elif section is not None and neurite is None:
-            try:
-                return [nm.features.bifurcationfunc.partition_asymmetry(section),]
-            except:
-                #cathing the fact that some bifurcation are triple
-                print('triple bifurcation for partition asymetry')
-                return [0.]
+            if len(section.children) > 1:
+
+                n = float(np.sum([sec.area for sec in section.children[0].ipreorder()]))
+                m = float(np.sum([sec.area for sec in section.children[1].ipreorder()]))
+
+                if len(section.children) == 3:
+                    m2 = float(np.sum([sec.area for sec in section.children[2].ipreorder()]))
+                    
+                    out = np.log10(np.min([n,m,m2]) / np.max([n,m,m2]))
+                else:
+                    out = np.log10(min(n,m) / max(n,m))
+                       
+                return out
+
         else:
             raise Exception('Please provide either a neurite or a section, not both')
 
-    if seq == 'asymmetry_pair': 
+    elif seq == 'asymmetry_pair': 
 
         if section is not None and neurite is None:
             try:
@@ -79,21 +109,27 @@ def sequential_single(seq, neurite = None, section = None):
         else:
             raise Exception('Please provide only a neuritet')
 
+    elif seq == 'sibling': 
+        if neurite is not None and section is None:
+            return sibling_ratios(neurite, method = 'mean', seq = None)
+
+        elif section is not None and neurite is None:
+            d1 = get_mean_diameter(section.children[0])
+            d2 = get_mean_diameter(section.children[1])
+
+            return min(d1, d2) / max(d1, d2)
+
+
     else:
         return [0,] #not the best way to do that...
 
-def sequential(data, seq, neurite):
+def sequential(data, seq, neurite, bounds = [-1000, 1000]):
     """ from a data and a type of sequential slicing, return both """
     if not isinstance(seq, str):
         return data 
 
-    elif seq == 'asymmetry': 
-        return [[d, s] for d, s in zip(data, sequential_single(seq, neurite)) if s < 1-1e-5]
-
-    elif seq == 'max_path':
-        return [[d, s] for d, s in zip(data, sequential_single(seq, neurite)) if s < 1-1e-5]
     else:
-        raise Exception('unknown sequential type')
+        return [[d, s] for d, s in zip(data, sequential_single(seq, neurite)) if bounds[0] < d < bounds[1] ]
 
 def Rall_deviations(neurite, method = 'mean', seq = None):
     """Returns the Rall deviation the diameters
@@ -116,13 +152,13 @@ def Rall_deviations(neurite, method = 'mean', seq = None):
             Rall_deviation = (d_1/d_0)**(3./2.) + (d_2/d_0)**(3./2.) 
 
             #don't consider cases with larger diameters of daughters 
-            if Rall_deviation < 100.8:
-                Rall_deviations.append(Rall_deviation)
+            #if 0.8 < Rall_deviation < 1.2:
+            Rall_deviations.append(Rall_deviation)
 
         elif len(bif_point.children) > 2:
             raise Exception('Number of children is '+ str(len(bif_point.children)) + '!')
 
-    return sequential(Rall_deviations, seq, neurite)
+    return sequential(Rall_deviations, seq, neurite, bounds = [0, 12-1e-5])
 
 def Rall_reduction_factor(Rall_deviation, siblings_ratio, seq = None):
     '''Returns the reduction factor for bifurcation diameter'''

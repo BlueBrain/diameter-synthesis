@@ -2,6 +2,7 @@ import os, glob, shutil
 import numpy as np
 from scipy import stats
 from numpy.polynomial import polynomial as polynomial
+from scipy.interpolate import UnivariateSpline
 
 import matplotlib
 matplotlib.use('Agg')
@@ -12,7 +13,7 @@ from neurom.core import iter_sections
 from neurom import viewer
 
 from diameter_synthesis.types import STR_TO_TYPES
-from diameter_synthesis.distribution_fitting import evaluate_distribution
+from diameter_synthesis.distribution_fitting import evaluate_distribution, evaluate_spline
 import diameter_synthesis.utils as utils 
 from diameter_synthesis import io
 
@@ -33,20 +34,27 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
 
     for neurite_type in neurite_types:
         tpes_model = [*model[neurite_type]['params']['params_data']]
-        ax1.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['a']), c=colors[neurite_type])
+
+        x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
+        ax1.plot(x, evaluate_spline(x, model[neurite_type]['params']['a']), c=colors[neurite_type])
+
         As  = np.array([v['a'] for v in model[neurite_type]['params']['params_data'].values()])
         w  = np.array([v['num_value'] for v in model[neurite_type]['params']['params_data'].values()])
 
         #prevent large values of a from bad fitting
         As[As>utils.A_MAX] = utils.A_MAX
         ax1.scatter(tpes_model, As, s=w, edgecolors=colors[neurite_type], facecolors='none' )
+
     ax1.set_xlabel('max path distance')
     ax1.set_ylabel('a')
 
     ax2 = fig.add_subplot(512)
     for neurite_type in neurite_types:
         tpes_model = [*model[neurite_type]['params']['params_data']]
-        ax2.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['loc']), c=colors[neurite_type])
+
+        x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
+        ax2.plot(x, evaluate_spline(x, model[neurite_type]['params']['loc']), c=colors[neurite_type])
+
         locs   = [v['loc'] for v in model[neurite_type]['params']['params_data'].values()]
         ax2.scatter(tpes_model, locs, s=w, edgecolors=colors[neurite_type], facecolors='none' )
     ax2.set_ylabel('loc')
@@ -54,7 +62,10 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
     ax3 = fig.add_subplot(513)
     for neurite_type in neurite_types:
         tpes_model = [*model[neurite_type]['params']['params_data']]
-        ax3.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['scale']), c=colors[neurite_type])
+
+        x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
+        ax3.plot(x, evaluate_spline(x, model[neurite_type]['params']['scale']), c=colors[neurite_type])
+
         scales = [v['scale'] for v in model[neurite_type]['params']['params_data'].values()]
         ax3.scatter(tpes_model, scales, s=w, edgecolors=colors[neurite_type], facecolors='none' )
     ax3.set_ylabel('scale')
@@ -62,7 +73,10 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
     ax4 = fig.add_subplot(514)
     for neurite_type in neurite_types:
         tpes_model = [*model[neurite_type]['params']['params_data']]
-        ax4.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['min']), c=colors[neurite_type])
+
+        x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
+        ax4.plot(x, evaluate_spline(x, model[neurite_type]['params']['min']), c=colors[neurite_type])
+
         mins = [v['min'] for v in model[neurite_type]['params']['params_data'].values()]
         ax4.scatter(tpes_model, mins, s=w, edgecolors=colors[neurite_type], facecolors='none' )
     ax4.set_ylabel('min')
@@ -70,7 +84,10 @@ def plot_fit_distribution_params(model, neurite_types, fig_name = 'test', ext = 
     ax5 = fig.add_subplot(515)
     for neurite_type in neurite_types:
         tpes_model = [*model[neurite_type]['params']['params_data']]
-        ax5.plot(tpes_model, polynomial.polyval(tpes_model, model[neurite_type]['params']['max']), c=colors[neurite_type])
+
+        x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
+        ax5.plot(x, evaluate_spline(x, model[neurite_type]['params']['max']), c=colors[neurite_type])
+
         maxs = [v['max'] for v in model[neurite_type]['params']['params_data'].values()]
         ax5.scatter(tpes_model, maxs, s=w, edgecolors=colors[neurite_type], facecolors='none' )
 
@@ -104,8 +121,8 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
 
                 plt.axhline(bottom_shift, lw=0.2, c='k')
                 try: #try to plot, may not be a fit to plot
-                    min_tpe = polynomial.polyval(tpe_mean, model[neurite_type]['params']['min'])
-                    max_tpe = polynomial.polyval(tpe_mean, model[neurite_type]['params']['max'])
+                    min_tpe = evaluate_spline(tpe_mean, model[neurite_type]['params']['min'])
+                    max_tpe = evaluate_spline(tpe_mean, model[neurite_type]['params']['max'])
 
                     min_val = np.min([min_val, min_tpe])
                     max_val = np.max([max_val, max_tpe])
@@ -113,13 +130,13 @@ def plot_distribution_fit(data, model, neurite_types, fig_name = 'test', ext = '
                     values_tpe = values_tpe[values_tpe>min_tpe*0.8] 
 
                     n, b = np.histogram(values_tpe, bins = 20)
-                    plt.bar(b[:-1], height*np.array(n)/np.max(n), width = b[1]-b[0], bottom = bottom_shift, color=colors[neurite_type], alpha = 0.5)
+                    plt.bar(b[1:], height*np.array(n)/np.max(n), width = b[1]-b[0], bottom = bottom_shift, color=colors[neurite_type], alpha = 0.5)
 
                     x = np.linspace(min_tpe, max_tpe, 1000)
                     params = {}
-                    params['a'] = polynomial.polyval(tpe_mean, model[neurite_type]['params']['a'])
-                    params['loc'] = polynomial.polyval(tpe_mean, model[neurite_type]['params']['loc'])
-                    params['scale'] = polynomial.polyval(tpe_mean, model[neurite_type]['params']['scale'])
+                    params['a'] = evaluate_spline(tpe_mean, model[neurite_type]['params']['a'])
+                    params['loc'] = evaluate_spline(tpe_mean, model[neurite_type]['params']['loc'])
+                    params['scale'] = evaluate_spline(tpe_mean, model[neurite_type]['params']['scale'])
                     pdf = evaluate_distribution(x, model[neurite_type]['distribution'], params)
 
                     plt.plot(x, bottom_shift + height*pdf/np.max(pdf) , c=colors[neurite_type], lw = 1, ls='--')

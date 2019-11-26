@@ -19,9 +19,10 @@ L = logging.getLogger(__name__)
 ROUND = 4 #number of digits for the fitted parameters
 MIN_DATA_POINTS = 5 #minimum number of points to fit a distribution
 A_MAX = 4 #maximum value for the a (shape) parameter of fits (can get really large when low number of points)
+A_MIN = 0.3
+SPLINE_SMOOTH = 0.005
 
 FORBIDDEN_MTYPES = ['L4_NGC', 'L4_CHC', 'L6_CHC', 'L6_DBC', ]
-
 
 def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mtypes_max = None, xml_file = 'neuronDB.xml', ext = '.asc', prefix = "", super_mtypes_path='../scripts/diameter_types/'):
     """ Create dict to load the morphologies from a directory, by mtypes or all at once """
@@ -168,7 +169,7 @@ def tqdm_disable(morphologies):
 
     return tqdm_1, tqdm_2
  
-def set_bins(data, n_bins, n_min = 20):
+def set_bins(data, n_bins, n_min = 10):
     """ find a good set of bins to avoid undersampling """
 
     #try to bin uniformly

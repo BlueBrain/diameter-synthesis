@@ -4,16 +4,26 @@ from tqdm import tqdm
 
 import numpy as np
 from numpy.polynomial import polynomial as polynomial
+from scipy.interpolate import UnivariateSpline
 
 import neurom as nm
 from neurom.core import iter_sections
 
 import diameter_synthesis.utils as utils
-from diameter_synthesis.utils import get_diameters, set_diameters, ROUND, MIN_DATA_POINTS, A_MAX
+from diameter_synthesis.utils import get_diameters, set_diameters, ROUND, MIN_DATA_POINTS, A_MAX, A_MIN
 
 ####################################
 ## Distribution related functions ##
 ####################################
+def build_spline(x, y, w):
+    """ build a spline model and return parameters"""
+    spl = UnivariateSpline(x, y, w = np.array(w)/np.sum(w), s = len(w)*utils.SPLINE_SMOOTH , k = 3)
+    return spl._eval_args
+
+def evaluate_spline(x, tck):
+    """ evaluate a spline model from parameters"""
+    spl = UnivariateSpline._from_tck(tck)
+    return spl(x)
 
 def evaluate_distribution(x, distribution, params):
     """ evaluate the fit of a distribution"""
@@ -87,11 +97,11 @@ def sample_distribution(model, tpe = 0):
         model_tpe = {}
         model_tpe['params'] = {}
         model_tpe['distribution'] = model['distribution']
-        model_tpe['params']['a'] = polynomial.polyval(tpe, model['params']['a'])
-        model_tpe['params']['loc'] = polynomial.polyval(tpe, model['params']['loc'])
-        model_tpe['params']['scale'] = polynomial.polyval(tpe, model['params']['scale'])
-        model_tpe['params']['min'] = polynomial.polyval(tpe, model['params']['min'])
-        model_tpe['params']['max'] = polynomial.polyval(tpe, model['params']['max'])
+        model_tpe['params']['a'] = evaluate_spline(tpe, model['params']['a'])
+        model_tpe['params']['loc'] = evaluate_spline(tpe, model['params']['loc'])
+        model_tpe['params']['scale'] = evaluate_spline(tpe, model['params']['scale'])
+        model_tpe['params']['min'] = evaluate_spline(tpe, model['params']['min'])
+        model_tpe['params']['max'] = evaluate_spline(tpe, model['params']['max'])
 
         #TODO: update the hack to use the all data values if the fit failed (only basal)
         """
@@ -104,11 +114,11 @@ def sample_distribution(model, tpe = 0):
                 print(e)
                 raise Exception('Could not load params_all.json, please create it or have more cells in each class.')
 
-            a = polynomial.polyval(tpe, params_all['a'])
-            loc = polynomial.polyval(tpe, params_all['loc'])
-            scale = polynomial.polyval(tpe, params_all['scale'])
-            Min = polynomial.polyval(tpe, params_all['min'])
-            Max = polynomial.polyval(tpe, params_all['max'])
+            a = evaluate_spline(tpe, params_all['a'])
+            loc = evaluate_spline(tpe, params_all['loc'])
+            scale = evaluate_spline(tpe, params_all['scale'])
+            Min = evaluate_spline(tpe, params_all['min'])
+            Max = evaluate_spline(tpe, params_all['max'])
         """
         try: 
             return sample_distribution_single(model_tpe)
@@ -129,8 +139,10 @@ def fit_distribution_single(data, distribution, p = 5):
             from scipy.stats import exponnorm
             a, loc, scale = exponnorm.fit(data)
             #refit if we get crazy values for a
-            if a > utils.A_MAX:
+            if a > A_MAX:
                 a, loc, scale = exponnorm.fit(data, f0 = A_MAX)
+            if a < A_MIN:
+                a, loc, scale = exponnorm.fit(data, f0 = A_MIN)
 
             return {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': np.round(np.percentile(data, 100-p), ROUND), 'num_value': len(data)}
 
@@ -138,20 +150,24 @@ def fit_distribution_single(data, distribution, p = 5):
             from scipy.stats import skewnorm
             a, loc, scale = skewnorm.fit(data)
             #refit if we get crazy values for a
-            if a > utils.A_MAX:
+            if a > A_MAX:
                 a, loc, scale = skewnorm.fit(data, f0 = A_MAX)
+            if a < A_MIN:
+                a, loc, scale = skewnorm.fit(data, f0 = A_MIN)
 
             return {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': np.round(np.percentile(data, 100-p), ROUND), 'num_value': len(data)}
 
         elif distribution == 'gamma':
             from scipy.stats import gamma
-            a, loc, scale = gamma.fit(data)
+
+            a, loc, scale = gamma.fit(data, floc = -1e-9)
             #refit if we get crazy values for a
-            if a > utils.A_MAX:
-                a, loc, scale = gamma.fit(data, f0 = A_MAX)
+            if a > A_MAX:
+                a, loc, scale = gamma.fit(data, f0 = A_MAX, floc = -1e-9)
+            if a < A_MIN:
+                a, loc, scale = gamma.fit(data, f0 = A_MIN, floc = -1e-9)
 
             return {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': np.round(np.percentile(data, 100-p), ROUND), 'num_value': len(data)}
-
 
         else:
             raise Exception('Distribution not understood')
@@ -179,7 +195,6 @@ def fit_distribution(data, distribution, min_sample_num = 10, p = 5, n_bins = 10
             params[np.round((bins[i+1] + bins[i])/2., ROUND)] = fit_distribution_single(data_tpe, distribution, p = p)
         return update_params_fit_distribution(params, orders = extra_params['orders'])
     else:
-        print(data)
         return {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1, 'num_value': len(data) , 'params_data': {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1, 'num_value': len(data)}}
 
 
@@ -201,20 +216,15 @@ def update_params_fit_distribution(params_data, orders = {'a':1, 'loc':1, 'scale
         maxs = np.array([v['max'] for v in params_values])
         w = np.array([v['num_value'] for v in params_values])
 
-        #prevent large values of a from bad fits
+        #prevent large or small values of a from bad fits
         As[As>A_MAX] = A_MAX
+        As[As<A_MIN] = A_MIN
     
-        z_As = polynomial.polyfit(tpes_model, As, orders['a'], w = w)
-        z_locs = polynomial.polyfit(tpes_model, locs, orders['loc'], w = w)
-        z_scales = polynomial.polyfit(tpes_model, scales, orders['scale'], w = w)
-        z_mins = polynomial.polyfit(tpes_model, mins, orders['min'], w = w)
-        z_maxs = polynomial.polyfit(tpes_model, maxs, orders['max'], w = w)
-        
-        params['a'] = list(np.round(z_As, ROUND))
-        params['loc'] = list(np.round(z_locs, ROUND))
-        params['scale'] = list(np.round(z_scales, ROUND))
-        params['min'] = list(np.round(z_mins, ROUND))
-        params['max'] = list(np.round(z_maxs,ROUND))
+        params['a'] = build_spline(tpes_model, As, w)
+        params['loc'] = build_spline(tpes_model, locs, w)
+        params['scale'] = build_spline(tpes_model, scales, w)
+        params['min'] = build_spline(tpes_model, mins, w)
+        params['max'] = build_spline(tpes_model, maxs, w)
         params['num_value'] = np.sum(w)
 
     else:
