@@ -10,6 +10,16 @@ def _ensure_dir(path):
         os.makedirs(path)
 
 
+def _split_prefix(neurom_feature_name):
+
+    name_list = neurom_feature_name.split('_')
+
+    prefix = name_list[0]
+    basename = '_'.join(name_list[1:])
+
+    return prefix, basename
+
+
 @click.command(help=__doc__)
 @click.option("--config", help="Configuration JSON file", required=True)
 @click.option("--original-dir", help="Directory with input morphologies", required=True)
@@ -17,9 +27,39 @@ def _ensure_dir(path):
 @click.option("-o", "--out-dir", help='Directory to output the analysis results', required=True)
 def cmd(config, original_dir, diametrized_dir, out_dir):
     import json
+    import pylab as plt
     from diameter_synthesis.io import load_morphology
     from diameter_synthesis.io import iter_morphology_filenames
     from diameter_synthesis.plotting import plot_cumulative_distribution
+
+    def make_figures(original_cells, diametrized_cells, feature1, feature2):
+
+        prefix1, basename1 = _split_prefix(feature1)
+        prefix2, basename2 = _split_prefix(feature2)
+
+        assert prefix1 == prefix2
+
+        f, axes = plot_cumulative_distribution(original_cells, diametrized_cells, feature1, feature2, neurite_types)
+
+        #ax.set_xlabel('{}'.format(basename1.replace('_', ' ').title()))
+        #ax.set_ylabel('{}'.format(basename2.replace('_', ' ').title()))
+
+        figure_name = 'cumulative_{}_{}_{}'.format(prefix1, basename1, basename2)
+
+        f.savefig(os.path.join(out_dir, figure_name + '.png'))
+        plt.close(f)
+
+        for original_cell, diametrized_cell in zip(original_cells, diametrized_cells):
+
+            f, axes = plot_cumulative_distribution([original_cell], [diametrized_cell], feature1, feature2, neurite_types)
+
+            #ax.set_xlabel('{}'.format(basename1.replace('_', ' ').title()))
+            #ax.set_ylabel('{}'.format(basename2.replace('_', ' ').title()))
+
+            fname = '{}_{}.png'.format(figure_name, original_cell.name)
+
+            f.savefig(os.path.join(out_dir, fname))
+            plt.close(f)
 
     _ensure_dir(out_dir)
 
@@ -34,25 +74,17 @@ def cmd(config, original_dir, diametrized_dir, out_dir):
     original_filepaths = (os.path.join(original_dir, filename) for filename in filenames)
     diametrized_filepaths = (os.path.join(diametrized_dir, 'M0_' + filename) for filename in filenames)
 
-
     original_cells = list(map(load_morphology, original_filepaths))
     diametrized_cells = list(map(load_morphology, diametrized_filepaths))
 
-    feature1 = 'segment_radial_distances'
-    feature2 = 'segment_volumes'
+    feature_pairs = [
+            ('segment_radial_distances', 'segment_volumes'),
+            ('section_radial_distances', 'section_areas'),
+            ('section_radial_distances', 'section_areas'),
+            ('section_path_distances',   'section_areas'),
+            ('section_branch_orders',    'section_areas'),
+            ('section_branch_orders',    'section_volumes')]
 
-    f, ax = plot_cumulative_distribution(original_cells, diametrized_cells, feature1, feature2, neurite_types)
+    for feature1, feature2 in feature_pairs:
+        make_figures(original_cells, diametrized_cells, feature1, feature2)
 
-    ax.set_xlabel('Radial Distance (um)')
-    ax.set_ylabel('Volume um3')
-
-    figure_name = 'cumulative_radial_distances.png'
-
-    f.savefig(os.path.join(out_dir, figure_name))
-
-    for original_cell, diametrized_cell in zip(original_cells, diametrized_cells):
-        f, ax = plot_cumulative_distribution([original_cell], [diametrized_cell], feature1, feature2, neurite_types)
-
-        figure_name = 'cumulative_radial_distances_' + original_cell.name + '.png'
-
-        f.savefig(os.path.join(out_dir, figure_name))

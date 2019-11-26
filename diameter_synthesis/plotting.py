@@ -403,41 +403,49 @@ def plot_diameter_diff(neuron_name, morph_path, new_morph_path, model, neurite_t
 
 def _create_data(feature1, feature2, original_cells, diametrized_cells, step_size, neurite_types):
 
-    def feature_data(cell):
-        return [(neurom.get(feature1, cell, neurite_type=STR_TO_TYPES[t]), 
-                 neurom.get(feature2, cell, neurite_type=STR_TO_TYPES[t])) for t in neurite_types]
+    def feature_data(cell, neurite_type):
+        nm_neurite_type = STR_TO_TYPES[neurite_type]
+        return [neurom.get(feat, cell, neurite_type=nm_neurite_type) for feat in (feature1, feature2)]
 
-    def find_upper_bound(data1, data2):
-        raw_max_value = max(vals.max() for cell_data in data1 for vals, _ in cell_data)
-        syn_max_value = max(vals.max() for cell_data in data2 for vals, _ in cell_data)
-        return max(raw_max_value, syn_max_value)
+    def create_paired_features(cell_list1, cell_list2, neurite_type):
+        for cell1, cell2 in zip(cell_list1, cell_list2):
+            yield feature_data(cell1, neurite_type), \
+                  feature_data(cell2, neurite_type)
 
     def create_bins(step_size, max_value):
         bins = np.arange(0., max_value + step_size, step_size)
         bin_centers = 0.5 * step_size + bins[:-1]
         return bin_centers, bins
 
-    def statistic_from_data(data, bins, max_value):
+    def find_upper_bound(pairs):
+        return max(max(vals1.max(), vals2.max())for (vals1, _), (vals2, _) in pairs)
 
-        per_cell_dat = np.empty(shape=(len(data), len(neurite_types), len(bins) - 1))
+    def per_neurite_data(cell1, cells2, neurite_types):
+        for n, neurite_type in enumerate(neurite_types):
+            yield list(create_paired_features(original_cells, diametrized_cells, neurite_type))
 
-        for i, cell_data in enumerate(data):
-            for j, (vals, data) in enumerate(cell_data):
-                res = stats.binned_statistic(vals, data, statistic='sum', bins=bins, range=(0, max_value))
-                per_cell_dat[i, j] = np.cumsum(res.statistic)
+    assert len(original_cells) == len(diametrized_cells)
 
-        return per_cell_dat
+    n_cells = len(original_cells)
+    iter_neurite_data = per_neurite_data(original_cells, diametrized_cells, neurite_types)
 
-    raw_cells_data = list(map(feature_data, original_cells))
-    syn_cells_data = list(map(feature_data, diametrized_cells))
+    for n, data_pairs in enumerate(iter_neurite_data):
 
-    upper_bound = find_upper_bound(raw_cells_data, syn_cells_data)
+        upper_bound = find_upper_bound(data_pairs)
+        bin_centers, bins = create_bins(step_size, upper_bound)
 
-    bin_centers, bins = create_bins(step_size, upper_bound)
+        stats1 = np.empty((n_cells, len(bin_centers)), dtype=np.float)
+        stats2 = np.empty_like(stats1)
 
-    return (bin_centers,
-            statistic_from_data(raw_cells_data, bins, upper_bound),
-            statistic_from_data(syn_cells_data, bins, upper_bound))
+        for i, ((metric1, data1), (metric2, data2)) in enumerate(data_pairs):
+            
+            res1 = stats.binned_statistic(metric1, data1, statistic='sum', bins=bins, range=(0, upper_bound))
+            res2 = stats.binned_statistic(metric2, data2, statistic='sum', bins=bins, range=(0, upper_bound))
+
+            stats1[i] = np.cumsum(res1.statistic)
+            stats2[i] = np.cumsum(res2.statistic)
+
+        yield bin_centers, stats1, stats2
 
 
 def plot_cumulative_distribution(original_cells, diametrized_cells, feature1, feature2, neurite_types, step_size=1.0):
@@ -461,29 +469,36 @@ def plot_cumulative_distribution(original_cells, diametrized_cells, feature1, fe
         - segment_volumes
         - segment_surface_areas (not implemented yet)
     """
-    f, ax = plt.subplots(1, 1, figsize=(10, 5))
 
-    bin_centers, per_cell_raw, per_cell_syn = _create_data(
-            feature1, feature2, original_cells, diametrized_cells, step_size, neurite_types)
 
-    for j, neurite_type in enumerate(neurite_types):
-        #for i in range(n_raw_cells):
-        #    ax.plot(bin_centers, per_cell_raw[i, j], c=neurite_colors[j], linestyle='-', alpha=0.1)
-        #for i in range(n_syn_cells):
-        #    ax.plot(bin_centers, per_cell_syn[i, j], c=neurite_colors[j], linestyle='--', alpha=0.1)
+    assert len(original_cells) == len(diametrized_cells)
 
-        color = colors[neurite_type]
+    data_generator = _create_data(feature1, feature2, original_cells, diametrized_cells, step_size, neurite_types)
 
-        means = per_cell_raw[:, j, :].mean(axis=0)
-        sdevs = per_cell_raw[:, j, :].std(axis=0)
+    f, axes = plt.subplots(2, 1, figsize=(10, 10))
 
-        ax.plot(bin_centers, means, c=color, linestyle='-')
-        ax.fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.2)
+    for i, (bin_centers, stats1, stats2) in enumerate(data_generator):
 
-        means = per_cell_syn[:, j, :].mean(axis=0)
-        sdevs = per_cell_syn[:, j, :].std(axis=0)
+        color = colors[neurite_types[i]]
 
-        ax.plot(bin_centers, means, c=color, linestyle='--')
-        ax.fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.2)
+        means = stats1.mean(axis=0)
+        sdevs = stats1.mean(axis=0)
 
-    return f, ax
+        axes[0].plot(bin_centers, means, c=color, linestyle='-')
+        axes[0].fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.2)
+
+        means = stats2.mean(axis=0)
+        sdevs = stats2.mean(axis=0)
+
+        axes[0].plot(bin_centers, means, c=color, linestyle='--')
+        axes[0].fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.2)
+
+        diffs = np.abs((stats2 - stats1) / stats1)
+
+        diff_means = diffs.mean(axis=0)
+        diff_sdevs = diffs.mean(axis=0)
+
+        axes[1].plot(bin_centers, diff_means, c=color, linestyle='-')
+        axes[1].fill_between(bin_centers, diff_means - diff_sdevs, diff_means + diff_sdevs, color=color, alpha=0.2)
+
+    return f, axes
