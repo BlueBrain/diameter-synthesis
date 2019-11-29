@@ -85,5 +85,5 @@ def save_neuron(neuron, model, folder):
         L.warning('Directory %s is created.', folder)
         os.mkdir(folder)
 
-    filepath = os.path.join(folder, '{}_{}.asc'.format(model, neuron[1]))
-    neuron[0].write(filepath)
+    filepath = os.path.join(folder, '{}_{}.asc'.format(model, neuron.name))
+    neuron.write(filepath)

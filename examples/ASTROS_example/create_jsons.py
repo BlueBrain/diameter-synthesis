@@ -8,7 +8,7 @@ extract_models_params = {
     'n_morphs_max': None, 
     'n_mtypes_max': 60,
     'models': ['M0',], 
-    'neurite_types': ['basal', 'axon',],
+    'neurite_types': ['basal',],
     'models_params_file': 'model_params.json',
     'plot': True,
     'fig_folder': 'figures', 
@@ -41,7 +41,7 @@ generate_diameters_params = {
     'new_morph_path': 'new_morphologies/', 
     #'new_morph_path': '../scripts/extract_morphometrics/new_morphologies_super_mtypes/', 
     'plot': True, 
-    'n_cpu': 10, 
+    'n_cpu': 3, 
     'extra_params': {}
 }
 

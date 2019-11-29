@@ -1,4 +1,6 @@
-import os, glob, shutil
+import os
+import glob
+import shutil
 import json
 from tqdm import tqdm
 
@@ -14,104 +16,96 @@ from diameter_synthesis.utils import get_diameters, set_diameters, section_lengt
 ## morphometric functions ##
 ############################
 
-def sibling_ratios(neurite, method = 'mean', seq = None):
+
+def sibling_ratios(neurite, method='mean', seq=None, bounds=[0, 1 - 1e-5]):
     """ compute the siblig ratios of a neurite"""
 
     s_ratios = []
-    #loop over bifuraction points
-    for bif_point in nm.core.Tree.ibifurcation_point(next(iter_sections(neurite))):
-        if len(bif_point.children) == 2:
-            if method == 'mean':
-                #take the average diameter of children to smooth noise out
-                d1 = get_mean_diameter(bif_point.children[0])
-                d2 = get_mean_diameter(bif_point.children[1])
+    # loop over bifuraction points
+    for section in iter_sections(neurite):
+        if len(section.children) > 1:
+            ds = []
+            for sec in section.children:
+                # take the average diameter of children to smooth noise out
+                if method == 'mean':
+                    ds.append(get_mean_diameter(sec))
 
-            elif method == 'first':
-                #take the first diameter, but subject to noise!
-                d1 = get_diameters(bif_point.children[0])[0]
-                d2 = get_diameters(bif_point.children[1])[0]
+                elif method == 'first':
+                    # take the first diameter, but subject to noise!
+                    ds.append(get_diameters(sec)[0])
 
-            else:
-                raise Exception('Method for sibling computation not understood!')
+                else:
+                    raise Exception('Method for sibling computation not understood!')
 
-            #print(nm.features.bifurcationfunc.partition_pair(bif_point))
-            s_ratios.append(np.min([d1,d2]) / np.max([d1,d2]))
+            s_ratios.append(np.min(ds) / np.max(ds))
 
-        elif len(bif_point.children) > 2:
-            raise Exception('Number of children is '+ str(len(bif_point.children)) + '!')
+    return sequential(s_ratios, seq, neurite, bounds=bounds)
 
-    #print('kl', nm.get('partition_asymmetry', neurite), s_ratios)
-    #return s_ratios
-    return sequential(s_ratios, seq, neurite, bounds = [0, 1-1e-5])
 
-def sequential_single(seq, neurite = None, section = None):
+def sequential_single(seq, neurite=None, section=None):
     """ return the value for sequencial slicing"""
 
-    if seq == 'asymmetry': 
+    if seq == 'asymmetry':
         if neurite is not None and section is None:
             val_min = -2
             out = []
+            tot_len = nm.get('total_length', neurite)[0]
             for bif_point in iter_sections(neurite):
 
                 if len(bif_point.children) > 1:
 
-                    n = float(np.sum([sec.area for sec in bif_point.children[0].ipreorder()]))
-                    m = float(np.sum([sec.area for sec in bif_point.children[1].ipreorder()]))
+                    n = float(np.sum([sec.length for sec in bif_point.children[0].ipreorder()]))
+                    m = float(np.sum([sec.length for sec in bif_point.children[1].ipreorder()]))
 
                     if len(bif_point.children) == 3:
-                        m2 = float(np.sum([sec.area for sec in bif_point.children[2].ipreorder()]))
-
-                        value = np.log10(np.min([n,m,m2]) / np.max([n,m,m2]))
-                        out.append(max(val_min, value))
+                        m2 = float(
+                            np.sum([sec.length for sec in bif_point.children[2].ipreorder()]))
+                        out.append(abs(np.max([n, m, m2]) - np.min([n, m, m2])) / tot_len)
                     else:
-                        value = np.log10(min(n,m) / max(n,m))
-                        out.append(max(val_min, value))
+                        out.append(abs(n - m) / tot_len)
 
                 elif len(bif_point.children) == 1:
                     print('single child!')
 
-            #print(out_max, np.mean(out_mean))
-            return np.array(out)#/out_max#*out_max/np.mean(out_mean))
+            return np.array(out)
 
         elif section is not None and neurite is None:
             if len(section.children) > 1:
 
-                n = float(np.sum([sec.area for sec in section.children[0].ipreorder()]))
-                m = float(np.sum([sec.area for sec in section.children[1].ipreorder()]))
+                n = float(np.sum([sec.length for sec in section.children[0].ipreorder()]))
+                m = float(np.sum([sec.length for sec in section.children[1].ipreorder()]))
 
                 if len(section.children) == 3:
-                    m2 = float(np.sum([sec.area for sec in section.children[2].ipreorder()]))
-                    
-                    out = np.log10(np.min([n,m,m2]) / np.max([n,m,m2]))
+                    m2 = float(np.sum([sec.length for sec in section.children[2].ipreorder()]))
+                    out = abs(np.max([n, m, m2]) - np.min([n, m, m2]))
                 else:
-                    out = np.log10(min(n,m) / max(n,m))
-                       
+                    out = abs(n - m)
                 return out
 
         else:
             raise Exception('Please provide either a neurite or a section, not both')
 
-    elif seq == 'asymmetry_pair': 
+    elif seq == 'asymmetry_pair':
 
         if section is not None and neurite is None:
             try:
-                return [nm.features.bifurcationfunc.partition_pair(section),]
+                return [nm.features.bifurcationfunc.partition_pair(section), ]
             except:
-                #cathing the fact that some bifurcation are triple
+                # cathing the fact that some bifurcation are triple
                 print('triple bifurcation for partition asymetry')
-                return [(0.5,1)]
+                return [(0.5, 1)]
         else:
             raise Exception('Please provide either a section only')
 
     elif seq == 'max_path':
         if neurite is not None and section is None:
-            return [np.max(nm.get('section_path_distances', neurite)),]
+            return [np.max(nm.get('section_path_distances', neurite)), ]
         else:
             raise Exception('Please provide only a neuritet')
 
-    elif seq == 'sibling': 
+    elif seq == 'sibling':
         if neurite is not None and section is None:
-            return sibling_ratios(neurite, method = 'mean', seq = None)
+            return sibling_ratios(neurite, method='mean', seq=None)
 
         elif section is not None and neurite is None:
             d1 = get_mean_diameter(section.children[0])
@@ -119,23 +113,25 @@ def sequential_single(seq, neurite = None, section = None):
 
             return min(d1, d2) / max(d1, d2)
 
-
     else:
-        return [0,] #not the best way to do that...
+        return [0, ]  # not the best way to do that...
 
-def sequential(data, seq, neurite, bounds = [-1000, 1000]):
+
+def sequential(data, seq, neurite, bounds=[-1000, 1000]):
     """ from a data and a type of sequential slicing, return both """
     if not isinstance(seq, str):
-        return data 
+        data = np.array(data)
+        return list(data[(data > bounds[0]) & (data < bounds[1])])
 
     else:
-        return [[d, s] for d, s in zip(data, sequential_single(seq, neurite)) if bounds[0] < d < bounds[1] ]
+        return [[d, s] for d, s in zip(data, sequential_single(seq, neurite)) if bounds[0] < d < bounds[1]]
 
-def Rall_deviations(neurite, method = 'mean', seq = None):
+
+def rall_deviations(neurite, method='mean', seq=None, bounds=[0, 2 - 1e-5]):
     """Returns the Rall deviation the diameters
        of the segments of a tree. """
-    
-    Rall_deviations = []
+
+    rall_deviations = []
     for bif_point in nm.core.Tree.ibifurcation_point(next(iter_sections(neurite))):
         if len(bif_point.children) == 2:
 
@@ -149,56 +145,60 @@ def Rall_deviations(neurite, method = 'mean', seq = None):
                 d_1 = get_diameters(bif_point.children[0])[0]
                 d_2 = get_diameters(bif_point.children[1])[0]
 
-            Rall_deviation = (d_1/d_0)**(3./2.) + (d_2/d_0)**(3./2.) 
+            rall_deviation = (d_1 / d_0)**(1.5) + (d_2 / d_0)**(1.5)
 
-            #don't consider cases with larger diameters of daughters 
-            #if 0.8 < Rall_deviation < 1.2:
-            Rall_deviations.append(Rall_deviation)
+            rall_deviations.append(rall_deviation)
 
         elif len(bif_point.children) > 2:
-            raise Exception('Number of children is '+ str(len(bif_point.children)) + '!')
+            raise Exception('Number of children is ' + str(len(bif_point.children)) + '!')
 
-    return sequential(Rall_deviations, seq, neurite, bounds = [0, 12-1e-5])
+    return sequential(rall_deviations, seq, neurite, bounds=bounds)
 
-def Rall_reduction_factor(Rall_deviation, siblings_ratio, seq = None):
+
+def rall_reduction_factor(rall_deviation, siblings_ratio, seq=None):
     '''Returns the reduction factor for bifurcation diameter'''
 
-    return (Rall_deviation / (1. + siblings_ratio**(3./2.) ) )**(2./3.)
+    return (rall_deviation / (1. + siblings_ratio**(3. / 2.)))**(2. / 3.)
 
-def terminal_diameters(neurite, method = 'mean', threshold = 1.0, seq = None):
+
+def terminal_diameters(neurite, method='mean', threshold=1.0, seq=None):
     """Returns the model for the terminations"""
 
     mean_diameter = np.mean(get_diameters(neurite))
 
     if method == 'mean':
-        term_diam = [np.mean(get_diameters(t)) for t in nm.core.Tree.ileaf(next(iter_sections(neurite))) if np.mean(get_diameters(t)) < threshold * mean_diameter]
+        term_diam = [np.mean(get_diameters(t)) for t in nm.core.Tree.ileaf(
+            next(iter_sections(neurite))) if np.mean(get_diameters(t)) < threshold * mean_diameter]
 
     elif method == 'first':
-        term_diam = [get_diameters(t)[-1] for t in nm.core.Tree.ileaf(next(iter_sections(neurite))) if get_diameters(t)[-1] < threshold * mean_diameter]
+        term_diam = [get_diameters(t)[-1] for t in nm.core.Tree.ileaf(next(iter_sections(neurite)))
+                     if get_diameters(t)[-1] < threshold * mean_diameter]
 
     else:
         raise Exception('Method for singling computation not understood!')
 
     return sequential(term_diam, seq, neurite)
 
-def trunk_diameter(neurite, seq = None):
+
+def trunk_diameter(neurite, seq=None):
     """ get the trunc diameters """
 
-    trunk_diam =  get_diameters(neurite.root_node)[0] 
+    trunk_diam = get_diameters(neurite.root_node)[0]
 
-    return sequential([trunk_diam,], seq, neurite)
+    return sequential([trunk_diam, ], seq, neurite)
 
-def taper(neurite, min_num_points = 20, fit_order = 1, params = None, seq = None):
+
+def taper(neurite, min_num_points=20, fit_order=1, params=None, seq=None):
     """ get the taper """
 
     #import pylab as plt
 
     tapers = []
-    sec_id = [] 
+    sec_id = []
     for i, section in enumerate(iter_sections(neurite)):
         lengths = [0] + section_lengths(section)
 
-        #do a linear fit if more than 5 points
+        # do a linear fit if more than 5 points
         if len(lengths) > min_num_points:
             z = polynomial.polyfit(lengths, get_diameters(section), fit_order, full=True)
 
@@ -213,7 +213,7 @@ def taper(neurite, min_num_points = 20, fit_order = 1, params = None, seq = None
 
             tap = z[0][-1]
             residual = z[1][0]
-            if residual < params['max_residual'] and abs(tap) > params['zeros'] and params['min'] < tap < params['max'] :
+            if residual < params['max_residual'] and abs(tap) > params['zeros'] and params['min'] < tap < params['max']:
                 tapers.append(tap)
                 sec_id.append(i)
 
@@ -227,9 +227,9 @@ def taper(neurite, min_num_points = 20, fit_order = 1, params = None, seq = None
     plt.axis([0,np.max(lens),-np.max(abs(tapers)), np.max(abs(tapers))])
     plt.savefig('taper/fig_'+str(j)+'.png')
     plt.close()
-    """ 
-    
+    """
+
     #bos = np.array(nm.get('section_path_distances', neurite))[sec_id]
-    #return [ [tap, bo ] for tap, bo in zip(tapers, bos)  ]
+    # return [ [tap, bo ] for tap, bo in zip(tapers, bos)  ]
 
     return sequential(tapers, seq, neurite)

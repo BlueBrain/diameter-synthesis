@@ -132,6 +132,19 @@ def get_mean_diameter(section):
     return np.sum(segment_mean_diams * segment_lengths) / segment_lengths.sum()
 
 
+def get_all_diameters(neuron):
+    """get all neuron diameters"""
+    return list(map(get_diameters, iter_sections(neuron)))
+
+def set_all_diameters(neuron, diameters):
+    """get all neuron diameters"""
+
+    i = 0
+    for neurite in neuron.neurites:
+        for section in iter_sections(neurite):
+            set_diameters(section, diameters[i])
+            i += 1
+
 def get_diameters(section):
     """hack to get diameters with neurom"""
     return 2. * section.points[:, COLS.R]

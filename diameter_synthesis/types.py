@@ -2,7 +2,6 @@
 from neurom import NeuriteType
 from morphio import SectionType
 
-
 STR_TO_TYPES = {'apical': SectionType.apical_dendrite,
                 'basal': SectionType.basal_dendrite,
                 'axon': SectionType.axon}
