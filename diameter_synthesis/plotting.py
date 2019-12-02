@@ -124,17 +124,31 @@ def plot_distribution_fit(data, model, neurite_types, fig_name='test', ext='.png
     fig = plt.figure(figsize=figsize)
 
     for neurite_type in neurite_types:
-        if isinstance(model[neurite_type]['sequential'], str):  # if the fits are done sequantially
+        if not isinstance(model[neurite_type]['sequential'], str) or model[neurite_type]['sequential'] == 'asymmetry_threshold':  # if the fits are done sequantially
+
+            min_val = model[neurite_type]['params']['min']
+            max_val = model[neurite_type]['params']['max']
+
+            if len(data[neurite_type]) > 0:
+                if len(np.shape(data[neurite_type])) > 1:
+                    plt.hist(np.array(data[neurite_type])[:, 0], bins=50, log=False, density=True, histtype='bar',
+                             lw=0.5, color=colors[neurite_type], alpha=0.5, range=[min_val * 0.8, max_val * 1.2])
+                else:
+                    plt.hist(data[neurite_type], bins=50, log=False, density=True, histtype='bar', lw=0.5,
+                             color=colors[neurite_type], alpha=0.5, range=[min_val * 0.8, max_val * 1.2])
+
+                x = np.linspace(min_val, max_val, 1000)
+                plt.plot(x, evaluate_distribution(
+                    x, model[neurite_type]['distribution'], model[neurite_type]['params']), c=colors[neurite_type], lw=3, ls='--', label=neurite_type)
+
+            plt.legend(loc='best')
+            plt.gca().set_xlim(min_val * 0.8, max_val * 1.2)
+
+        else:
+
             tpes = np.asarray(data[neurite_type])[:, 1]  # collect the type of point
             values = np.asarray(data[neurite_type])[:, 0]  # collect the data itself
-            plt.figure()
-            plt.hist(tpes, bins=500, log=True)
-            plt.axvline(0.1, c='k')
-            plt.axvline(0.3, c='r')
-            plt.savefig('test' + ext)
-            plt.figure()
-            plt.scatter(values, tpes, s=5)
-            plt.savefig('test2' + ext)
+
             bins, num_values = utils.set_bins(tpes, n_bins)
 
             min_val = 1e10
@@ -182,25 +196,6 @@ def plot_distribution_fit(data, model, neurite_types, fig_name='test', ext='.png
                     plt.bar(b[:-1], height * np.array(n) / np.max(n), width=b[1] - b[0],
                             bottom=bottom_shift, color=colors[neurite_type], alpha=0.5)
 
-        else:
-
-            min_val = model[neurite_type]['params']['min']
-            max_val = model[neurite_type]['params']['max']
-
-            if len(data[neurite_type]) > 0:
-                if len(np.shape(data[neurite_type])) > 1:
-                    plt.hist(np.array(data[neurite_type])[:, 0], bins=50, log=False, density=True, histtype='bar',
-                             lw=0.5, color=colors[neurite_type], alpha=0.5, range=[min_val * 0.8, max_val * 1.2])
-                else:
-                    plt.hist(data[neurite_type], bins=50, log=False, density=True, histtype='bar', lw=0.5,
-                             color=colors[neurite_type], alpha=0.5, range=[min_val * 0.8, max_val * 1.2])
-
-                x = np.linspace(min_val, max_val, 1000)
-                plt.plot(x, evaluate_distribution(
-                    x, model[neurite_type]['distribution'], model[neurite_type]['params']), c=colors[neurite_type], lw=3, ls='--', label=neurite_type)
-
-            plt.legend(loc='best')
-            plt.gca().set_xlim(min_val * 0.8, max_val * 1.2)
 
     title_txt = 'Fit parameters:\n'
     try:
@@ -219,10 +214,8 @@ def plot_distribution_fit(data, model, neurite_types, fig_name='test', ext='.png
     plt.savefig(fig_name + ext, bbox_inches='tight')
     plt.close(fig)
 
-    if isinstance(model[neurite_type]['sequential'], str):  # if the fits are done sequantially
-        plot_fit_distribution_params(
-            model, neurite_types, fig_name=fig_name + '_param_fit', ext=ext)
-
+    if isinstance(model[neurite_type]['sequential'], str) and not 'asymmetry_threhsold':  # if the fits are done sequantially
+        plot_fit_distribution_params(model, neurite_types, fig_name=fig_name + '_param_fit', ext=ext)
 
 def plot_fit_param_boxes(model_params, model='M0', neurite_type='basal', figname='test', ext='.png', figsize=(6, 3)):
     """ box plots for the fits of the model parameters """
@@ -512,35 +505,76 @@ def plot_cumulative_distribution(original_cells, diametrized_cells, feature1, fe
     data_generator = _create_data(feature1, feature2, original_cells,
                                   diametrized_cells, step_size, neurite_types)
 
-    f, axes = plt.subplots(2, 1, figsize=(10, 10))
+    f, axes = plt.subplots(3, 1, figsize=(5, 12))
 
     for i, (bin_centers, stats1, stats2) in enumerate(data_generator):
 
-        color = colors[neurite_types[i]]
+        #color = colors[neurite_types[i]]
         means = stats1.mean(axis=0)
-
-        axes[0].plot(bin_centers, means, c=color, linestyle='-')
+        color = 'C0'
+        axes[0].plot(bin_centers, means, c=color, linestyle='-', lw=3, label='original cells')
 
         if len(stats1) > 1:  # don't plot std if there is only one curve
-            sdevs = stats1.mean(axis=0)
-            axes[0].fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.2)
+            for st1 in stats1:
+                axes[0].plot(bin_centers, st1, c=color, linestyle='-', lw=0.5, alpha=0.2)
 
+            sdevs = stats1.std(axis=0)
+            #axes[0].fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.2)
+            axes[0].plot(bin_centers, means - sdevs, c=color, linestyle='--', lw=3)
+            axes[0].plot(bin_centers, means + sdevs, c=color, linestyle='--', lw=3)
+        
         means = stats2.mean(axis=0)
 
-        axes[0].plot(bin_centers, means, c=color, linestyle='--')
-
+        color = 'C1'
+        axes[0].plot(bin_centers, means, c=color, linestyle='-', lw=3, label='rediametrized cells')
+        axes[0].legend(loc='best')
         if len(stats2) > 1:
-            sdevs = stats2.mean(axis=0)
-            axes[0].fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.2)
+            for st2 in stats2:
+                axes[0].plot(bin_centers, st2, c=color, linestyle='-', lw=0.3, alpha=0.5)
 
-        diffs = np.abs((stats2 - stats1) / stats1)
+            sdevs = stats2.std(axis=0)
+            #axes[0].fill_between(bin_centers, means - sdevs, means + sdevs, color=color, alpha=0.5)
+            axes[0].plot(bin_centers, means - sdevs, c=color, linestyle='--', lw=3)
+            axes[0].plot(bin_centers, means + sdevs, c=color, linestyle='--', lw=3)
+
+        axes[0].set_xlabel('path distance')
+        axes[0].set_ylabel('cummulative section areas')
+
+        stats1[stats1 == 0] = 1
+        diffs = (stats1 - stats2)# / stats1
 
         diff_means = diffs.mean(axis=0)
 
-        axes[1].plot(bin_centers, diff_means, c=color, linestyle='-')
-
+        color = 'C2'
         if len(diffs) > 1:
-            diff_sdevs = diffs.mean(axis=0)
-            axes[1].fill_between(bin_centers, diff_means - diff_sdevs,
-                                 diff_means + diff_sdevs, color=color, alpha=0.2)
+            for dfs in diffs:
+                axes[1].plot(bin_centers, dfs, c=color, linestyle='-', lw=0.3, alpha=0.5)
+
+            diff_sdevs = diffs.std(axis=0)
+            #axes[1].fill_between(bin_centers, diff_means - diff_sdevs, diff_means + diff_sdevs, color=color, alpha=0.2)
+            axes[1].plot(bin_centers, diff_means - diff_sdevs, c=color, linestyle='--', lw=3)
+            axes[1].plot(bin_centers, diff_means + diff_sdevs, c=color, linestyle='--', lw=3)
+        axes[1].plot(bin_centers, diff_means, c=color, linestyle='-', lw=3)
+        axes[1].axhline(0, ls='--', c='k')
+
+        axes[1].set_xlabel('path distance')
+        axes[1].set_ylabel('difference in cummulative section areas')
+
+        axes[2].scatter(stats1[:,-1], stats2[:,-1], c=color, marker='o')
+
+        axes[0].set_xlabel('path distance')
+        axes[0].set_ylabel('cummulative section areas')
+        if len(diffs) > 1:
+            for i in range(len(stats1)):
+                axes[2].annotate(i, (stats1[i,-1], stats2[i,-1]))
+
+        x = np.arange(4000, 47000)
+        axes[2].plot(x,x, ls='-', c='k')
+        if len(diffs) > 1:
+            axes[2].plot(x,x-diff_means[-1], ls='--', c=color)
+            axes[2].plot(x,x+diff_means[-1], ls='--', c=color)
+
+        axes[2].set_xlabel('total surface area of original cells')
+        axes[2].set_ylabel('total surface area of diametrized cells')
+
     return f, axes

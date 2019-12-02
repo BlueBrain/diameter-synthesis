@@ -70,7 +70,6 @@ def truncate(sample_func, min_value, max_value):
 
 def sample_distribution_single(model):
     """ sample from a distribution (no slicing)"""
-
     params = model['params']
 
     if model['distribution'] == 'expon_rev':
@@ -99,8 +98,7 @@ def sample_distribution_single(model):
 
 def sample_distribution(model, tpe=0):
     """ sample from a distribution"""
-
-    if not isinstance(model['sequential'], str):  # if no sequential fitting needed
+    if not isinstance(model['sequential'], str) or model['sequential'] == 'asymmetry_threshold':  # if no sequential fitting needed
         return sample_distribution_single(model)
 
     else:
@@ -197,11 +195,31 @@ def fit_distribution_single(data, distribution, p=5):
         return {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1, 'num_value': len(data)}
 
 
-def fit_distribution(data, distribution, min_sample_num=10, p=5, n_bins=10, seq=None, extra_params=None):
+def fit_distribution(data, distribution, min_sample_num=10, p=5, n_bins=10, seq=None, extra_params=None, name = 'test'):
     """ generic function to fit a distribution with scipy """
-
     if not isinstance(seq, str):  # if no sequential fitting needed
         return fit_distribution_single(data, distribution, p=p)
+
+    elif seq == 'asymmetry_threshold':
+
+        tpes = np.asarray(data)[:, 1]  # collect the type of point
+        values = np.asarray(data)[:, 0]  # collect the data itself
+
+        ext = '.svg'
+        import pylab as plt
+        plt.figure()
+        plt.hist(tpes, bins=500, log=True)
+        plt.axvline(0.1, c='k')
+        plt.axvline(0.3, c='r')
+        plt.savefig(name + ext)
+
+        plt.figure()
+        plt.scatter(values, tpes, s=5)
+        plt.savefig(name + '_scatter' + ext)
+
+        values = values[tpes < extra_params['threshold']]
+
+        return fit_distribution_single(values, distribution, p=p)
 
     elif len(data) > 0:
         tpes = np.asarray(data)[:, 1]  # collect the type of point
@@ -212,10 +230,8 @@ def fit_distribution(data, distribution, min_sample_num=10, p=5, n_bins=10, seq=
 
         params = {}
         for i in range(len(bins) - 1):
-            data_tpe = values[(tpes >= bins[i]) & (tpes < bins[i + 1])
-                              ]  # select the values by its type
-            params[np.round((bins[i + 1] + bins[i]) / 2., ROUND)
-                   ] = fit_distribution_single(data_tpe, distribution, p=p)
+            data_tpe = values[(tpes >= bins[i]) & (tpes < bins[i + 1])]  # select the values by its type
+            params[np.round((bins[i + 1] + bins[i]) / 2., ROUND)] = fit_distribution_single(data_tpe, distribution, p=p)
         return update_params_fit_distribution(params, orders=extra_params['orders'])
     else:
         return {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1, 'num_value': len(data), 'params_data': {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1, 'num_value': len(data)}}

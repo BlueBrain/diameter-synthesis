@@ -117,11 +117,10 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
             while wrong_tips:
 
                 # sample a trunk diameter
-                trunk_diam = trunk_diam_frac * \
-                    get_trunk_diameter(neurite, params['trunk_diameter'][neurite_type])
+                trunk_diam = trunk_diam_frac * get_trunk_diameter(neurite, params['trunk_diameter'][neurite_type])
                 # try to diametrize the neurite
                 wrong_tips = diametrize_tree(neurite, params, neurite_type, trunk_diam, mode_sibling='threshold', mode_rall='generic',
-                                             sibling_threshold=extra_params['sibling_threshold'], rall_threshold=extra_params['rall_threshold'], with_asymmetry=True, no_taper=False)
+                                             sibling_threshold=extra_params['threshold'], rall_threshold=extra_params['threshold'], with_asymmetry=True, no_taper=False)
 
                 # if we can't get a good model, reduce the trunk diameter progressively
                 n_tries += 1
@@ -153,11 +152,10 @@ def diametrize_model_apical(neuron, params, neurite_types, extra_params):
             while wrong_tips:
 
                 # sample a trunk diameter
-                trunk_diam = trunk_diam_frac * \
-                    get_trunk_diameter(neurite, params['trunk_diameter'][neurite_type])
+                trunk_diam = trunk_diam_frac * get_trunk_diameter(neurite, params['trunk_diameter'][neurite_type])
                 # try to diametrize the neurite
                 wrong_tips = diametrize_tree(neurite, params, neurite_type, trunk_diam, mode_sibling='threshold', mode_rall='threshold',
-                                             sibling_threshold=extra_params['sibling_threshold'], rall_threshold=extra_params['rall_threshold'], with_asymmetry=True, no_taper=True)
+                                             sibling_threshold=extra_params['threshold'], rall_threshold=extra_params['threshold'], with_asymmetry=True, no_taper=True)
 
                 # if we can't get a good model, reduce the trunk diameter progressively
                 n_tries += 1
@@ -226,6 +224,7 @@ def get_trunk_diameter(neurite, params):
 
 def get_terminal_diameter(neurite, params):
     """ sample a terminal diameter """
+
     seq_value = morph_funcs.sequential_single(params['sequential'], neurite=neurite)
     terminal_diam = sample_distribution(params, seq_value[0])
 
@@ -252,14 +251,12 @@ def get_daughter_diameters(section, terminal_diam, params, neurite_type, mode_si
     reduction_factor = reduction_factor_max + 1.0
     while reduction_factor > reduction_factor_max:  # try until we get a reduction of diameter in the branching
 
-        sibling_ratio = get_sibling_ratio(
-            section, params['sibling_ratio'][neurite_type], mode=mode_sibling, tot_length=tot_length, threshold=sibling_threshold)
+        sibling_ratio = get_sibling_ratio(section, params['sibling_ratio'][neurite_type], mode=mode_sibling, tot_length=tot_length, threshold=sibling_threshold)
         rall_deviation = get_rall_deviation(
             section, params['rall_deviation'][neurite_type], mode=mode_rall, tot_length=tot_length, threshold=rall_threshold)
 
         # compute the reduction factor
-        reduction_factor = morph_funcs.rall_reduction_factor(
-            rall_deviation=rall_deviation, siblings_ratio=sibling_ratio)
+        reduction_factor = morph_funcs.rall_reduction_factor(rall_deviation=rall_deviation, siblings_ratio=sibling_ratio)
 
     d0 = get_diameters(section)[-1]
     # if new terminal diam is too large from the previous section, reassign it
@@ -271,6 +268,9 @@ def get_daughter_diameters(section, terminal_diam, params, neurite_type, mode_si
     # set minimum values if too small
     d1 = max(d1, terminal_diam)
     d2 = max(d2, terminal_diam)
+
+    #if reduction_factor == 1:
+    #    d2 *= 1.3
 
     diams = [d1] + (len(section.children) - 1) * [d2]
 
@@ -303,7 +303,6 @@ def diametrize_tree(neurite, params, neurite_type, trunk_diam, mode_sibling='gen
     tot_length = nm.get('total_length', neurite)[0]
 
     while active:
-
         section = active.popleft()
 
         # set trunk diam if trunk, or first diam of the section otherwise

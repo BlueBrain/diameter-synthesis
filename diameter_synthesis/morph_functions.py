@@ -45,7 +45,7 @@ def sibling_ratios(neurite, method='mean', seq=None, bounds=[0, 1 - 1e-5]):
 def sequential_single(seq, neurite=None, section=None):
     """ return the value for sequencial slicing"""
 
-    if seq == 'asymmetry':
+    if seq == 'asymmetry' or seq == 'asymmetry_threshold':
         if neurite is not None and section is None:
             val_min = -2
             out = []

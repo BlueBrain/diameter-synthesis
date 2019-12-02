@@ -25,8 +25,8 @@ import diameter_synthesis.plotting as plotting
 def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, tqdm_disable=False):
     """ test for sampling models """
 
-    sibling_sequential = 'asymmetry'
-    rall_deviation_sequential = 'asymmetry'
+    sibling_sequential = 'asymmetry_threshold'
+    rall_deviation_sequential = 'asymmetry_threshold'
     terminal_diameters_sequential = None
     trunk_diameters_sequential = None
     tapers_sequential = None
@@ -55,16 +55,11 @@ def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, 
                 if neurite.type == STR_TO_TYPES[neurite_type]:
 
                     # compute here all the morphological values from the neurite
-                    sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(
-                        neurite, seq=sibling_sequential)
-                    rall_deviations[neurite_type] += morph_funcs.rall_deviations(
-                        neurite, seq=rall_deviation_sequential)
-                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(
-                        neurite, threshold=extra_params['terminal_threshold'], seq=terminal_diameters_sequential)
-                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(
-                        neurite, seq=trunk_diameters_sequential)
-                    tapers[neurite_type] += morph_funcs.taper(neurite,
-                                                              params=extra_params['taper'], seq=tapers_sequential)
+                    sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(neurite, seq=sibling_sequential)
+                    rall_deviations[neurite_type] += morph_funcs.rall_deviations(neurite, seq=rall_deviation_sequential)
+                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite, threshold=extra_params['terminal_threshold'], seq=terminal_diameters_sequential)
+                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite, seq=trunk_diameters_sequential)
+                    tapers[neurite_type] += morph_funcs.taper(neurite, params=extra_params['taper'], seq=tapers_sequential)
 
     # do the fits of each morphological values
     sibling_ratio_models = {}
@@ -78,29 +73,25 @@ def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, 
         sibling_ratio_models[neurite_type] = {}
         sibling_ratio_models[neurite_type]['distribution'] = 'expon_rev'
         sibling_ratio_models[neurite_type]['sequential'] = sibling_sequential
-        sibling_ratio_models[neurite_type]['params'] = fit_distribution(
-            sibling_ratios[neurite_type], sibling_ratio_models[neurite_type]['distribution'], seq=sibling_sequential, extra_params=extra_params)
+        sibling_ratio_models[neurite_type]['params'] = fit_distribution(sibling_ratios[neurite_type], sibling_ratio_models[neurite_type]['distribution'], seq=sibling_sequential, extra_params=extra_params, name ='sibling')
 
         # Rall deviation
         rall_deviation_models[neurite_type] = {}
         rall_deviation_models[neurite_type]['distribution'] = 'exponnorm'
         rall_deviation_models[neurite_type]['sequential'] = rall_deviation_sequential
-        rall_deviation_models[neurite_type]['params'] = fit_distribution(
-            rall_deviations[neurite_type], rall_deviation_models[neurite_type]['distribution'], seq=rall_deviation_sequential, extra_params=extra_params)
+        rall_deviation_models[neurite_type]['params'] = fit_distribution(rall_deviations[neurite_type], rall_deviation_models[neurite_type]['distribution'], seq=rall_deviation_sequential, extra_params=extra_params, name ='Rall')
 
         # terminal diameters
         terminal_diameters_models[neurite_type] = {}
         terminal_diameters_models[neurite_type]['distribution'] = 'exponnorm'
         terminal_diameters_models[neurite_type]['sequential'] = terminal_diameters_sequential
-        terminal_diameters_models[neurite_type]['params'] = fit_distribution(
-            terminal_diameters[neurite_type], terminal_diameters_models[neurite_type]['distribution'], seq=terminal_diameters_sequential, extra_params=extra_params)
+        terminal_diameters_models[neurite_type]['params'] = fit_distribution(terminal_diameters[neurite_type], terminal_diameters_models[neurite_type]['distribution'], seq=terminal_diameters_sequential, extra_params=extra_params)
 
         # trunk diameters
         trunk_diameters_models[neurite_type] = {}
         trunk_diameters_models[neurite_type]['distribution'] = 'exponnorm'
         trunk_diameters_models[neurite_type]['sequential'] = trunk_diameters_sequential
-        trunk_diameters_models[neurite_type]['params'] = fit_distribution(
-            trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], seq=trunk_diameters_sequential, extra_params=extra_params)
+        trunk_diameters_models[neurite_type]['params'] = fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], seq=trunk_diameters_sequential, extra_params=extra_params)
 
         # taper
         tapers_models[neurite_type] = {}
@@ -108,7 +99,6 @@ def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, 
         tapers_models[neurite_type]['sequential'] = tapers_sequential
         tapers_models[neurite_type]['params'] = fit_distribution(
             tapers[neurite_type], tapers_models[neurite_type]['distribution'], seq=tapers_sequential, extra_params=extra_params)
-        # min_sample_num = extra_params['trunk_min_sample_num'][neurite_type])
 
     # collect all models in one dictionary
     all_models = {
@@ -163,16 +153,11 @@ def sampling_model_trunk_path(morphologies, neurite_types, extra_params, tqdm_di
                 if neurite.type == STR_TO_TYPES[neurite_type]:
 
                     # compute here all the morphological values from the neurite
-                    sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(
-                        neurite, seq=sibling_sequential)
-                    rall_deviations[neurite_type] += morph_funcs.rall_deviations(
-                        neurite, seq=rall_deviation_sequential)
-                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(
-                        neurite, threshold=extra_params['terminal_threshold'], seq=terminal_diameters_sequential)
-                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(
-                        neurite, seq=trunk_diameters_sequential)
-                    tapers[neurite_type] += morph_funcs.taper(neurite,
-                                                              params=extra_params['taper'], seq=tapers_sequential)
+                    sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(neurite, seq=sibling_sequential)
+                    rall_deviations[neurite_type] += morph_funcs.rall_deviations(neurite, seq=rall_deviation_sequential)
+                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite, threshold=extra_params['terminal_threshold'], seq=terminal_diameters_sequential)
+                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite, seq=trunk_diameters_sequential)
+                    tapers[neurite_type] += morph_funcs.taper(neurite, params=extra_params['taper'], seq=tapers_sequential)
 
     # do the fits of each morphological values
     sibling_ratio_models = {}
@@ -271,16 +256,11 @@ def sampling_model_generic(morphologies, neurite_types, extra_params, tqdm_disab
                 if neurite.type == STR_TO_TYPES[neurite_type]:
 
                     # compute here all the morphological values from the neurite
-                    sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(
-                        neurite, seq=sibling_sequential)
-                    rall_deviations[neurite_type] += morph_funcs.rall_deviations(
-                        neurite, seq=rall_deviation_sequential)
-                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(
-                        neurite, threshold=extra_params['terminal_threshold'], seq=terminal_diameters_sequential)
-                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(
-                        neurite, seq=trunk_diameters_sequential)
-                    tapers[neurite_type] += morph_funcs.taper(neurite,
-                                                              params=extra_params['taper'], seq=tapers_sequential)
+                    sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(neurite, seq=sibling_sequential)
+                    rall_deviations[neurite_type] += morph_funcs.rall_deviations(neurite, seq=rall_deviation_sequential)
+                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite, threshold=extra_params['terminal_threshold'], seq=terminal_diameters_sequential)
+                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite, seq=trunk_diameters_sequential)
+                    tapers[neurite_type] += morph_funcs.taper(neurite, params=extra_params['taper'], seq=tapers_sequential)
 
     # do the fits of each morphological values
     sibling_ratio_models = {}
@@ -367,8 +347,7 @@ def build_models(models, morphologies, neurite_types, extra_params, fig_folder='
         models_params[mtype] = {}
         models_data[mtype] = {}
         for model in models:
-            models_params[mtype][model], models_data[mtype][model] = all_models[model](
-                morphologies[mtype], neurite_types, extra_params[model], tqdm_2)
+            models_params[mtype][model], models_data[mtype][model] = all_models[model](morphologies[mtype], neurite_types, extra_params[model], tqdm_2)
 
     # plot the distributions and fit of the data
     if plot:
@@ -379,7 +358,6 @@ def build_models(models, morphologies, neurite_types, extra_params, fig_folder='
             os.mkdir(fig_folder + '/' + mtype)
             for model in models:  # for each diameter model
                 for fit_tpe in models_data[mtype][model]:  # for each fit of the data we did
-                    plotting.plot_distribution_fit(models_data[mtype][model][fit_tpe], models_params[mtype][model][fit_tpe],
-                                                   neurite_types, fig_name=fig_folder + '/' + mtype + '/' + model + '_' + fit_tpe, ext=ext)
+                    plotting.plot_distribution_fit(models_data[mtype][model][fit_tpe], models_params[mtype][model][fit_tpe], neurite_types, fig_name=fig_folder + '/' + mtype + '/' + model + '_' + fit_tpe, ext=ext)
 
     return models_params

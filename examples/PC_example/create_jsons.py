@@ -12,7 +12,7 @@ extract_models_params = {
     'models_params_file': 'model_params.json',
     'plot': True,
     'fig_folder': 'figures', 
-    'ext': '.png',
+    'ext': '.svg',
     'extra_params': {}
 
 }
@@ -23,7 +23,8 @@ for model in extract_models_params['models']:
                 'trunk_min_sample_num': {'basal': 10, 'apical': 10},
                 'trunk_floc': None, 
                 'orders': {'a': 4, 'loc':4, 'scale':4, 'min':4, 'max':4},
-                'taper': {'max_residual': 10, 'zeros':1e-8, 'max': 0.002, 'min': -0.005}
+                'taper': {'max_residual': 10, 'zeros':1e-8, 'max': 0.002, 'min': -0.005},
+                'threshold': 0.2,
                 }
 
 with open('extract_models_params.json', 'w') as json_file:
@@ -41,7 +42,7 @@ generate_diameters_params = {
     'new_morph_path': 'new_morphologies/', 
     #'new_morph_path': '../scripts/extract_morphometrics/new_morphologies_super_mtypes/', 
     'plot': True, 
-    'n_cpu': 1, 
+    'n_cpu': 10, 
     'n_samples': 10,
     'extra_params': {}
 }
@@ -49,6 +50,7 @@ generate_diameters_params = {
 for i, model in enumerate(generate_diameters_params['models']):
     generate_diameters_params['extra_params'][model] = {
                 'seed': 10,
+                'threshold': 0.2,
                 'sibling_threshold': 0.2,
                 'rall_threshold': 0.2
                }
