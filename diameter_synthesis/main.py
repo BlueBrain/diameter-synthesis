@@ -45,8 +45,14 @@ def run_models(config_file):
 
     print('Loading morphologies...')
     # load all the morphologies
-    morphologies = utils.load_morphologies(
+    morphologies_tmp = utils.load_morphologies(
         config['morph_path'], n_morphs_max=config['n_morphs_max'], mtypes_sort=config['mtypes_sort'], n_mtypes_max=config['n_mtypes_max'])
+
+    #remove empty mtypes if missing data (not clean...)
+    morphologies = morphologies_tmp.copy() 
+    for m in morphologies_tmp:
+        if len(morphologies_tmp[m]) == 0:
+            del morphologies[m]
 
     print('Extracting models parameters...')
     # compute the model

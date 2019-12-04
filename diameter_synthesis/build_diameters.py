@@ -51,6 +51,9 @@ def build_diameters(models, models_params, morphologies_dict, neurite_types, new
         for mtype in morphologies_dict:
             for neuron in morphologies_dict[mtype]:
                 name, ext = os.path.splitext(neuron)
+                print(name)
+                if name == 'mtC130201A_idB':
+                    print(os.path.exists(morph_path + '/' + neuron))
                 if ext in {'.h5', '.asc', '.swc'} and os.path.exists(morph_path + '/' + neuron):
                     neurons.append([neuron, mtype])
 
@@ -72,7 +75,8 @@ def build_diam_pool(all_models, model, models_params, neurite_types, extra_param
 
     filepath = os.path.join(morph_path, fname)
     neuron = io.load_morphology(filepath)
-    print(neuron.name)
+    if neuron.name == 'mtC130201A_idB':
+        print(neuron.name)
 
     np.random.seed(extra_params[model]['seed'])
 
@@ -92,7 +96,6 @@ def build_diam_pool(all_models, model, models_params, neurite_types, extra_param
         utils.set_all_diameters(neuron, diameters)
 
     io.save_neuron(neuron, model, new_morph_path)
-
     if plot:
         folder = 'shapes_' + os.path.basename(new_morph_path[:-1])
         plotting.plot_diameter_diff(name, morph_path, new_morph_path,
@@ -120,7 +123,7 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
                 trunk_diam = trunk_diam_frac * get_trunk_diameter(neurite, params['trunk_diameter'][neurite_type])
                 # try to diametrize the neurite
                 wrong_tips = diametrize_tree(neurite, params, neurite_type, trunk_diam, mode_sibling='threshold', mode_rall='generic',
-                                             sibling_threshold=extra_params['threshold'], rall_threshold=extra_params['threshold'], with_asymmetry=True, no_taper=False)
+                                             sibling_threshold=extra_params['threshold'][neurite_type], rall_threshold=extra_params['threshold'][neurite_type], with_asymmetry=True, no_taper=False)
 
                 # if we can't get a good model, reduce the trunk diameter progressively
                 n_tries += 1
@@ -155,7 +158,7 @@ def diametrize_model_apical(neuron, params, neurite_types, extra_params):
                 trunk_diam = trunk_diam_frac * get_trunk_diameter(neurite, params['trunk_diameter'][neurite_type])
                 # try to diametrize the neurite
                 wrong_tips = diametrize_tree(neurite, params, neurite_type, trunk_diam, mode_sibling='threshold', mode_rall='threshold',
-                                             sibling_threshold=extra_params['threshold'], rall_threshold=extra_params['threshold'], with_asymmetry=True, no_taper=True)
+                                             sibling_threshold=extra_params['threshold'][neurite_type], rall_threshold=extra_params['threshold'][neurite_type], with_asymmetry=True, no_taper=True)
 
                 # if we can't get a good model, reduce the trunk diameter progressively
                 n_tries += 1

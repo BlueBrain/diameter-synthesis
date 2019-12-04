@@ -1,21 +1,24 @@
 {
     "extra_params": {
-        "M0": {
-            "seed": 0
+        "M2": {
+            "seed": 10,
+            "threshold": 0.2
         }
     },
     "models": [
-        "M0"
+        "M2"
     ],
     "models_params_file": "model_params_all.json",
-    "morph_path": "05_RepairUnravel-asc_test/",
+    "morph_path": "05_RepairUnravel-asc/",
     "mtypes_sort": "all",
-    "n_cpu": 10,
+    "n_cpu": 1,
     "n_morphs_max": null,
     "n_mtypes_max": 60,
+    "n_samples": 2,
     "neurite_types": [
-        "basal"
+        "basal",
+        "apical"
     ],
-    "new_morph_path": "../scripts/diameter-checks/new_morphologies_super_mtypes/",
+    "new_morph_path": "../scripts/diameter-checks/new_morphologies_all/",
     "plot": true
 }

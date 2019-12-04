@@ -22,10 +22,10 @@ def _split_prefix(neurom_feature_name):
 
 @click.command(help=__doc__)
 @click.option("--config", help="Configuration JSON file", required=True)
-@click.option("--original-dir", help="Directory with input morphologies", required=True)
-@click.option("--diametrized-dir", help="Directory with diametrized morphologies", required=True)
+#@click.option("--original-dir", help="Directory with input morphologies", required=True)
+#@click.option("--diametrized-dir", help="Directory with diametrized morphologies", required=True)
 @click.option("-o", "--out-dir", help='Directory to output the analysis results', required=True)
-def cmd(config, original_dir, diametrized_dir, out_dir):
+def cmd(config, out_dir):
     import json
     import pylab as plt
     from diameter_synthesis.io import load_morphology
@@ -70,13 +70,15 @@ def cmd(config, original_dir, diametrized_dir, out_dir):
     if len(config['models']) > 1:
         print('multiple models provided, will only use the first in the list for analysis')
     model_names = config['models'][0]
-
+    
+    original_dir = config['morph_path']
+    diametrized_dir = config['new_morph_path']
     neurite_types = config['neurite_types']
 
     filenames = list(iter_morphology_filenames(original_dir))
 
-    original_filepaths = (os.path.join(original_dir, filename) for filename in filenames)
-    diametrized_filepaths = (os.path.join(diametrized_dir, model_names + '_' + filename) for filename in filenames)
+    original_filepaths = (os.path.join(original_dir, filename) for filename in filenames if os.path.exists(os.path.join(diametrized_dir, model_names + '_' + filename)))
+    diametrized_filepaths = (os.path.join(diametrized_dir, model_names + '_' + filename) for filename in filenames if os.path.exists(os.path.join(diametrized_dir, model_names + '_' + filename)))
 
     original_cells = list(map(load_morphology, original_filepaths))
     diametrized_cells = list(map(load_morphology, diametrized_filepaths))

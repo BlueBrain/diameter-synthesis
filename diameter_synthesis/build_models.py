@@ -28,7 +28,7 @@ def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, 
     sibling_sequential = 'asymmetry_threshold'
     rall_deviation_sequential = 'asymmetry_threshold'
     terminal_diameters_sequential = None
-    trunk_diameters_sequential = None
+    trunk_diameters_sequential =  'max_path'
     tapers_sequential = None
 
     # initialise dictionaries for collecting morphological quantities
@@ -73,13 +73,13 @@ def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, 
         sibling_ratio_models[neurite_type] = {}
         sibling_ratio_models[neurite_type]['distribution'] = 'expon_rev'
         sibling_ratio_models[neurite_type]['sequential'] = sibling_sequential
-        sibling_ratio_models[neurite_type]['params'] = fit_distribution(sibling_ratios[neurite_type], sibling_ratio_models[neurite_type]['distribution'], seq=sibling_sequential, extra_params=extra_params, name ='sibling')
+        sibling_ratio_models[neurite_type]['params'] = fit_distribution(sibling_ratios[neurite_type], sibling_ratio_models[neurite_type]['distribution'], seq=sibling_sequential, extra_params=extra_params, name ='sibling', threshold=extra_params['threshold'][neurite_type] )
 
         # Rall deviation
         rall_deviation_models[neurite_type] = {}
         rall_deviation_models[neurite_type]['distribution'] = 'exponnorm'
         rall_deviation_models[neurite_type]['sequential'] = rall_deviation_sequential
-        rall_deviation_models[neurite_type]['params'] = fit_distribution(rall_deviations[neurite_type], rall_deviation_models[neurite_type]['distribution'], seq=rall_deviation_sequential, extra_params=extra_params, name ='Rall')
+        rall_deviation_models[neurite_type]['params'] = fit_distribution(rall_deviations[neurite_type], rall_deviation_models[neurite_type]['distribution'], seq=rall_deviation_sequential, extra_params=extra_params, name ='Rall', threshold=extra_params['threshold'][neurite_type] )
 
         # terminal diameters
         terminal_diameters_models[neurite_type] = {}

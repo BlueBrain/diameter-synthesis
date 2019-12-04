@@ -1,39 +1,41 @@
 {
     "ext": ".png",
     "extra_params": {
-        "M0": {
+        "M2": {
             "orders": {
-                "a": 1,
-                "loc": 1,
-                "max": 1,
-                "min": 1,
-                "scale": 1
+                "a": 4,
+                "loc": 4,
+                "max": 4,
+                "min": 4,
+                "scale": 4
             },
             "taper": {
-                "max": 0.005,
+                "max": 0.002,
                 "max_residual": 10,
-                "min": -0.0025,
+                "min": -0.005,
                 "zeros": 1e-08
             },
             "terminal_threshold": 1.0,
+            "threshold": 0.2,
             "trunk_floc": null,
             "trunk_min_sample_num": {
-                "apical": 10,
-                "basal": 10
+                "apical": 5,
+                "basal": 5
             }
         }
     },
-    "fig_folder": "figures_all",
+    "fig_folder": "figures_mtypes",
     "models": [
-        "M0"
+        "M2"
     ],
-    "models_params_file": "model_params_all.json",
-    "morph_path": "05_RepairUnravel-asc_test/",
-    "mtypes_sort": "all",
-    "n_morphs_max": 200,
-    "n_mtypes_max": 60,
+    "models_params_file": "model_params_mtypes.json",
+    "morph_path": "05_RepairUnravel-asc/",
+    "mtypes_sort": "mtypes",
+    "n_morphs_max": null,
+    "n_mtypes_max": 10,
     "neurite_types": [
-        "basal"
+        "basal",
+        "apical"
     ],
     "plot": true
 }

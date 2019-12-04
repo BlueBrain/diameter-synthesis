@@ -17,7 +17,7 @@ L = logging.getLogger(__name__)
 
 
 ROUND = 4 #number of digits for the fitted parameters
-MIN_DATA_POINTS = 5 #minimum number of points to fit a distribution
+MIN_DATA_POINTS = 10 #minimum number of points to fit a distribution
 A_MAX = 4 #maximum value for the a (shape) parameter of fits (can get really large when low number of points)
 A_MIN = 0.3
 SPLINE_SMOOTH = 0.005
@@ -94,7 +94,6 @@ def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = Non
             if fname.endswith(('.h5', '.asc', '.swc')) and os.path.exists(filepath) and n_morphs < n_morphs_max:
                 name_dict['generic_type'] += [prefix + fname]
                 n_morphs +=1
-
     return name_dict
 
 def load_morphologies(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix = ""):
@@ -181,7 +180,7 @@ def tqdm_disable(morphologies):
 
     return tqdm_1, tqdm_2
  
-def set_bins(data, n_bins, n_min = 10):
+def set_bins(data, n_bins, n_min=20):
     """ find a good set of bins to avoid undersampling """
 
     #try to bin uniformly
@@ -196,12 +195,12 @@ def set_bins(data, n_bins, n_min = 10):
         min_data = np.min(data)
 
         #if the last bins have to few points, reduce the window
-        while values[-1] < n_min and max_data-min_data>0.1*diff_max: #second condition is to prevent shrinking for ever
+        while values[-1] < n_min and max_data-min_data > 0.1 * diff_max: #second condition is to prevent shrinking for ever
             max_data = bins[-2]
             values, bins = np.histogram(data, bins = n_bins, range = (min_data, max_data) )
 
         #if the first bins have to few points, reduce the window
-        while values[0] < n_min and max_data-min_data>0.1*diff_max:
+        while values[0] < n_min and max_data-min_data > 0.1 * diff_max:
             min_data = bins[1]
             values, bins = np.histogram(data, bins = n_bins, range = (min_data, max_data) )
 
@@ -211,13 +210,12 @@ def set_bins(data, n_bins, n_min = 10):
     values, bins = reduce_bounds(values, bins, data)
 
     #if bins have to few elements, reduce the number of bins and readjust bounds
-    while len(values[values<n_min])>0 and n_bins>2:
+    while len(values[values < n_min]) > 0 and n_bins > 4:
         n_bins -= 1
         max_data = np.max(data)
         min_data = np.min(data)
         values, bins = np.histogram(data, bins = n_bins, range = (min_data, max_data) )
 
         values, bins = reduce_bounds(values, bins, data)
-
     return bins, values
 

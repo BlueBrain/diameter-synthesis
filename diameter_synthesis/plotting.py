@@ -121,10 +121,28 @@ def plot_fit_distribution_params(model, neurite_types, fig_name='test', ext='.pn
 
 def plot_distribution_fit(data, model, neurite_types, fig_name='test', ext='.png', figsize=(5, 4), n_bins=10):
     """ Plot the data distribution and its fit """
+
+    plt.figure()
+    save_plot = False
+    for neurite_type in neurite_types:
+        if model[neurite_type]['sequential'] == 'asymmetry_threshold':
+            tpes = np.asarray(data[neurite_type])[:, 1]  # collect the type of point
+            values = np.asarray(data[neurite_type])[:, 0]  # collect the type of point
+
+            plt.scatter(values, tpes, s=5, c=colors[neurite_type], alpha = 0.5)
+            plt.axhline(0.2, c='k')
+            save_plot = True
+
+    if save_plot:
+        plt.savefig(fig_name + '_scatter' + ext)
+    plt.close()
+
+
     fig = plt.figure(figsize=figsize)
 
     for neurite_type in neurite_types:
         if not isinstance(model[neurite_type]['sequential'], str) or model[neurite_type]['sequential'] == 'asymmetry_threshold':  # if the fits are done sequantially
+
 
             min_val = model[neurite_type]['params']['min']
             max_val = model[neurite_type]['params']['max']
@@ -214,7 +232,8 @@ def plot_distribution_fit(data, model, neurite_types, fig_name='test', ext='.png
     plt.savefig(fig_name + ext, bbox_inches='tight')
     plt.close(fig)
 
-    if isinstance(model[neurite_type]['sequential'], str) and not 'asymmetry_threhsold':  # if the fits are done sequantially
+    if isinstance(model[neurite_type]['sequential'], str) and model[neurite_type]['sequential'] != 'asymmetry_threshold':  # if the fits are done sequantially
+        print(model[neurite_type]['sequential'])
         plot_fit_distribution_params(model, neurite_types, fig_name=fig_name + '_param_fit', ext=ext)
 
 def plot_fit_param_boxes(model_params, model='M0', neurite_type='basal', figname='test', ext='.png', figsize=(6, 3)):
@@ -540,6 +559,9 @@ def plot_cumulative_distribution(original_cells, diametrized_cells, feature1, fe
         axes[0].set_xlabel('path distance')
         axes[0].set_ylabel('cummulative section areas')
 
+        axes[0].set_xlabel('path distance')
+        axes[0].set_ylabel('cummulative section areas')
+
         stats1[stats1 == 0] = 1
         diffs = (stats1 - stats2)# / stats1
 
@@ -554,25 +576,25 @@ def plot_cumulative_distribution(original_cells, diametrized_cells, feature1, fe
             #axes[1].fill_between(bin_centers, diff_means - diff_sdevs, diff_means + diff_sdevs, color=color, alpha=0.2)
             axes[1].plot(bin_centers, diff_means - diff_sdevs, c=color, linestyle='--', lw=3)
             axes[1].plot(bin_centers, diff_means + diff_sdevs, c=color, linestyle='--', lw=3)
+
         axes[1].plot(bin_centers, diff_means, c=color, linestyle='-', lw=3)
         axes[1].axhline(0, ls='--', c='k')
 
         axes[1].set_xlabel('path distance')
         axes[1].set_ylabel('difference in cummulative section areas')
 
-        axes[2].scatter(stats1[:,-1], stats2[:,-1], c=color, marker='o')
 
-        axes[0].set_xlabel('path distance')
-        axes[0].set_ylabel('cummulative section areas')
-        if len(diffs) > 1:
-            for i in range(len(stats1)):
-                axes[2].annotate(i, (stats1[i,-1], stats2[i,-1]))
+        #if len(diffs) > 1:
+        #    for i in range(len(stats1)):
+        #        axes[2].annotate(i, (stats1[i,-1], stats2[i,-1]))
+
+        axes[2].scatter(stats1[:,-1], stats2[:,-1], c=color, marker='o', s = 5)
 
         x = np.arange(4000, 47000)
         axes[2].plot(x,x, ls='-', c='k')
-        if len(diffs) > 1:
-            axes[2].plot(x,x-diff_means[-1], ls='--', c=color)
-            axes[2].plot(x,x+diff_means[-1], ls='--', c=color)
+        #if len(diffs) > 1:
+        #    axes[2].plot(x,x-diff_means[-1], ls='--', c=color)
+        #    axes[2].plot(x,x+diff_means[-1], ls='--', c=color)
 
         axes[2].set_xlabel('total surface area of original cells')
         axes[2].set_ylabel('total surface area of diametrized cells')
