@@ -21,7 +21,7 @@ from diameter_synthesis.utils import get_diameters, set_diameters, ROUND, MIN_DA
 
 def build_spline(x, y, w):
     """ build a spline model and return parameters"""
-    spl = UnivariateSpline(x, y, w=np.array(w) / np.sum(w), s=len(w) * utils.SPLINE_SMOOTH, k=3)
+    spl = UnivariateSpline(x, y) #, w=np.array(w) / np.sum(w), s=len(w) * utils.SPLINE_SMOOTH, k=3)
     return spl._eval_args
 
 
@@ -80,17 +80,17 @@ def sample_distribution_single(model):
     elif model['distribution'] == 'exponnorm':
         from scipy.stats import exponnorm
 
-        return truncate(lambda: exponnorm.rvs(params['a'], params['loc'], params['scale']), params['min'], params['max'])
+        return truncate(lambda: exponnorm.rvs(np.clip(params['a'], A_MIN, A_MAX), params['loc'], params['scale']), params['min'], params['max'])
 
     elif model['distribution'] == 'gamma':
         from scipy.stats import gamma
 
-        return truncate(lambda: gamma.rvs(params['a'], params['loc'], params['scale']), params['min'], params['max'])
+        return truncate(lambda: gamma.rvs(np.clip(params['a'], A_MIN, A_MAX), params['loc'], params['scale']), params['min'], params['max'])
 
     elif model['distribution'] == 'skewnorm':
         from scipy.stats import skewnorm
 
-        return truncate(lambda: skewnorm.rvs(params['a'], params['loc'], params['scale']), params['min'], params['max'])
+        return truncate(lambda: skewnorm.rvs(np.clip(params['a'], A_MIN, A_MAX), params['loc'], params['scale']), params['min'], params['max'])
 
     else:
         raise Exception('Distribution not understood')
@@ -243,8 +243,7 @@ def update_params_fit_distribution(params_data, orders={'a': 1, 'loc': 1, 'scale
         try:
             As = np.array([v['a'] for v in params_values])
             # prevent large or small values of a from bad fits
-            As[As > A_MAX] = A_MAX
-            As[As < A_MIN] = A_MIN
+            As = np.clip(As, A_MIN, A_MAX)
         except:
             pass
         locs = np.array([v['loc'] for v in params_values])

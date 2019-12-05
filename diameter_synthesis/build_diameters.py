@@ -51,9 +51,6 @@ def build_diameters(models, models_params, morphologies_dict, neurite_types, new
         for mtype in morphologies_dict:
             for neuron in morphologies_dict[mtype]:
                 name, ext = os.path.splitext(neuron)
-                print(name)
-                if name == 'mtC130201A_idB':
-                    print(os.path.exists(morph_path + '/' + neuron))
                 if ext in {'.h5', '.asc', '.swc'} and os.path.exists(morph_path + '/' + neuron):
                     neurons.append([neuron, mtype])
 

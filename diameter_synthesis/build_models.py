@@ -28,7 +28,7 @@ def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, 
     sibling_sequential = 'asymmetry_threshold'
     rall_deviation_sequential = 'asymmetry_threshold'
     terminal_diameters_sequential = None
-    trunk_diameters_sequential =  'max_path'
+    trunk_diameters_sequential = 'max_branch' 
     tapers_sequential = None
 
     # initialise dictionaries for collecting morphological quantities

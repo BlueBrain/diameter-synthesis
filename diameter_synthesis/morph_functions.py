@@ -97,12 +97,28 @@ def sequential_single(seq, neurite=None, section=None):
         else:
             raise Exception('Please provide either a section only')
 
+    elif seq == 'tot_length':
+        if neurite is not None and section is None:
+            return nm.get('total_length', neurite)
+        else:
+            raise Exception('Please provide only a neuritet')
+
+
     elif seq == 'max_path':
         if neurite is not None and section is None:
-            #return [np.max(nm.get('section_path_distances', neurite)), ]
-            return [list(nm.features.neuritefunc.section_strahler_orders(neurite))[0],]
-            #return [np.max(nm.get('section_branch_orders', neurite)), ]
+            return [np.max(nm.get('section_path_distances', neurite)), ]
+        else:
+            raise Exception('Please provide only a neuritet')
 
+    elif seq == 'max_branch':
+        if neurite is not None and section is None:
+            return [np.max(nm.get('section_branch_orders', neurite)), ]
+        else:
+            raise Exception('Please provide only a neuritet')
+
+    elif seq == 'root_strahler':
+        if neurite is not None and section is None:
+            return [list(nm.features.neuritefunc.section_strahler_orders(neurite))[0],]
         else:
             raise Exception('Please provide only a neuritet')
 

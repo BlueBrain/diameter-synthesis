@@ -233,7 +233,6 @@ def plot_distribution_fit(data, model, neurite_types, fig_name='test', ext='.png
     plt.close(fig)
 
     if isinstance(model[neurite_type]['sequential'], str) and model[neurite_type]['sequential'] != 'asymmetry_threshold':  # if the fits are done sequantially
-        print(model[neurite_type]['sequential'])
         plot_fit_distribution_params(model, neurite_types, fig_name=fig_name + '_param_fit', ext=ext)
 
 def plot_fit_param_boxes(model_params, model='M0', neurite_type='basal', figname='test', ext='.png', figsize=(6, 3)):
@@ -497,7 +496,7 @@ def _create_data(feature1, feature2, original_cells, diametrized_cells, step_siz
         yield bin_centers, stats1, stats2
 
 
-def plot_cumulative_distribution(original_cells, diametrized_cells, feature1, feature2, neurite_types, step_size=1.0):
+def plot_cumulative_distribution(original_cells, diametrized_cells, feature1, feature2, neurite_types, step_size=1.0, auto_limit = True):
     """
     Plot the cumulative distribution of feature2 with respect to the metric values determined via feature1
 
@@ -588,10 +587,22 @@ def plot_cumulative_distribution(original_cells, diametrized_cells, feature1, fe
         #    for i in range(len(stats1)):
         #        axes[2].annotate(i, (stats1[i,-1], stats2[i,-1]))
 
+        if auto_limit:
+            lim_min = 0.5*np.min(stats1[:,-1])
+            lim_max = np.max(stats1[:,-1])
+        else:
+            lim_min = 5000
+            lim_max = 30000
+
         axes[2].scatter(stats1[:,-1], stats2[:,-1], c=color, marker='o', s = 5)
 
-        x = np.arange(4000, 47000)
-        axes[2].plot(x,x, ls='-', c='k')
+        x = np.arange(lim_min, lim_max)
+
+        axes[2].plot(x, x, ls='-', c='k')
+        axes[2].set_xlim(lim_min, lim_max)
+        axes[2].set_ylim(lim_min, lim_max)
+        axes[2].set_title('L2 error = ' + str( np.around(np.linalg.norm(stats2[:,-1] - stats1[:,-1]) , 1)), loc='left')
+
         #if len(diffs) > 1:
         #    axes[2].plot(x,x-diff_means[-1], ls='--', c=color)
         #    axes[2].plot(x,x+diff_means[-1], ls='--', c=color)
