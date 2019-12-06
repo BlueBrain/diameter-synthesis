@@ -32,7 +32,7 @@ TRUNK_MAX_TRIES = 90
 ##################################
 
 
-def build_diameters(models, models_params, morphologies_dict, neurite_types, new_morph_path, extra_params, morph_path, plot=True, n_cpu=1, n_samples=1):
+def build_diameters(models, models_params, morphologies_dict, neurite_types, new_morph_path, extra_params, morph_path, plot=True, n_cpu=1, n_samples=1, ext = '.png'):
     """ Building the diameters from the generated diameter models"""
 
     all_models = {}
@@ -50,30 +50,27 @@ def build_diameters(models, models_params, morphologies_dict, neurite_types, new
         neurons = []
         for mtype in morphologies_dict:
             for neuron in morphologies_dict[mtype]:
-                name, ext = os.path.splitext(neuron)
-                if ext in {'.h5', '.asc', '.swc'} and os.path.exists(morph_path + '/' + neuron):
+                name, neuron_ext = os.path.splitext(neuron)
+                if neuron_ext in {'.h5', '.asc', '.swc'} and os.path.exists(morph_path + '/' + neuron):
                     neurons.append([neuron, mtype])
 
         # set all parameters
         build_diam_poolf = partial(build_diam_pool, all_models, model, models_params,
-                                   neurite_types, extra_params, morph_path, new_morph_path, plot, n_samples)
+                                   neurite_types, extra_params, morph_path, new_morph_path, plot, n_samples, ext)
 
         # generate diameters in parallel
         with Pool(processes=n_cpu) as p_build:  # initialise the parallel computation
             list(tqdm(p_build.imap(build_diam_poolf, neurons), total=len(neurons)))
 
 
-def build_diam_pool(all_models, model, models_params, neurite_types, extra_params, morph_path, new_morph_path, plot, n_samples, neuron_input):
+def build_diam_pool(all_models, model, models_params, neurite_types, extra_params, morph_path, new_morph_path, plot, n_samples, ext, neuron_input):
     """ build a neuron diameters, save and plot it """
 
     fname = neuron_input[0]
     mtype = neuron_input[1]
-    name, ext = os.path.splitext(fname)
 
     filepath = os.path.join(morph_path, fname)
     neuron = io.load_morphology(filepath)
-    if neuron.name == 'mtC130201A_idB':
-        print(neuron.name)
 
     np.random.seed(extra_params[model]['seed'])
 
@@ -95,8 +92,8 @@ def build_diam_pool(all_models, model, models_params, neurite_types, extra_param
     io.save_neuron(neuron, model, new_morph_path)
     if plot:
         folder = 'shapes_' + os.path.basename(new_morph_path[:-1])
-        plotting.plot_diameter_diff(name, morph_path, new_morph_path,
-                                    model, neurite_types, folder=folder)
+        plotting.plot_diameter_diff(os.path.splitext(fname)[0], morph_path, new_morph_path,
+                                    model, neurite_types, folder=folder, ext = ext)
 
 
 def diametrize_model_generic(neuron, params, neurite_types, extra_params):

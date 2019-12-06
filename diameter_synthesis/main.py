@@ -83,5 +83,4 @@ def run_diameters(config_file):
         models_params = json.load(f)
 
     # generate diameters
-    models_params = build_diameters(config['models'], models_params, morphologies_dict, config['neurite_types'], config['new_morph_path'],
-                                    config['extra_params'], config['morph_path'], plot=config['plot'], n_cpu=config['n_cpu'], n_samples=config['n_samples'])
+    models_params = build_diameters(config['models'], models_params, morphologies_dict, config['neurite_types'], config['new_morph_path'], config['extra_params'], config['morph_path'], plot=config['plot'], n_cpu=config['n_cpu'], n_samples=config['n_samples'], ext = config['ext'])

@@ -7,7 +7,7 @@ extract_models_params = {
     #'morph_path': '/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/', 
     'mtypes_sort': 'mtypes', 
     'n_morphs_max': None, 
-    'n_mtypes_max': 10,
+    'n_mtypes_max': 60,
     'models': ['M2',], # 'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9'],
     'neurite_types': ['basal', 'apical'],
     'models_params_file': 'model_params_mtypes.json',

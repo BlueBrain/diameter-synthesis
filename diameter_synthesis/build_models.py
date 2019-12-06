@@ -22,13 +22,112 @@ import diameter_synthesis.plotting as plotting
 ##############################################
 
 
-def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, tqdm_disable=False):
+def sampling_model_sibling_asymmetry_trunk(morphologies, neurite_types, extra_params, tqdm_disable=False):
     """ test for sampling models """
 
     sibling_sequential = 'asymmetry_threshold'
     rall_deviation_sequential = 'asymmetry_threshold'
     terminal_diameters_sequential = None
     trunk_diameters_sequential = 'max_branch' 
+    tapers_sequential = None
+
+    # initialise dictionaries for collecting morphological quantities
+    sibling_ratios = {}
+    rall_deviations = {}
+    terminal_diameters = {}
+    trunk_diameters = {}
+    tapers = {}
+    for neurite_type in neurite_types:
+        sibling_ratios[neurite_type] = []
+        rall_deviations[neurite_type] = []
+        terminal_diameters[neurite_type] = []
+        trunk_diameters[neurite_type] = []
+        tapers[neurite_type] = []
+
+    # loop first over all morphologies (TODO: could be parallelized)
+    i = 0
+    for neuron in tqdm(morphologies, disable=tqdm_disable):
+        # for each neurite in the neuron
+        for neurite in neuron.neurites:
+            # for each type of neurite we consider
+            for neurite_type in neurite_types:
+
+                if neurite.type == STR_TO_TYPES[neurite_type]:
+
+                    # compute here all the morphological values from the neurite
+                    sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(neurite, seq=sibling_sequential)
+                    rall_deviations[neurite_type] += morph_funcs.rall_deviations(neurite, seq=rall_deviation_sequential)
+                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite, threshold=extra_params['terminal_threshold'], seq=terminal_diameters_sequential)
+                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite, seq=trunk_diameters_sequential)
+                    tapers[neurite_type] += morph_funcs.taper(neurite, params=extra_params['taper'], seq=tapers_sequential)
+
+    # do the fits of each morphological values
+    sibling_ratio_models = {}
+    rall_deviation_models = {}
+    terminal_diameters_models = {}
+    trunk_diameters_models = {}
+    tapers_models = {}
+    for neurite_type in neurite_types:
+
+        # sibling ratio
+        sibling_ratio_models[neurite_type] = {}
+        sibling_ratio_models[neurite_type]['distribution'] = 'expon_rev'
+        sibling_ratio_models[neurite_type]['sequential'] = sibling_sequential
+        sibling_ratio_models[neurite_type]['params'] = fit_distribution(sibling_ratios[neurite_type], sibling_ratio_models[neurite_type]['distribution'], seq=sibling_sequential, extra_params=extra_params, name ='sibling', threshold=extra_params['threshold'][neurite_type] )
+
+        # Rall deviation
+        rall_deviation_models[neurite_type] = {}
+        rall_deviation_models[neurite_type]['distribution'] = 'exponnorm'
+        rall_deviation_models[neurite_type]['sequential'] = rall_deviation_sequential
+        rall_deviation_models[neurite_type]['params'] = fit_distribution(rall_deviations[neurite_type], rall_deviation_models[neurite_type]['distribution'], seq=rall_deviation_sequential, extra_params=extra_params, name ='Rall', threshold=extra_params['threshold'][neurite_type] )
+
+        # terminal diameters
+        terminal_diameters_models[neurite_type] = {}
+        terminal_diameters_models[neurite_type]['distribution'] = 'exponnorm'
+        terminal_diameters_models[neurite_type]['sequential'] = terminal_diameters_sequential
+        terminal_diameters_models[neurite_type]['params'] = fit_distribution(terminal_diameters[neurite_type], terminal_diameters_models[neurite_type]['distribution'], seq=terminal_diameters_sequential, extra_params=extra_params)
+
+        # trunk diameters
+        trunk_diameters_models[neurite_type] = {}
+        trunk_diameters_models[neurite_type]['distribution'] = 'exponnorm'
+        trunk_diameters_models[neurite_type]['sequential'] = trunk_diameters_sequential
+        trunk_diameters_models[neurite_type]['params'] = fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], seq=trunk_diameters_sequential, extra_params=extra_params)
+
+        # taper
+        tapers_models[neurite_type] = {}
+        tapers_models[neurite_type]['distribution'] = 'exponnorm'
+        tapers_models[neurite_type]['sequential'] = tapers_sequential
+        tapers_models[neurite_type]['params'] = fit_distribution(
+            tapers[neurite_type], tapers_models[neurite_type]['distribution'], seq=tapers_sequential, extra_params=extra_params)
+
+    # collect all models in one dictionary
+    all_models = {
+        'sibling_ratio': sibling_ratio_models,
+        'rall_deviation': rall_deviation_models,
+        'terminal_diameter': terminal_diameters_models,
+        'trunk_diameter': trunk_diameters_models,
+        'taper': tapers_models
+    }
+
+    all_data = {
+        'sibling_ratio': sibling_ratios,
+        'rall_deviation': rall_deviations,
+        'terminal_diameter': terminal_diameters,
+        'trunk_diameter': trunk_diameters,
+        'taper': tapers
+    }
+
+    return all_models, all_data
+
+
+
+def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, tqdm_disable=False):
+    """ test for sampling models """
+
+    sibling_sequential = 'asymmetry_threshold'
+    rall_deviation_sequential = 'asymmetry_threshold'
+    terminal_diameters_sequential = None
+    trunk_diameters_sequential = None #'max_branch' 
     tapers_sequential = None
 
     # initialise dictionaries for collecting morphological quantities
@@ -334,9 +433,9 @@ def build_models(models, morphologies, neurite_types, extra_params, fig_folder='
         if model == 'M0':
             all_models[model] = sampling_model_generic
         if model == 'M1':
-            all_models[model] = sampling_model_trunk_path
-        if model == 'M2':
             all_models[model] = sampling_model_sibling_asymmetry
+        if model == 'M2':
+            all_models[model] = sampling_model_sibling_asymmetry_trunk
 
     tqdm_1, tqdm_2 = utils.tqdm_disable(morphologies)  # to have a single progression bar
 
