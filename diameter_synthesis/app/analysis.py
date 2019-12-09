@@ -81,7 +81,7 @@ def cmd(config, out_dir):
     print('...done.')
 
     feature_pairs = [
-            #('segment_radial_distances', 'segment_volumes'),
+            ('segment_radial_distances', 'segment_volumes'),
             #('section_radial_distances', 'section_areas'),
             ('section_path_distances',   'section_areas'),
             #('section_branch_orders',    'section_areas'),

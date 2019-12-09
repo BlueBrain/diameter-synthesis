@@ -387,7 +387,7 @@ def draw_axis(obj, mode='2d', ax=None, **kwargs):
     return fig, ax
 
 
-def plot_diameter_diff(neuron_name, morph_path, new_morph_path, model, neurite_types, folder, ext = '.png'):
+def plot_diameter_diff(neuron_name, morph_path, neuron_new, model, neurite_types, folder, ext = '.png', mode = '2d'):
     """ plot original morphology, new one and differences """
 
     if not os.path.isdir(folder):
@@ -396,14 +396,13 @@ def plot_diameter_diff(neuron_name, morph_path, new_morph_path, model, neurite_t
     neuron_orig = io.load_neuron(neuron_name, None, morph_path)
     neuron_diff_pos = io.load_neuron(neuron_name, None, morph_path)
     neuron_diff_neg = io.load_neuron(neuron_name, None, morph_path)
-    neuron_new = io.load_neuron(neuron_name, model, new_morph_path)
 
     fig, axs = plt.subplots(2, 2, figsize=(10, 10))
 
-    draw_axis(neuron_orig, ax=axs[0, 0])
+    draw_axis(neuron_orig, ax=axs[0, 0], mode=mode)
     axs[0, 0].set_title('Original neuron')
 
-    draw_axis(neuron_new, ax=axs[0, 1])
+    draw_axis(neuron_new, ax=axs[0, 1], mode=mode)
     axs[0, 1].set_title('New neuron')
 
     neurite_types = ['basal', 'axon', 'apical']
@@ -439,9 +438,9 @@ def plot_diameter_diff(neuron_name, morph_path, new_morph_path, model, neurite_t
                 diff_neg[diff_neg < 0] = 0
                 utils.set_diameters(s, diff_neg)
 
-    draw_axis(neuron_diff_pos, ax=axs[1, 0])
+    draw_axis(neuron_diff_pos, ax=axs[1, 0], mode=mode)
     axs[1, 0].set_title('Positive diameter differences')
-    draw_axis(neuron_diff_neg, ax=axs[1, 1])
+    draw_axis(neuron_diff_neg, ax=axs[1, 1], mode=mode)
     axs[1, 1].set_title('Negative diameter differences')
 
     fig.savefig(folder + '/' + neuron_name + '_' + folder + '_' + model + ext, dpi=500)

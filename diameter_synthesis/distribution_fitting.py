@@ -195,7 +195,7 @@ def fit_distribution_single(data, distribution, p=5):
         return {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1, 'num_value': len(data)}
 
 
-def fit_distribution(data, distribution, min_sample_num=20, p=5, n_bins=10, seq=None, extra_params=None, name = 'test', threshold = 1.):
+def fit_distribution(data, distribution, min_sample_num=10, p=5, n_bins=10, seq=None, extra_params=None, name = 'test', threshold = 1.):
     """ generic function to fit a distribution with scipy """
     if not isinstance(seq, str):  # if no sequential fitting needed
         return fit_distribution_single(data, distribution, p=p)
@@ -223,12 +223,12 @@ def fit_distribution(data, distribution, min_sample_num=20, p=5, n_bins=10, seq=
         for i in range(len(bins) - 1):
             data_tpe = values[(tpes >= bins[i]) & (tpes < bins[i + 1])]  # select the values by its type
             params[np.round((bins[i + 1] + bins[i]) / 2., ROUND)] = fit_distribution_single(data_tpe, distribution, p=p)
-        return update_params_fit_distribution(params, orders=extra_params['orders'])
+        return update_params_fit_distribution(params)
     else:
         return {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1, 'num_value': len(data), 'params_data': {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1, 'num_value': len(data)}}
 
 
-def update_params_fit_distribution(params_data, orders={'a': 1, 'loc': 1, 'scale': 1, 'min': 1, 'max': 1}):
+def update_params_fit_distribution(params_data):
     """ linear fit to model parameters as a function of a given quantity tpes_model
     and update the model dictionary with the fits of parameters """
 

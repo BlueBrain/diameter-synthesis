@@ -16,10 +16,8 @@ from diameter_synthesis.utils import get_diameters, set_diameters, section_lengt
 ## morphometric functions ##
 ############################
 
-
 def sibling_ratios(neurite, method='mean', seq=None, bounds=[0, 1 - 1e-5]):
     """ compute the siblig ratios of a neurite"""
-
     s_ratios = []
     # loop over bifuraction points
     for section in iter_sections(neurite):
@@ -44,7 +42,6 @@ def sibling_ratios(neurite, method='mean', seq=None, bounds=[0, 1 - 1e-5]):
 
 def sequential_single(seq, neurite=None, section=None):
     """ return the value for sequencial slicing"""
-
     if seq == 'asymmetry' or seq == 'asymmetry_threshold':
         if neurite is not None and section is None:
             val_min = -2
@@ -149,7 +146,6 @@ def sequential(data, seq, neurite, bounds=[-1000, 1000]):
 def rall_deviations(neurite, method='mean', seq=None, bounds=[0, 2 - 1e-5]):
     """Returns the Rall deviation the diameters
        of the segments of a tree. """
-
     rall_deviations = []
     for bif_point in nm.core.Tree.ibifurcation_point(next(iter_sections(neurite))):
         if len(bif_point.children) == 2:
@@ -176,13 +172,11 @@ def rall_deviations(neurite, method='mean', seq=None, bounds=[0, 2 - 1e-5]):
 
 def rall_reduction_factor(rall_deviation, siblings_ratio, seq=None):
     '''Returns the reduction factor for bifurcation diameter'''
-
     return (rall_deviation / (1. + siblings_ratio**(3. / 2.)))**(2. / 3.)
 
 
-def terminal_diameters(neurite, method='mean', threshold=1.0, seq=None):
+def terminal_diameters(neurite, method='mean', threshold=1.0, seq=None, bounds=[0,100]):
     """Returns the model for the terminations"""
-
     mean_diameter = np.mean(get_diameters(neurite))
 
     if method == 'mean':
@@ -196,22 +190,36 @@ def terminal_diameters(neurite, method='mean', threshold=1.0, seq=None):
     else:
         raise Exception('Method for singling computation not understood!')
 
-    return sequential(term_diam, seq, neurite)
+    return sequential(term_diam, seq, neurite, bounds=bounds)
 
 
-def trunk_diameter(neurite, seq=None):
+def min_diameter(neurite, seq=None, bounds=[0,100]):
+    """ get the min diameter of a neurite """
+    min_diam = 1e5
+    for section in iter_sections(neurite):
+        min_diam = min(min_diam, get_mean_diameter(section))
+
+    return sequential([min_diam, ], seq, neurite, bounds=bounds)
+
+
+def max_diameter(neurite, seq=None, bounds=[0,100]):
+    """ get the max diameter of a neurite """
+    max_diam = 0
+    for section in iter_sections(neurite):
+        max_diam = max(max_diam, get_mean_diameter(section))
+
+    return sequential([max_diam, ], seq, neurite, bounds=bounds)
+
+
+def trunk_diameter(neurite, seq=None, bounds=[0,100]):
     """ get the trunc diameters """
-
     trunk_diam = get_diameters(neurite.root_node)[0]
 
-    return sequential([trunk_diam, ], seq, neurite)
+    return sequential([trunk_diam, ], seq, neurite, bounds=bounds)
 
 
 def taper(neurite, min_num_points=20, fit_order=1, params=None, seq=None):
     """ get the taper """
-
-    #import pylab as plt
-
     tapers = []
     sec_id = []
     for i, section in enumerate(iter_sections(neurite)):
@@ -221,34 +229,10 @@ def taper(neurite, min_num_points=20, fit_order=1, params=None, seq=None):
         if len(lengths) > min_num_points:
             z = polynomial.polyfit(lengths, get_diameters(section), fit_order, full=True)
 
-            """
-            plt.figure()
-            plt.plot(lengths, get_diameters(section),'+')
-            plt.plot(lengths, np.poly1d(z[0])(lengths))
-            plt.title(str(np.round(z[1][0],3)))
-            plt.savefig('taper/fig_'+str(i)+'.png')
-            plt.close()
-            """
-
             tap = z[0][-1]
             residual = z[1][0]
             if residual < params['max_residual'] and abs(tap) > params['zeros'] and params['min'] < tap < params['max']:
                 tapers.append(tap)
                 sec_id.append(i)
-
-    """ 
-    bos = np.array(nm.get('section_branch_orders', neurite))[sec_id]
-    lens =np.array(nm.get('section_lengths', neurite))[sec_id]
-    plt.figure()
-    tapers = np.array(tapers)
-    print(lens,tapers)
-    plt.plot(lens, tapers, '+')
-    plt.axis([0,np.max(lens),-np.max(abs(tapers)), np.max(abs(tapers))])
-    plt.savefig('taper/fig_'+str(j)+'.png')
-    plt.close()
-    """
-
-    #bos = np.array(nm.get('section_path_distances', neurite))[sec_id]
-    # return [ [tap, bo ] for tap, bo in zip(tapers, bos)  ]
 
     return sequential(tapers, seq, neurite)
