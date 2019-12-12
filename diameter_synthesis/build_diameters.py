@@ -52,7 +52,7 @@ def build_diameters(models, models_params, morphologies_dict, neurite_types, new
         for mtype in morphologies_dict:
             for neuron in morphologies_dict[mtype]:
                 name, neuron_ext = os.path.splitext(neuron)
-                if neuron_ext in {'.h5', '.asc', '.swc'} and os.path.exists(morph_path + '/' + neuron):
+                if neuron_ext in {'.h5', '.asc', '.swc'} and os.path.exists(os.path.join(morph_path, neuron)):
                     neurons.append([neuron, mtype])
 
         # set all parameters
@@ -74,7 +74,6 @@ def build_diam_pool(all_models, model, models_params, neurite_types, extra_param
     neuron = io.load_morphology(filepath)
 
     np.random.seed(extra_params[model]['seed'])
-
     all_models[model](neuron, models_params[mtype][model], neurite_types, extra_params[model])
     if n_samples > 1:
         diameters = utils.get_all_diameters(neuron)
@@ -158,7 +157,6 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
                 if n_tries > 2 * n_tries_step:  # if we keep failing, slighly reduce the trunk diams
                     trunk_diam_frac -= TRUNK_FRAC_DECREASE
                     n_tries_step += 1
-
                 # don't try to much and keep the latest try
                 if n_tries > extra_params['trunk_max_tries'] and extra_params['trunk_max_tries'] > 1:
                     print('max tries attained with', neurite_type)
@@ -184,6 +182,10 @@ def diametrize_model_apical(neuron, params, neurite_types, extra_params):
 
                 # sample a trunk diameter
                 trunk_diam = trunk_diam_frac * get_trunk_diameter(neurite, params['trunk_diameter'][neurite_type])
+                if trunk_diam < 0.01:
+                    trunk_diam = 1.0
+                    print('sampled trunk diameter < 0.01, so use 1 instead')
+
                 # try to diametrize the neurite
                 wrong_tips = diametrize_tree(neurite, params, neurite_type, trunk_diam, mode_sibling='threshold', mode_rall='threshold', sibling_threshold=extra_params['threshold'][neurite_type], rall_threshold=extra_params['threshold'][neurite_type], with_asymmetry=True, no_taper=True, reduction_factor_max=1.0)
 

@@ -49,13 +49,14 @@ def cmd(config, out_dir):
         if not os.path.isdir(os.path.join(out_dir, figure_name + '_individual')):
             os.mkdir(os.path.join(out_dir, figure_name + '_individual'))  
 
+        """
         for i, (original_cell, diametrized_cell) in enumerate(zip(original_cells, diametrized_cells)):
             f, axes = plot_cumulative_distribution([original_cell], [diametrized_cell], feature1, feature2, neurite_types, auto_limit=False)
             fname = '{}_{}.svg'.format(figure_name, original_cell.name)
             f.savefig( os.path.join(out_dir, figure_name + '_individual/' , str(i) + '_' + fname), bbox_inches = 'tight')
             plt.close(f)
 
-
+        """ 
     with open(config, 'r') as f:
         config = json.load(f)
 
@@ -70,15 +71,26 @@ def cmd(config, out_dir):
     diametrized_dir = config['new_morph_path']
     neurite_types = config['neurite_types']
 
-    filenames = list(iter_morphology_filenames(original_dir))
+    filenames_original = list(iter_morphology_filenames(original_dir))
+    if len(list(filenames_original)) == 0: #to deal with cells in mtypes folder
+        filenames_original = []
+        for folder in os.listdir(original_dir):
+            for fname in os.listdir(os.path.join(original_dir, folder)):
+                if fname.endswith(('.h5', '.asc', '.swc')):
+                    filenames_original.append(os.path.join(folder, fname))
 
-    original_filepaths = (os.path.join(original_dir, filename) for filename in filenames if os.path.exists(os.path.join(diametrized_dir, model_names + '_' + filename)))
-    diametrized_filepaths = (os.path.join(diametrized_dir, model_names + '_' + filename) for filename in filenames if os.path.exists(os.path.join(diametrized_dir, model_names + '_' + filename)))
+    filenames_diametrized = list(iter_morphology_filenames(diametrized_dir))
+
+    original_filepaths = (os.path.join(original_dir, filename) for filename in filenames_original)# if os.path.exists(os.path.join(diametrized_dir, model_names + '_' + filename)))
+    diametrized_filepaths = (os.path.join(diametrized_dir, filename) for filename in filenames_diametrized)# if os.path.exists(os.path.join(diametrized_dir, filename)))
 
     print('Loading neurons...')
     original_cells = list(map(load_morphology, original_filepaths))
     diametrized_cells = list(map(load_morphology, diametrized_filepaths))
     print('...done.')
+    #sort cells to ensure they are ordered the same
+    original_cells = sorted(original_cells, key=lambda neuron: neuron.name)
+    diametrized_cells = sorted(diametrized_cells, key=lambda neuron: neuron.name)
 
     feature_pairs = [
             ('segment_radial_distances', 'segment_volumes'),

@@ -24,7 +24,7 @@ SPLINE_SMOOTH = 0.0001
 
 FORBIDDEN_MTYPES = ['L4_NGC', 'L4_CHC', 'L6_CHC', 'L6_DBC', ]
 
-def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mtypes_max = None, xml_file = 'neuronDB.xml', ext = '.asc', prefix = "", super_mtypes_path='../scripts/diameter_types/'):
+def create_morphologies_dict(morph_path, mtypes_sort='all', n_morphs_max=None, n_mtypes_max=None, xml_file='neuronDB.xml', with_json=False, with_folders=True, json_file='morphs.json', ext='.asc', prefix="", super_mtypes_path='../scripts/diameter_types/'):
     """ Create dict to load the morphologies from a directory, by mtypes or all at once """
 
     #if not max number of mtypes, take all
@@ -33,9 +33,46 @@ def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = Non
     if not n_morphs_max:
         n_morphs_max =  1e10
 
-    # try to load the files, if there is no neuronDB, set a constant mtype
     try:
+        with open(json_file, 'r') as f:
+            morph_name = json.load(f)
 
+        n_morphs = 0
+        name_dict = {}
+        for fname in tqdm(os.listdir(morph_path)):
+            filepath = os.path.join(morph_path, fname)
+            if fname.endswith(('.h5', '.asc', '.swc')) and os.path.exists(filepath) and n_morphs < n_morphs_max:
+                #get the mtype
+                mtype = morph_name[os.path.splitext(fname)[0]]
+                if mtype in name_dict:
+                    name_dict[mtype] += [prefix + fname]
+                else:
+                    name_dict[mtype] = [prefix + fname]
+                n_morphs +=1
+        return name_dict
+    except:
+        pass
+
+    try:
+        n_morphs = 0
+        name_dict = {}
+        for fold_name in tqdm(os.listdir(morph_path)):
+            for fname in os.listdir(os.path.join(morph_path, fold_name)):
+                if fname.endswith(('.h5', '.asc', '.swc')) and n_morphs < n_morphs_max:
+                    #get the mtype
+                    mtype = fold_name 
+                    #if it is an old mtype, convert it
+                    if mtype in name_dict:
+                        name_dict[mtype] += [os.path.join(fold_name,prefix + fname)]
+                    else:
+                        name_dict[mtype] = [os.path.join(fold_name, prefix + fname)]
+                    n_morphs +=1
+        return name_dict
+
+    except:
+        pass
+
+    try:
         #first load the neuronDB.xml file
         from xml.etree import ElementTree as ET
         FileDB = ET.parse(morph_path + xml_file)
@@ -84,6 +121,9 @@ def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = Non
                     print('Failed to process', e)
 
     except:
+        pass
+
+    try:
         L.warning('No neuronDB.xml file found, use same mtype for all')
 
         n_morphs = 0
@@ -94,7 +134,9 @@ def create_morphologies_dict(morph_path, mtypes_sort = 'all', n_morphs_max = Non
             if fname.endswith(('.h5', '.asc', '.swc')) and os.path.exists(filepath) and n_morphs < n_morphs_max:
                 name_dict['generic_type'] += [prefix + fname]
                 n_morphs +=1
-    return name_dict
+        return name_dict
+    except:
+        print('Could not load any files!')
 
 def load_morphologies(morph_path, mtypes_sort = 'all', n_morphs_max = None, n_mtypes_max = None, xml_file = './neuronDB.xml', ext = '.asc', prefix = ""):
     """ Load the morphologies from a directory, by mtypes or all at once """

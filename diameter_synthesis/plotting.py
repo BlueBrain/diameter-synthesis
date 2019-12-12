@@ -443,7 +443,7 @@ def plot_diameter_diff(neuron_name, morph_path, neuron_new, model, neurite_types
     draw_axis(neuron_diff_neg, ax=axs[1, 1], mode=mode)
     axs[1, 1].set_title('Negative diameter differences')
 
-    fig.savefig(folder + '/' + neuron_name + '_' + folder + '_' + model + ext, dpi=500)
+    fig.savefig(folder + '/' + model + '_' + neuron_new.name + '_' + folder + '_' + model + ext, dpi=500)
     plt.close('all')
 
 
@@ -464,7 +464,7 @@ def _create_data(feature1, feature2, original_cells, diametrized_cells, step_siz
         return bin_centers, bins
 
     def find_upper_bound(pairs):
-        return max(max(vals1.max(), vals2.max())for (vals1, _), (vals2, _) in pairs)
+        return max(max(max(vals1), max(vals2)) for (vals1, _), (vals2, _) in pairs)
 
     def per_neurite_data(cell1, cells2, neurite_types):
         for n, neurite_type in enumerate(neurite_types):
@@ -476,7 +476,12 @@ def _create_data(feature1, feature2, original_cells, diametrized_cells, step_siz
     iter_neurite_data = per_neurite_data(original_cells, diametrized_cells, neurite_types)
     for n, data_pairs in enumerate(iter_neurite_data):
 
-        upper_bound = find_upper_bound(data_pairs)
+        try:
+            upper_bound = find_upper_bound(data_pairs)
+        except:
+            print('failed to find upper bound, most likely due to no data points')
+            upper_bound = 2000 
+
         bin_centers, bins = create_bins(step_size, upper_bound)
 
         stats1 = np.empty((n_cells, len(bin_centers)), dtype=np.float)

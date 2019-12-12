@@ -55,8 +55,7 @@ def sequential_single(seq, neurite=None, section=None):
                     m = float(np.sum([sec.length for sec in bif_point.children[1].ipreorder()]))
 
                     if len(bif_point.children) == 3:
-                        m2 = float(
-                            np.sum([sec.length for sec in bif_point.children[2].ipreorder()]))
+                        m2 = float(np.sum([sec.length for sec in bif_point.children[2].ipreorder()]))
                         out.append(abs(np.max([n, m, m2]) - np.min([n, m, m2])) / tot_len)
                     else:
                         out.append(abs(n - m) / tot_len)
@@ -78,6 +77,9 @@ def sequential_single(seq, neurite=None, section=None):
                 else:
                     out = abs(n - m)
                 return out
+            else:
+                #print('single children, use asymetry = 1')
+                return 1.
 
         else:
             raise Exception('Please provide either a neurite or a section, not both')

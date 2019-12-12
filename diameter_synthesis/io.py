@@ -34,7 +34,10 @@ def load_morphology(filepath):
 def load_neuron(name, model_name, directory):
     """ load the neuron morphology for later analysis """
     prefix = '{}_'.format(model_name) if model_name else ''
-    filepath = os.path.join(directory, '{}{}.asc'.format(prefix, name))
+    try:
+        filepath = os.path.join(directory, '{}{}.h5'.format(prefix, name))
+    except:
+        filepath = os.path.join(directory, '{}{}.asc'.format(prefix, name))
     return load_morphology(filepath)
 
 
