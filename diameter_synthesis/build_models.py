@@ -548,6 +548,7 @@ def build_models(models, morphologies, neurite_types, extra_params, fig_folder='
         models_params[mtype] = {}
         models_data[mtype] = {}
         for model in models:
+            print(morphologies[mtype])
             models_params[mtype][model], models_data[mtype][model] = all_models[model](morphologies[mtype], neurite_types, extra_params[model], tqdm_2)
 
     # plot the distributions and fit of the data

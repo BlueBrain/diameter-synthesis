@@ -23,7 +23,7 @@ setup(
         'click>=7.0',
         'scipy>=1.2.0',
         'h5py>=2.9.0',
-        'neurom @ git+ssh://git@github.com/BlueBrain/NeuroM@mut_morphio',
+        'neurom @ git+ssh://git@github.com/BlueBrain/NeuroM@master',
         'voxcell>=2.5.5',
         'morphio'
     ],

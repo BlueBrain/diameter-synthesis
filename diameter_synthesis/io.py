@@ -5,7 +5,7 @@ import logging
 
 import neurom as nm
 from neurom.exceptions import RawDataError
-from neurom.exceptions import UnknownFileType
+#from neurom.exceptions import UnknownFileType
 
 
 L = logging.getLogger(__name__)
@@ -28,6 +28,7 @@ def iter_morphology_filepaths(directory, filenames=None):
 
 def load_morphology(filepath):
     """ Returns a morphology object using NeuroM """
+    print(type(nm.load_neuron(filepath)))
     return nm.load_neuron(filepath)
 
 
