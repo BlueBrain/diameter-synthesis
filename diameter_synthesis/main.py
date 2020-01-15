@@ -4,7 +4,6 @@ from diameter_synthesis.build_models import build_models
 import os
 import glob
 import shutil
-import click
 import json
 from tqdm import tqdm
 import numpy as np
@@ -28,14 +27,6 @@ class NpEncoder(json.JSONEncoder):
         else:
             return super(NpEncoder, self).default(obj)
 
-
-@click.group()
-def cli():
-    pass
-
-
-@cli.command('run_models')
-@click.argument('config_file', type=click.Path(exists=True))
 def run_models(config_file):
     """ Run the model extraction from config file"""
 
@@ -64,8 +55,6 @@ def run_models(config_file):
         json.dump(models_params, json_file, sort_keys=True, indent=4, cls=NpEncoder)
 
 
-@cli.command('run_diameters')
-@click.argument('config_file', type=click.Path(exists=True))
 def run_diameters(config_file):
     """ Build new diameters from config file and diameter model"""
 

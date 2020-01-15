@@ -5,7 +5,7 @@ import logging
 
 import neurom as nm
 from neurom.exceptions import RawDataError
-#from neurom.exceptions import UnknownFileType
+from neurom.exceptions import UnknownFileType
 
 
 L = logging.getLogger(__name__)
@@ -35,11 +35,14 @@ def load_neuron(name, model_name, directory):
     """ load the neuron morphology for later analysis """
     prefix = '{}_'.format(model_name) if model_name else ''
     try:
-        filepath = os.path.join(directory, '{}{}.h5'.format(prefix, name))
-        return load_morphology(filepath)
+        try:
+            filepath = os.path.join(directory, '{}{}.h5'.format(prefix, name))
+            return load_morphology(filepath)
+        except:
+            filepath = os.path.join(directory, '{}{}.asc'.format(prefix, name))
+            return load_morphology(filepath)
     except:
-        filepath = os.path.join(directory, '{}{}.asc'.format(prefix, name))
-        return load_morphology(filepath)
+        print('file not found')
 
 
 def load_morphologies(filepaths):
