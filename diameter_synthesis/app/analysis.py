@@ -81,6 +81,8 @@ def cmd(config, out_dir):
 
     filenames_diametrized = list(iter_morphology_filenames(diametrized_dir))
 
+    print(len(filenames_original))
+    print(len(filenames_diametrized))
     original_filepaths = (os.path.join(original_dir, filename) for filename in filenames_original)# if os.path.exists(os.path.join(diametrized_dir, model_names + '_' + filename)))
     diametrized_filepaths = (os.path.join(diametrized_dir, filename) for filename in filenames_diametrized)# if os.path.exists(os.path.join(diametrized_dir, filename)))
 

@@ -16,7 +16,7 @@ from diameter_synthesis.utils import get_diameters, set_diameters, section_lengt
 ## morphometric functions ##
 ############################
 
-def sibling_ratios(neurite, method='mean', seq=None, bounds=[0, 1 - 1e-5]):
+def sibling_ratios(neurite, method='mean', seq=None, bounds=[0, 1 + 1e-5]):
     """ compute the siblig ratios of a neurite"""
     s_ratios = []
     # loop over bifuraction points
@@ -145,7 +145,7 @@ def sequential(data, seq, neurite, bounds=[-1000, 1000]):
         return [[d, s] for d, s in zip(data, sequential_single(seq, neurite)) if bounds[0] < d < bounds[1]]
 
 
-def rall_deviations(neurite, method='mean', seq=None, bounds=[0, 2 - 1e-5]):
+def rall_deviations(neurite, method='mean', seq=None, bounds=[0, 1.5 - 1e-5]):
     """Returns the Rall deviation the diameters
        of the segments of a tree. """
     rall_deviations = []
@@ -213,9 +213,13 @@ def max_diameter(neurite, seq=None, bounds=[0,100]):
     return sequential([max_diam, ], seq, neurite, bounds=bounds)
 
 
-def trunk_diameter(neurite, seq=None, bounds=[0,100]):
+def trunk_diameter(neurite, seq=None, method='first', bounds=[0,100]):
     """ get the trunc diameters """
-    trunk_diam = get_diameters(neurite.root_node)[0]
+
+    if method == 'mean':
+        trunk_diam = get_mean_diameter(neurite.root_node)
+    if method == 'first':
+        trunk_diam = get_diameters(neurite.root_node)[0]
 
     return sequential([trunk_diam, ], seq, neurite, bounds=bounds)
 

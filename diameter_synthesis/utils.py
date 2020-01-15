@@ -44,11 +44,18 @@ def create_morphologies_dict(morph_path, mtypes_sort='all', n_morphs_max=None, n
             if fname.endswith(('.h5', '.asc', '.swc')) and os.path.exists(filepath) and n_morphs < n_morphs_max:
                 #get the mtype
                 mtype = morph_name[os.path.splitext(fname)[0]]
+                #if mtype == 'L6_BP':
+                #    mtype = "L6_BTC"
+                #if mtype == 'L4_NGC':
+                #    mtype = "L4_NBC"
+                #if mtype == 'L5_NGC':
+                #    mtype = "L5_NBC"
                 if mtype in name_dict:
                     name_dict[mtype] += [prefix + fname]
                 else:
                     name_dict[mtype] = [prefix + fname]
                 n_morphs +=1
+        print('found morph.json file')
         return name_dict
     except:
         pass
@@ -67,6 +74,7 @@ def create_morphologies_dict(morph_path, mtypes_sort='all', n_morphs_max=None, n
                     else:
                         name_dict[mtype] = [os.path.join(fold_name, prefix + fname)]
                     n_morphs +=1
+        print('found folder structure per mtype')
         return name_dict
 
     except:
@@ -120,11 +128,14 @@ def create_morphologies_dict(morph_path, mtypes_sort='all', n_morphs_max=None, n
                 except Exception as e:
                     print('Failed to process', e)
 
+        print('found neuronDB.xml')
+        return name_dict
+
     except:
         pass
 
     try:
-        L.warning('No neuronDB.xml file found, use same mtype for all')
+        print('use all files as single mtype')
 
         n_morphs = 0
         name_dict = {}
