@@ -373,8 +373,8 @@ def diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=10.
     #fact = 1.0
     #fact2 = 1.0
 
-    if initial_diam < min_diam:
-        min_diam = initial_diam
+    #if initial_diam < min_diam:
+    #    min_diam = initial_diam
 
     #if initial_diam > max_diam:
     #    max_diam = initial_diam

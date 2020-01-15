@@ -213,13 +213,15 @@ def max_diameter(neurite, seq=None, bounds=[0,100]):
     return sequential([max_diam, ], seq, neurite, bounds=bounds)
 
 
-def trunk_diameter(neurite, seq=None, method='first', bounds=[0,100]):
+def trunk_diameter(neurite, seq=None, method='last', bounds=[0,100]):
     """ get the trunc diameters """
 
     if method == 'mean':
         trunk_diam = get_mean_diameter(neurite.root_node)
     if method == 'first':
         trunk_diam = get_diameters(neurite.root_node)[0]
+    if method == 'last':
+        trunk_diam = get_diameters(neurite.root_node)[-1]
 
     return sequential([trunk_diam, ], seq, neurite, bounds=bounds)
 

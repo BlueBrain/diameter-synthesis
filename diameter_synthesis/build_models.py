@@ -548,16 +548,17 @@ def build_models(models, morphologies, neurite_types, extra_params, fig_folder='
         models_params[mtype] = {}
         models_data[mtype] = {}
         for model in models:
-            print(morphologies[mtype])
             models_params[mtype][model], models_data[mtype][model] = all_models[model](morphologies[mtype], neurite_types, extra_params[model], tqdm_2)
 
     # plot the distributions and fit of the data
     if plot:
         print('Plot the fits...')
-        shutil.rmtree(fig_folder, ignore_errors=True)
-        os.mkdir(fig_folder)
+        #shutil.rmtree(fig_folder, ignore_errors=True)
+        if not os.path.isdir(fig_folder):
+            os.mkdir(fig_folder)
         for mtype in tqdm(morphologies):  # for each mtypes
-            os.mkdir(fig_folder + '/' + mtype)
+            if not os.path.isdir(fig_folder + '/' + mtype):
+                os.mkdir(fig_folder + '/' + mtype)
             for model in models:  # for each diameter model
                 for fit_tpe in models_data[mtype][model]:  # for each fit of the data we did
                     plotting.plot_distribution_fit(models_data[mtype][model][fit_tpe], models_params[mtype][model][fit_tpe], neurite_types, fig_name=fig_folder + '/' + mtype + '/' + model + '_' + fit_tpe, ext=ext)

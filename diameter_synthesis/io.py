@@ -28,7 +28,6 @@ def iter_morphology_filepaths(directory, filenames=None):
 
 def load_morphology(filepath):
     """ Returns a morphology object using NeuroM """
-    print(type(nm.load_neuron(filepath)))
     return nm.load_neuron(filepath)
 
 

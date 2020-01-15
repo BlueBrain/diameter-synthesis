@@ -54,7 +54,7 @@ def run_models(config_file):
         if len(morphologies_tmp[m]) == 0:
             del morphologies[m]
 
-    print('Extracting models parameters...')
+    print('Extracting model parameters...')
     # compute the model
     models_params = build_models(config['models'], morphologies, config['neurite_types'],
                                  config['extra_params'], fig_folder=config['fig_folder'], ext=config['ext'], plot=config['plot'])
