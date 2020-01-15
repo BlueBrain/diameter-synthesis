@@ -143,7 +143,7 @@ def diametrize_model_generic(neuron, params, neurite_types, extra_params):
 
             wrong_tips = True
             n_tries = 0
-            trunk_diam_frac = 1.
+            trunk_diam_frac = 1.0
             n_tries_step = 1
             while wrong_tips:
 
@@ -176,7 +176,7 @@ def diametrize_model_apical(neuron, params, neurite_types, extra_params):
 
             wrong_tips = True
             n_tries = 0
-            trunk_diam_frac = 1.
+            trunk_diam_frac = 1.0
             n_tries_step = 1
             while wrong_tips:
 
@@ -187,7 +187,7 @@ def diametrize_model_apical(neuron, params, neurite_types, extra_params):
                     print('sampled trunk diameter < 0.01, so use 1 instead')
 
                 # try to diametrize the neurite
-                wrong_tips = diametrize_tree(neurite, params, neurite_type, trunk_diam, mode_sibling='threshold', mode_rall='threshold', sibling_threshold=extra_params['threshold'][neurite_type], rall_threshold=extra_params['threshold'][neurite_type], with_asymmetry=True, no_taper=True, reduction_factor_max=1.0)
+                wrong_tips = diametrize_tree(neurite, params, neurite_type, trunk_diam, mode_sibling='threshold', mode_rall='threshold', sibling_threshold=extra_params['threshold'][neurite_type], rall_threshold=extra_params['threshold'][neurite_type], with_asymmetry=True, no_taper=False, reduction_factor_max=1.0)
 
                 # if we can't get a good model, reduce the trunk diameter progressively
                 n_tries += 1
@@ -198,8 +198,8 @@ def diametrize_model_apical(neuron, params, neurite_types, extra_params):
                 # don't try to much and keep the latest try
                 if n_tries > extra_params['trunk_max_tries'] and extra_params['trunk_max_tries'] > 1:
                     print('max tries attained with', neurite_type)
-                    wrong_tips = False
-
+                    wrong_tips = False 
+    
 def get_sibling_ratio(section, params, mode='generic', tot_length=1., threshold=0.3):
     """return a sampled sibling ratio"""
     if mode == 'generic':
@@ -288,6 +288,7 @@ def get_daughter_diameters(section, terminal_diam, params, neurite_type, mode_si
         reduction_factor = morph_funcs.rall_reduction_factor(rall_deviation=rall_deviation, siblings_ratio=sibling_ratio)
 
     d0 = get_diameters(section)[-1]
+
     # if new terminal diam is too large from the previous section, reassign it
     terminal_diam = min(d0, terminal_diam)
 
@@ -297,9 +298,6 @@ def get_daughter_diameters(section, terminal_diam, params, neurite_type, mode_si
     # set minimum values if too small
     d1 = max(d1, terminal_diam)
     d2 = max(d2, terminal_diam)
-
-    #if reduction_factor == 1:
-    #    d2 *= 1.3
 
     diams = [d1] + (len(section.children) - 1) * [d2]
 

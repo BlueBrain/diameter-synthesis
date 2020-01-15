@@ -36,9 +36,10 @@ def load_neuron(name, model_name, directory):
     prefix = '{}_'.format(model_name) if model_name else ''
     try:
         filepath = os.path.join(directory, '{}{}.h5'.format(prefix, name))
+        return load_morphology(filepath)
     except:
         filepath = os.path.join(directory, '{}{}.asc'.format(prefix, name))
-    return load_morphology(filepath)
+        return load_morphology(filepath)
 
 
 def load_morphologies(filepaths):
@@ -49,7 +50,7 @@ def load_morphologies(filepaths):
         try:
             cell = load_morphology(filepath)
         except (RawDataError, UnknownFileType) as exc:
-            L.warning('%s failed to load: %s', filepath, exc)
+            #L.warning('%s failed to load: %s', filepath, exc)
             continue
         yield cell
 
