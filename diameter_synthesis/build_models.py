@@ -36,12 +36,14 @@ def sampling_model_sibling_asymmetry_trunk(morphologies, neurite_types, extra_pa
     rall_deviations = {}
     terminal_diameters = {}
     trunk_diameters = {}
+    trunk_tapers = {}
     tapers = {}
     for neurite_type in neurite_types:
         sibling_ratios[neurite_type] = []
         rall_deviations[neurite_type] = []
         terminal_diameters[neurite_type] = []
         trunk_diameters[neurite_type] = []
+        trunk_tapers[neurite_type] = []
         tapers[neurite_type] = []
 
     # loop first over all morphologies (TODO: could be parallelized)
@@ -59,6 +61,7 @@ def sampling_model_sibling_asymmetry_trunk(morphologies, neurite_types, extra_pa
                     rall_deviations[neurite_type] += morph_funcs.rall_deviations(neurite, seq=rall_deviation_sequential)
                     terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite, threshold=extra_params['terminal_threshold'], seq=terminal_diameters_sequential)
                     trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite, seq=trunk_diameters_sequential)
+                    trunk_tapers[neurite_type] += morph_funcs.taper(neurite, only_first=True)
                     tapers[neurite_type] += morph_funcs.taper(neurite, params=extra_params['taper'], seq=tapers_sequential)
 
     # do the fits of each morphological values
@@ -66,6 +69,7 @@ def sampling_model_sibling_asymmetry_trunk(morphologies, neurite_types, extra_pa
     rall_deviation_models = {}
     terminal_diameters_models = {}
     trunk_diameters_models = {}
+    trunk_tapers_models = {}
     tapers_models = {}
     for neurite_type in neurite_types:
 
@@ -93,6 +97,12 @@ def sampling_model_sibling_asymmetry_trunk(morphologies, neurite_types, extra_pa
         trunk_diameters_models[neurite_type]['sequential'] = trunk_diameters_sequential
         trunk_diameters_models[neurite_type]['params'] = fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], seq=trunk_diameters_sequential, extra_params=extra_params)
 
+        # trunk taper 
+        trunk_tapers_models[neurite_type] = {}
+        trunk_tapers_models[neurite_type]['distribution'] = 'exponnorm'
+        trunk_tapers_models[neurite_type]['sequential'] = None
+        trunk_tapers_models[neurite_type]['params'] = fit_distribution(trunk_tapers[neurite_type], trunk_tapers_models[neurite_type]['distribution'], seq=None, extra_params=extra_params)
+
         # taper
         tapers_models[neurite_type] = {}
         tapers_models[neurite_type]['distribution'] = 'exponnorm'
@@ -106,6 +116,7 @@ def sampling_model_sibling_asymmetry_trunk(morphologies, neurite_types, extra_pa
         'rall_deviation': rall_deviation_models,
         'terminal_diameter': terminal_diameters_models,
         'trunk_diameter': trunk_diameters_models,
+        'trunk_taper': trunk_tapers_models,
         'taper': tapers_models
     }
 
@@ -114,12 +125,11 @@ def sampling_model_sibling_asymmetry_trunk(morphologies, neurite_types, extra_pa
         'rall_deviation': rall_deviations,
         'terminal_diameter': terminal_diameters,
         'trunk_diameter': trunk_diameters,
+        'trunk_taper': trunk_tapers,
         'taper': tapers
     }
 
     return all_models, all_data
-
-
 
 def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, tqdm_disable=False):
     """ test for sampling models """
@@ -135,12 +145,14 @@ def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, 
     rall_deviations = {}
     terminal_diameters = {}
     trunk_diameters = {}
+    trunk_tapers = {}
     tapers = {}
     for neurite_type in neurite_types:
         sibling_ratios[neurite_type] = []
         rall_deviations[neurite_type] = []
         terminal_diameters[neurite_type] = []
         trunk_diameters[neurite_type] = []
+        trunk_tapers[neurite_type] = []
         tapers[neurite_type] = []
 
     # loop first over all morphologies (TODO: could be parallelized)
@@ -158,6 +170,7 @@ def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, 
                     rall_deviations[neurite_type] += morph_funcs.rall_deviations(neurite, seq=rall_deviation_sequential)
                     terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite, threshold=extra_params['terminal_threshold'], seq=terminal_diameters_sequential)
                     trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite, seq=trunk_diameters_sequential)
+                    trunk_tapers[neurite_type] += morph_funcs.taper(neurite, only_first=True)
                     tapers[neurite_type] += morph_funcs.taper(neurite, params=extra_params['taper'], seq=tapers_sequential)
 
     # do the fits of each morphological values
@@ -165,6 +178,7 @@ def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, 
     rall_deviation_models = {}
     terminal_diameters_models = {}
     trunk_diameters_models = {}
+    trunk_tapers_models = {}
     tapers_models = {}
     for neurite_type in neurite_types:
 
@@ -192,6 +206,12 @@ def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, 
         trunk_diameters_models[neurite_type]['sequential'] = trunk_diameters_sequential
         trunk_diameters_models[neurite_type]['params'] = fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], seq=trunk_diameters_sequential, extra_params=extra_params)
 
+        # trunk taper 
+        trunk_tapers_models[neurite_type] = {}
+        trunk_tapers_models[neurite_type]['distribution'] = 'skewnorm'
+        trunk_tapers_models[neurite_type]['sequential'] = None
+        trunk_tapers_models[neurite_type]['params'] = fit_distribution(trunk_tapers[neurite_type], trunk_tapers_models[neurite_type]['distribution'], seq=None, extra_params=extra_params)
+
         # taper
         tapers_models[neurite_type] = {}
         tapers_models[neurite_type]['distribution'] = 'exponnorm'
@@ -205,6 +225,7 @@ def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, 
         'rall_deviation': rall_deviation_models,
         'terminal_diameter': terminal_diameters_models,
         'trunk_diameter': trunk_diameters_models,
+        'trunk_taper': trunk_tapers_models,
         'taper': tapers_models
     }
 
@@ -213,6 +234,7 @@ def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, 
         'rall_deviation': rall_deviations,
         'terminal_diameter': terminal_diameters,
         'trunk_diameter': trunk_diameters,
+        'trunk_taper': trunk_tapers,
         'taper': tapers
     }
 

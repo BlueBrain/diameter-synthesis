@@ -12,6 +12,7 @@ set -e
 #module load neuron/7.6.8/python2/serial
 
 export OMP_NUM_THREADS=1
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 
 python create_jsons.py
 

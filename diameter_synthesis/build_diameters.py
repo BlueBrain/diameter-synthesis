@@ -120,6 +120,7 @@ def diametrize_model_astrocyte(neuron, params, neurite_types, extra_params):
                 # if we can't get a good model, reduce the trunk diameter progressively
                 n_tries += 1
                 if n_tries > 2 * n_tries_step:  # if we keep failing, slighly reduce the trunk diams
+                    print(n_tries)
                     trunk_diam_frac -= TRUNK_FRAC_DECREASE
                     n_tries_step += 1
 
@@ -167,6 +168,8 @@ def diametrize_model_apical(neuron, params, neurite_types, extra_params):
     '''Corrects the diameters of a morphio-neuron according to the model.
        Starts from the root and moves towards the tips.
     '''
+    
+    with_trunk_taper = False# experimental trunk tapering
 
     for neurite_type in neurite_types:
         neurites = (neurite for neurite in neuron.neurites if neurite.type ==
@@ -182,19 +185,23 @@ def diametrize_model_apical(neuron, params, neurite_types, extra_params):
 
                 # sample a trunk diameter
                 trunk_diam = trunk_diam_frac * get_trunk_diameter(neurite, params['trunk_diameter'][neurite_type])
+                if with_trunk_taper:
+                    trunk_taper = -get_trunk_taper(neurite, params['trunk_taper'][neurite_type])
+                else:
+                    trunk_taper = None
+
                 if trunk_diam < 0.01:
                     trunk_diam = 1.0
                     print('sampled trunk diameter < 0.01, so use 1 instead')
 
                 # try to diametrize the neurite
-                wrong_tips = diametrize_tree(neurite, params, neurite_type, trunk_diam, mode_sibling='threshold', mode_rall='threshold', sibling_threshold=extra_params['threshold'][neurite_type], rall_threshold=extra_params['threshold'][neurite_type], with_asymmetry=True, no_taper=False, reduction_factor_max=1.0)
+                wrong_tips = diametrize_tree(neurite, params, neurite_type, trunk_diam, mode_sibling='threshold', mode_rall='threshold', sibling_threshold=extra_params['threshold'][neurite_type], rall_threshold=extra_params['threshold'][neurite_type], with_asymmetry=True, no_taper=False, reduction_factor_max=1.0, trunk_taper=trunk_taper)
 
                 # if we can't get a good model, reduce the trunk diameter progressively
                 n_tries += 1
                 if n_tries > 2 * n_tries_step:  # if we keep failing, slighly reduce the trunk diams
                     trunk_diam_frac -= TRUNK_FRAC_DECREASE
                     n_tries_step += 1
-
                 # don't try to much and keep the latest try
                 if n_tries > extra_params['trunk_max_tries'] and extra_params['trunk_max_tries'] > 1:
                     print('max tries attained with', neurite_type)
@@ -251,6 +258,14 @@ def get_trunk_diameter(neurite, params):
     trunk_diam = sample_distribution(params, seq_value[0])
 
     return trunk_diam
+
+
+def get_trunk_taper(neurite, params):
+    """ sample a trunk taper """
+    seq_value = morph_funcs.sequential_single(params['sequential'], neurite=neurite)
+    trunk_taper = sample_distribution(params, seq_value[0])
+
+    return trunk_taper
 
 
 def get_terminal_diameter(neurite, params):
@@ -318,7 +333,7 @@ def get_daughter_diameters(section, terminal_diam, params, neurite_type, mode_si
     return diams
 
 
-def diametrize_tree(neurite, params, neurite_type, trunk_diam, mode_sibling='generic', mode_rall='generic', sibling_threshold=0.3, rall_threshold=0.3, with_asymmetry=False, no_taper=False, reduction_factor_max=1.0):
+def diametrize_tree(neurite, params, neurite_type, trunk_diam, mode_sibling='generic', mode_rall='generic', sibling_threshold=0.3, rall_threshold=0.3, with_asymmetry=False, no_taper=False, reduction_factor_max=1.0, trunk_taper=None):
     """ diametrize a single tree """
 
     # initialise status variables
@@ -335,12 +350,16 @@ def diametrize_tree(neurite, params, neurite_type, trunk_diam, mode_sibling='gen
         # set trunk diam if trunk, or first diam of the section otherwise
         if section.is_root():
             init_diam = trunk_diam
+            if trunk_taper is not None:
+                taper = trunk_taper
+            else:
+                taper = get_taper(neurite, params['taper'][neurite_type], no_taper=no_taper)
         else:
             init_diam = get_diameters(section)[0]
+            taper = get_taper(neurite, params['taper'][neurite_type], no_taper=no_taper)
 
         # sample a terminal diameter
         terminal_diam = get_terminal_diameter(neurite, params['terminal_diameter'][neurite_type])
-        taper = get_taper(neurite, params['taper'][neurite_type], no_taper=no_taper)
 
         # diametrize a section
         diametrize_section(section, init_diam, taper=taper, min_diam=terminal_diam, max_diam=trunk_diam)

@@ -226,8 +226,20 @@ def trunk_diameter(neurite, seq=None, method='last', bounds=[0,100]):
     return sequential([trunk_diam, ], seq, neurite, bounds=bounds)
 
 
-def taper(neurite, min_num_points=20, fit_order=1, params=None, seq=None):
+def taper(neurite, min_num_points=20, fit_order=1, params=None, seq=None, only_first=False):
     """ get the taper """
+
+    # to output the taper of the first section of the neurite only
+    if only_first: 
+        root_section = list(iter_sections(neurite))[0]
+        lengths = [0] + section_lengths(root_section)
+        z = polynomial.polyfit(lengths, get_diameters(root_section), fit_order, full=True)
+        tap = z[0][-1]
+        if -.1 < tap < 0: #only consider negative taper here
+            return [-tap,]
+        else:
+            return []
+
     tapers = []
     sec_id = []
     for i, section in enumerate(iter_sections(neurite)):

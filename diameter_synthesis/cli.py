@@ -11,6 +11,8 @@ def run_models(config_file):
     from .main import run_models
     run_models(config_file)
 
+@cli.command('run_diameters')
+@click.argument('config_file', type=click.Path(exists=True))
 def run_diameters(config_file):
     """ Build new diameters from config file and diameter model"""
     from .main import run_diameters

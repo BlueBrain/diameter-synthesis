@@ -37,7 +37,7 @@ def evaluate_distribution(x, distribution, params):
     if distribution == 'expon_rev':
         from scipy.stats import expon
 
-        return expon.pdf(1 - x, params['loc'], params['scale'])
+        return expon.pdf(-x, params['loc'], params['scale'])
 
     elif distribution == 'exponnorm':
         from scipy.stats import exponnorm
@@ -75,7 +75,7 @@ def sample_distribution_single(model):
     if model['distribution'] == 'expon_rev':
         from scipy.stats import expon
 
-        return truncate(lambda: 1. - expon.rvs(params['loc'], params['scale']), params['min'], params['max'])
+        return truncate(lambda: -expon.rvs(params['loc'], params['scale']), params['min'], params['max'])
 
     elif model['distribution'] == 'exponnorm':
         from scipy.stats import exponnorm
@@ -150,9 +150,9 @@ def fit_distribution_single(data, distribution, p=5):
 
         if distribution == 'expon_rev':
             from scipy.stats import expon
-            loc, scale = expon.fit(1 - np.array(data))
+            loc, scale = expon.fit(-np.array(data))
 
-            return {'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': 1, 'num_value': len(data)}
+            return {'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': np.round(max(data), ROUND), 'num_value': len(data)}
 
         elif distribution == 'exponnorm':
             from scipy.stats import exponnorm
