@@ -546,9 +546,15 @@ def sampling_model_generic(morphologies, neurite_types, extra_params, tqdm_disab
 
     return all_models, all_data
 
-
-def build_models(models, morphologies, neurite_types, extra_params, fig_folder='figures', ext='.png', plot=True):
+def build_models(morphologies, config):
     """ Building the models in the list of models """
+
+    models = config['models']
+    neurite_types = config['neurite_types']
+    extra_params = config['extra_params']
+    fig_folder = config['fig_folder']
+    ext = config['ext']
+    plot = config['plot']
 
     all_models = {}
     for model in models:
@@ -586,3 +592,43 @@ def build_models(models, morphologies, neurite_types, extra_params, fig_folder='
                     plotting.plot_distribution_fit(models_data[mtype][model][fit_tpe], models_params[mtype][model][fit_tpe], neurite_types, fig_name=fig_folder + '/' + mtype + '/' + model + '_' + fit_tpe, ext=ext)
 
     return models_params
+
+def build_model(morphologies, config):
+    """ Building a single model """
+
+    model = config['models'][0]
+    neurite_types = config['neurite_types']
+    extra_params = config['extra_params']
+    fig_folder = config['fig_folder']
+    ext = config['ext']
+    plot = config['plot']
+
+
+    if model == 'M0':
+        model_generator = sampling_model_generic
+    elif model == 'M1':
+        model_generator = sampling_model_sibling_asymmetry
+    elif model == 'M2':
+        model_generator = sampling_model_sibling_asymmetry_trunk
+    elif model == 'M3':
+        model_generator = sampling_model_astrocyte
+
+    # extract the data and the models
+    model_params = {}  # dictionary of model parameters for each mtype
+    model_data = {}  # dictionary of model parameters for each mtype
+    for mtype in morphologies:
+        model_params[mtype], model_data[mtype] = model_generator(morphologies[mtype], neurite_types, extra_params[model], False)
+
+    # plot the distributions and fit of the data
+    if plot:
+        print('Plot the fits...')
+        #shutil.rmtree(fig_folder, ignore_errors=True)
+        if not os.path.isdir(fig_folder):
+            os.mkdir(fig_folder)
+        for mtype in tqdm(morphologies):  # for each mtypes
+            if not os.path.isdir(fig_folder + '/' + mtype):
+                os.mkdir(fig_folder + '/' + mtype)
+            for fit_tpe in model_data[mtype]:  # for each fit of the data we did
+                plotting.plot_distribution_fit(model_data[mtype][fit_tpe], model_params[mtype][fit_tpe], neurite_types, fig_name=fig_folder + '/' + mtype + '/' + fit_tpe, ext=ext)
+
+    return model_params

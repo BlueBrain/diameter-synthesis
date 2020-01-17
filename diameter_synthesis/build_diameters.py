@@ -30,20 +30,22 @@ TRUNK_FRAC_DECREASE = 0.1
 ## Build diameters from a model ##
 ##################################
 
+def build_diameters(morphologies_dict, models_params, config):
+    """ Building the diameters from the generated diameter models with multiprocessing"""
 
-def build_diameters(models, models_params, morphologies_dict, neurite_types, new_morph_path, extra_params, morph_path, plot=True, n_cpu=1, n_samples=1, ext = '.png'):
-    """ Building the diameters from the generated diameter models"""
+    models = config['models'] 
+    neurite_types = config['neurite_types']
+    new_morph_path = config['new_morph_path'] 
+    extra_params = config['extra_params'] 
+    morph_path = config['morph_path'] 
+    plot = config['plot'] 
+    n_cpu = config['n_cpu'] 
+    n_samples = config['n_samples'] 
+    ext = config['ext']
 
     all_models = {}
     for model in models:
-        if model == 'M0':
-            all_models[model] = diametrize_model_generic
-        if model == 'M1':
-            all_models[model] = diametrize_model_apical
-        if model == 'M2':
-            all_models[model] = diametrize_model_apical
-        if model == 'M3':
-            all_models[model] = diametrize_model_astrocyte
+        all_models[model] = select_model(model)
 
     # collect neurons paths and mtypes
     for model in models:
@@ -55,31 +57,48 @@ def build_diameters(models, models_params, morphologies_dict, neurite_types, new
                 if neuron_ext in {'.h5', '.asc', '.swc'} and os.path.exists(os.path.join(morph_path, neuron)):
                     neurons.append([neuron, mtype])
 
-        # set all parameters
-        build_diam_poolf = partial(build_diam_pool, all_models, model, models_params,
-                                   neurite_types, extra_params, morph_path, new_morph_path, plot, n_samples, ext)
-
+        
         # generate diameters in parallel
         with Pool(processes=n_cpu) as p_build:  # initialise the parallel computation
-            list(tqdm(p_build.imap(build_diam_poolf, neurons), total=len(neurons)))
+            list(tqdm(p_build.imap(partial(build_diameters_pool, all_models, model, models_params, config), neurons), total=len(neurons)))
 
 
-def build_diam_pool(all_models, model, models_params, neurite_types, extra_params, morph_path, new_morph_path, plot, n_samples, ext, neuron_input):
-    """ build a neuron diameters, save and plot it """
+def build_diameters_pool(all_models, model, models_params, config, neuron_input):
+    """ function to build diameter of a neuron an plot it, for multiprocessing """
 
     fname = neuron_input[0]
     mtype = neuron_input[1]
 
-    filepath = os.path.join(morph_path, fname)
+    filepath = os.path.join(config['morph_path'], fname)
     neuron = io.load_morphology(filepath)
 
+    build_diameters_single_neuron(neuron, models_params[mtype][model], config)
+
+    io.save_neuron(neuron, model, config['new_morph_path'])
+
+    if config['plot']:
+        folder = 'shapes_' + os.path.basename(config['new_morph_path'][:-1])
+        plotting.plot_diameter_diff(os.path.splitext(fname)[0], config['morph_path'], neuron,
+                                    model, config['neurite_types'], folder=folder, ext=config['ext'])
+
+def build_diameters_single_neuron(neuron, models_params, config):
+    """ Building the diameters from the generated diameter models of a neuron"""
+
+    model = config['models'][0]
+    neurite_types = config['neurite_types']
+    extra_params = config['extra_params'] 
+    n_samples = config['n_samples'] 
+
     np.random.seed(extra_params[model]['seed'])
-    all_models[model](neuron, models_params[mtype][model], neurite_types, extra_params[model])
+
+    diameter_generator = select_model(model)
+
+    diameter_generator(neuron, models_params, neurite_types, extra_params[model])
+
     if n_samples > 1:
         diameters = utils.get_all_diameters(neuron)
         for i in range(n_samples - 1):
-            all_models[model](neuron, models_params[mtype][model],
-                              neurite_types, extra_params[model])
+            diameter_generator(neuron, models_params, neurite_types, extra_params[model])
             diameters_tmp = utils.get_all_diameters(neuron)
             for di, diams in enumerate(diameters_tmp):
                 diameters[di] += diams
@@ -89,11 +108,21 @@ def build_diam_pool(all_models, model, models_params, neurite_types, extra_param
 
         utils.set_all_diameters(neuron, diameters)
 
-    io.save_neuron(neuron, model, new_morph_path)
-    if plot:
-        folder = 'shapes_' + os.path.basename(new_morph_path[:-1])
-        plotting.plot_diameter_diff(os.path.splitext(fname)[0], morph_path, neuron,
-                                    model, neurite_types, folder=folder, ext = ext)
+
+###################
+# diameter models #
+###################
+
+def select_model(model):
+    """ select a model to use from available ones """
+    if model == 'M0':
+        return diametrize_model_generic
+    if model == 'M1':
+        return diametrize_model_apical
+    if model == 'M2':
+        return diametrize_model_apical
+    if model == 'M3':
+        return diametrize_model_astrocyte
 
 
 def diametrize_model_astrocyte(neuron, params, neurite_types, extra_params):
@@ -279,6 +308,7 @@ def get_terminal_diameter(neurite, params):
 
 def get_taper(section, params, no_taper=False):
     """ sample a taper """
+
     if no_taper:
         return 0.0
 
@@ -294,7 +324,6 @@ def get_daughter_diameters(section, terminal_diam, params, neurite_type, mode_si
 
     reduction_factor = reduction_factor_max + 1.0
     while reduction_factor > reduction_factor_max:  # try until we get a reduction of diameter in the branching
-
         sibling_ratio = get_sibling_ratio(section, params['sibling_ratio'][neurite_type], mode=mode_sibling, tot_length=tot_length, threshold=sibling_threshold)
         rall_deviation = get_rall_deviation(
             section, params['rall_deviation'][neurite_type], mode=mode_rall, tot_length=tot_length, threshold=rall_threshold)
