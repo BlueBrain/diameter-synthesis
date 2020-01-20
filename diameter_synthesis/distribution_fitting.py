@@ -1,61 +1,50 @@
-import os
-import glob
-import shutil
-import json
-from tqdm import tqdm
-
+""" Functions to fit distributions to parameters of diameter models """
 import numpy as np
-from numpy.polynomial import polynomial as polynomial
 from scipy.interpolate import UnivariateSpline
-
-import neurom as nm
-from neurom.core import iter_sections
+from scipy.stats import expon, exponnorm, gamma, skewnorm
 
 import diameter_synthesis.utils as utils
-from diameter_synthesis.utils import get_diameters, set_diameters, ROUND, MIN_DATA_POINTS, A_MAX, A_MIN
+from diameter_synthesis.utils import A_MAX, A_MIN, MIN_DATA_POINTS, ROUND
 
-####################################
-## Distribution related functions ##
-####################################
+##################################
+# Distribution related functions #
+##################################
 
 
-def build_spline(x, y, w):
+def build_spline(val_x, val_y, weights):
     """ build a spline model and return parameters"""
-    spl = UnivariateSpline(x, y) #, w=np.array(w) / np.sum(w), s=len(w) * utils.SPLINE_SMOOTH, k=3)
-    return spl._eval_args
+    spl = UnivariateSpline(val_x, val_y, w=np.array(weights) / np.sum(weights),
+                           s=len(weights) * utils.SPLINE_SMOOTH, k=3)
+    return spl._eval_args  # pylint: disable=protected-access
 
 
-def evaluate_spline(x, tck):
+def evaluate_spline(val_x, tck):
     """ evaluate a spline model from parameters"""
-    spl = UnivariateSpline._from_tck(tck)
-    return spl(x)
+    spl = UnivariateSpline._from_tck(tck)  # pylint: disable=protected-access
+
+    return spl(val_x)
 
 
-def evaluate_distribution(x, distribution, params):
+def evaluate_distribution(val_x, distribution, params):
     """ evaluate the fit of a distribution"""
 
     if distribution == 'expon_rev':
-        from scipy.stats import expon
 
-        return expon.pdf(-x, params['loc'], params['scale'])
+        return expon.pdf(-val_x, params['loc'], params['scale'])
 
-    elif distribution == 'exponnorm':
-        from scipy.stats import exponnorm
+    if distribution == 'exponnorm':
 
-        return exponnorm.pdf(x, params['a'], params['loc'], params['scale'])
+        return exponnorm.pdf(val_x, params['a'], params['loc'], params['scale'])
 
-    elif distribution == 'gamma':
-        from scipy.stats import gamma
+    if distribution == 'gamma':
 
-        return gamma.pdf(x, params['a'], params['loc'], params['scale'])
+        return gamma.pdf(val_x, params['a'], params['loc'], params['scale'])
 
-    elif distribution == 'skewnorm':
-        from scipy.stats import skewnorm
+    if distribution == 'skewnorm':
 
-        return skewnorm.pdf(x, params['a'], params['loc'], params['scale'])
+        return skewnorm.pdf(val_x, params['a'], params['loc'], params['scale'])
 
-    else:
-        raise Exception('Distribution not understood')
+    raise Exception('Distribution not understood')
 
 
 def truncate(sample_func, min_value, max_value):
@@ -73,159 +62,186 @@ def sample_distribution_single(model):
     params = model['params']
 
     if model['distribution'] == 'expon_rev':
-        from scipy.stats import expon
 
-        return truncate(lambda: -expon.rvs(params['loc'], params['scale']), params['min'], params['max'])
+        return truncate(lambda: -expon.rvs(params['loc'],
+                                           params['scale']),
+                        params['min'],
+                        params['max'])
 
-    elif model['distribution'] == 'exponnorm':
-        from scipy.stats import exponnorm
+    if model['distribution'] == 'exponnorm':
 
-        return truncate(lambda: exponnorm.rvs(np.clip(params['a'], A_MIN, A_MAX), params['loc'], params['scale']), params['min'], params['max'])
+        return truncate(lambda: exponnorm.rvs(np.clip(params['a'], A_MIN, A_MAX),
+                                              params['loc'],
+                                              params['scale']),
+                        params['min'],
+                        params['max'])
 
-    elif model['distribution'] == 'gamma':
-        from scipy.stats import gamma
+    if model['distribution'] == 'gamma':
 
-        return truncate(lambda: gamma.rvs(np.clip(params['a'], A_MIN, A_MAX), params['loc'], params['scale']), params['min'], params['max'])
+        return truncate(lambda: gamma.rvs(np.clip(params['a'], A_MIN, A_MAX),
+                                          params['loc'],
+                                          params['scale']),
+                        params['min'],
+                        params['max'])
 
-    elif model['distribution'] == 'skewnorm':
-        from scipy.stats import skewnorm
+    if model['distribution'] == 'skewnorm':
 
-        return truncate(lambda: skewnorm.rvs(np.clip(params['a'], A_MIN, A_MAX), params['loc'], params['scale']), params['min'], params['max'])
+        return truncate(lambda: skewnorm.rvs(np.clip(params['a'], A_MIN, A_MAX),
+                                             params['loc'],
+                                             params['scale']),
+                        params['min'],
+                        params['max'])
 
-    else:
-        raise Exception('Distribution not understood')
+    raise Exception('Distribution not understood')
 
 
 def sample_distribution(model, tpe=0):
     """ sample from a distribution"""
-    if not isinstance(model['sequential'], str) or model['sequential'] == 'asymmetry_threshold':  # if no sequential fitting needed
+    if not isinstance(
+            model['sequential'],
+            str) or model['sequential'] == 'asymmetry_threshold':  # if no sequential fitting needed
         return sample_distribution_single(model)
 
-    else:
+    # if our sample is out of the bins used for fitting, restrict to these bins
+    tpes = [*model['params']['params_data'].keys()]
+    tpe_min = float(tpes[0])
+    tpe_max = float(tpes[-1])
+    tpe = np.clip(tpe, tpe_min, tpe_max)
 
-        # if our sample is out of the bins used for fitting, restrict to these bins
-        tpes = [*model['params']['params_data'].keys()]
-        tpe_min = float(tpes[0])
-        tpe_max = float(tpes[-1])
-        tpe = np.clip(tpe, tpe_min, tpe_max)
+    model_tpe = {}
+    model_tpe['params'] = {}
+    model_tpe['distribution'] = model['distribution']
+    try:
+        model_tpe['params']['a'] = evaluate_spline(tpe, model['params']['a'])
+    except BaseException:  # pylint: disable=broad-except
+        pass
+    model_tpe['params']['loc'] = evaluate_spline(tpe, model['params']['loc'])
+    model_tpe['params']['scale'] = evaluate_spline(tpe, model['params']['scale'])
+    model_tpe['params']['min'] = evaluate_spline(tpe, model['params']['min'])
+    model_tpe['params']['max'] = evaluate_spline(tpe, model['params']['max'])
 
-        model_tpe = {}
-        model_tpe['params'] = {}
-        model_tpe['distribution'] = model['distribution']
-        try:
-            model_tpe['params']['a'] = evaluate_spline(tpe, model['params']['a'])
-        except:
-            pass
-        model_tpe['params']['loc'] = evaluate_spline(tpe, model['params']['loc'])
-        model_tpe['params']['scale'] = evaluate_spline(tpe, model['params']['scale'])
-        model_tpe['params']['min'] = evaluate_spline(tpe, model['params']['min'])
-        model_tpe['params']['max'] = evaluate_spline(tpe, model['params']['max'])
-
-        # TODO: update the hack to use the all data values if the fit failed (only basal)
-        """
-        if [*params.values()][0][0] == 0. or a < 0 or loc <0  or scale <0 or Min < 0 or Max<0:
-            try:
-                with open('./model_params_all.json', 'r') as f:
-                    params_all = json.load(f)
-                params_all = params_all['all_types']['M0']['trunk_diameter']['basal']['params']
-            except Exception as e:
-                print(e)
-                raise Exception('Could not load params_all.json, please create it or have more cells in each class.')
-
-            a = evaluate_spline(tpe, params_all['a'])
-            loc = evaluate_spline(tpe, params_all['loc'])
-            scale = evaluate_spline(tpe, params_all['scale'])
-            Min = evaluate_spline(tpe, params_all['min'])
-            Max = evaluate_spline(tpe, params_all['max'])
-        """
-        try:
-            return sample_distribution_single(model_tpe)
-        except:
-            raise Exception('error in parameters for tpe ', tpe, ' with model ', model_tpe)
+    try:
+        return sample_distribution_single(model_tpe)
+    except BaseException:  # pylint: disable=broad-except
+        raise Exception('error in parameters for tpe ', tpe, ' with model ', model_tpe)
 
 
-def fit_distribution_single(data, distribution, p=5):
+def fit_distribution_single(data, distribution, percentile=5):
     """ generic function to fit a distribution with scipy (single slice)"""
     if len(data) > MIN_DATA_POINTS:
 
         if distribution == 'expon_rev':
-            from scipy.stats import expon
-            loc, scale = expon.fit(-np.array(data))
+            loc, scale = expon.fit(-data)
 
-            return {'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': np.round(max(data), ROUND), 'num_value': len(data)}
+            return {'loc': np.round(loc, ROUND),
+                    'scale': np.round(scale, ROUND),
+                    'min': np.round(np.percentile(data, percentile), ROUND),
+                    'max': np.round(max(data), ROUND),
+                    'num_value': len(data)}
 
-        elif distribution == 'exponnorm':
-            from scipy.stats import exponnorm
-            a, loc, scale = exponnorm.fit(data)
+        if distribution == 'exponnorm':
+            var_a, loc, scale = exponnorm.fit(data)
             # refit if we get crazy values for a
-            if a > A_MAX:
-                a, loc, scale = exponnorm.fit(data, f0=A_MAX)
-            if a < A_MIN:
-                a, loc, scale = exponnorm.fit(data, f0=A_MIN)
+            if var_a > A_MAX:
+                var_a, loc, scale = exponnorm.fit(data, f0=A_MAX)
+            if var_a < A_MIN:
+                var_a, loc, scale = exponnorm.fit(data, f0=A_MIN)
 
-            return {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': np.round(np.percentile(data, 100 - p), ROUND), 'num_value': len(data)}
+            return {'a': np.round(var_a, ROUND),
+                    'loc': np.round(loc, ROUND),
+                    'scale': np.round(scale, ROUND),
+                    'min': np.round(np.percentile(data, percentile), ROUND),
+                    'max': np.round(np.percentile(data, 100 - percentile), ROUND),
+                    'num_value': len(data)}
 
-        elif distribution == 'skewnorm':
-            from scipy.stats import skewnorm
-            a, loc, scale = skewnorm.fit(data)
+        if distribution == 'skewnorm':
+            var_a, loc, scale = skewnorm.fit(data)
             # refit if we get crazy values for a
-            if a > A_MAX:
-                a, loc, scale = skewnorm.fit(data, f0=A_MAX)
-            if a < A_MIN:
-                a, loc, scale = skewnorm.fit(data, f0=A_MIN)
+            if var_a > A_MAX:
+                var_a, loc, scale = skewnorm.fit(data, f0=A_MAX)
+            if var_a < A_MIN:
+                var_a, loc, scale = skewnorm.fit(data, f0=A_MIN)
 
-            return {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': np.round(np.percentile(data, 100 - p), ROUND), 'num_value': len(data)}
+            return {'a': np.round(var_a, ROUND),
+                    'loc': np.round(loc, ROUND),
+                    'scale': np.round(scale, ROUND),
+                    'min': np.round(np.percentile(data, percentile), ROUND),
+                    'max': np.round(np.percentile(data, 100 - percentile), ROUND),
+                    'num_value': len(data)}
 
-        elif distribution == 'gamma':
-            from scipy.stats import gamma
-
-            a, loc, scale = gamma.fit(data, floc=-1e-9)
+        if distribution == 'gamma':
+            var_a, loc, scale = gamma.fit(data, floc=-1e-9)
             # refit if we get crazy values for a
-            if a > A_MAX:
-                a, loc, scale = gamma.fit(data, f0=A_MAX, floc=-1e-9)
-            if a < A_MIN:
-                a, loc, scale = gamma.fit(data, f0=A_MIN, floc=-1e-9)
+            if var_a > A_MAX:
+                var_a, loc, scale = gamma.fit(data, f0=A_MAX, floc=-1e-9)
+            if var_a < A_MIN:
+                var_a, loc, scale = gamma.fit(data, f0=A_MIN, floc=-1e-9)
 
-            return {'a': np.round(a, ROUND), 'loc': np.round(loc, ROUND), 'scale': np.round(scale, ROUND), 'min': np.round(np.percentile(data, p), ROUND), 'max': np.round(np.percentile(data, 100 - p), ROUND), 'num_value': len(data)}
+            return {'a': np.round(var_a, ROUND),
+                    'loc': np.round(loc, ROUND),
+                    'scale': np.round(scale, ROUND),
+                    'min': np.round(np.percentile(data, percentile), ROUND),
+                    'max': np.round(np.percentile(data, 100 - percentile), ROUND),
+                    'num_value': len(data)}
 
-        else:
-            raise Exception('Distribution not understood')
-    else:
-        # if no data, return null parameters (for neurons without apical dentrites)
-        return {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1, 'num_value': len(data)}
+        raise Exception('Distribution not understood')
+    # if no data, return null parameters (for neurons without apical dentrites)
+    return {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1, 'num_value': len(data)}
 
 
-def fit_distribution(data, distribution, min_sample_num=10, p=5, n_bins=10, seq=None, extra_params=None, name = 'test', threshold = 1.):
+def fit_distribution(data, distribution, seq=None, extra_params=None):
     """ generic function to fit a distribution with scipy """
+
+    n_bins = 10
+    percentile = 5
+    min_sample_num = 10
+    threshold = extra_params['threshold'][extra_params['neurite_type']]
+
     if not isinstance(seq, str):  # if no sequential fitting needed
-        return fit_distribution_single(data, distribution, p=p)
+        return fit_distribution_single(data, distribution, percentile=percentile)
 
-    elif seq == 'asymmetry_threshold':
+    if seq == 'asymmetry_threshold':
 
-        if len(data)>0:
-            tpes = np.asarray(data)[:, 1]  # collect the type of point
-            values = np.asarray(data)[:, 0]  # collect the data itself
+        if len(data) > 0:
+            # here, enforcing a flat type is necessary, for some weird reason!
+            tpes = np.asarray(data, dtype=np.float32)[:, 1]  # collect the type of point
+            values = np.asarray(data, dtype=np.float32)[:, 0]  # collect the data itself
 
             values = values[tpes < threshold]
 
-            return fit_distribution_single(values, distribution, p=p)
-        else:
-            return 0
+            return fit_distribution_single(values, distribution, percentile=percentile)
+        return 0
 
-    elif len(data) > 0:
+    if len(data) > 0:
         tpes = np.asarray(data)[:, 1]  # collect the type of point
         values = np.asarray(data)[:, 0]  # collect the data itself
 
-        # set the bins for estimating parameters if we can otherwise use two bins to be able to fit later
-        bins, num_values = utils.set_bins(tpes, n_bins, n_min=min_sample_num)
+        # set the bins for estimating parameters if we can otherwise use two bins
+        # to be able to fit later
+        bins, _ = utils.set_bins(tpes, n_bins, n_min=min_sample_num)
 
         params = {}
         for i in range(len(bins) - 1):
-            data_tpe = values[(tpes >= bins[i]) & (tpes < bins[i + 1])]  # select the values by its type
-            params[np.round((bins[i + 1] + bins[i]) / 2., ROUND)] = fit_distribution_single(data_tpe, distribution, p=p)
+            data_tpe = values[(tpes >= bins[i]) & (tpes < bins[i + 1])
+                              ]  # select the values by its type
+            params[np.round((bins[i + 1] + bins[i]) / 2., ROUND)
+                   ] = fit_distribution_single(data_tpe, distribution, percentile=percentile)
         return update_params_fit_distribution(params)
-    else:
-        return {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1, 'num_value': len(data), 'params_data': {'a': 0., 'loc': 0., 'scale': 0., 'min': 0., 'max': 0.1, 'num_value': len(data)}}
+
+    return {
+        'a': 0.,
+        'loc': 0.,
+        'scale': 0.,
+        'min': 0.,
+        'max': 0.1,
+        'num_value': len(data),
+        'params_data': {
+            'a': 0.,
+            'loc': 0.,
+            'scale': 0.,
+            'min': 0.,
+            'max': 0.1,
+            'num_value': len(data)}}
 
 
 def update_params_fit_distribution(params_data):
@@ -241,26 +257,26 @@ def update_params_fit_distribution(params_data):
         params_values = [*params_data.values()]
 
         try:
-            As = np.array([v['a'] for v in params_values])
+            var_as = np.array([v['a'] for v in params_values])
             # prevent large or small values of a from bad fits
-            As = np.clip(As, A_MIN, A_MAX)
-        except:
+            var_as = np.clip(var_as, A_MIN, A_MAX)
+        except BaseException:  # pylint: disable=broad-except
             pass
         locs = np.array([v['loc'] for v in params_values])
         scales = np.array([v['scale'] for v in params_values])
         mins = np.array([v['min'] for v in params_values])
         maxs = np.array([v['max'] for v in params_values])
-        w = np.array([v['num_value'] for v in params_values])
+        weights = np.array([v['num_value'] for v in params_values])
 
         try:
-            params['a'] = build_spline(tpes_model, As, w)
-        except:
+            params['a'] = build_spline(tpes_model, var_as, weights)
+        except BaseException:  # pylint: disable=broad-except
             pass
-        params['loc'] = build_spline(tpes_model, locs, w)
-        params['scale'] = build_spline(tpes_model, scales, w)
-        params['min'] = build_spline(tpes_model, mins, w)
-        params['max'] = build_spline(tpes_model, maxs, w)
-        params['num_value'] = np.sum(w)
+        params['loc'] = build_spline(tpes_model, locs, weights)
+        params['scale'] = build_spline(tpes_model, scales, weights)
+        params['min'] = build_spline(tpes_model, mins, weights)
+        params['max'] = build_spline(tpes_model, maxs, weights)
+        params['num_value'] = np.sum(weights)
 
     else:
         params['a'] = [0.]

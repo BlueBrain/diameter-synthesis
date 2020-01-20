@@ -1,12 +1,10 @@
 """ Helper functions for loading and writing morphologies """
 
-import os
 import logging
+import os
 
 import neurom as nm
-from neurom.exceptions import RawDataError
-from neurom.exceptions import UnknownFileType
-
+from neurom.exceptions import RawDataError, UnknownFileType
 
 L = logging.getLogger(__name__)
 
@@ -38,10 +36,10 @@ def load_neuron(name, model_name, directory):
         try:
             filepath = os.path.join(directory, '{}{}.h5'.format(prefix, name))
             return load_morphology(filepath)
-        except:
+        except (RawDataError, UnknownFileType):
             filepath = os.path.join(directory, '{}{}.asc'.format(prefix, name))
             return load_morphology(filepath)
-    except:
+    except (RawDataError, UnknownFileType):
         print('file not found')
 
 
@@ -52,8 +50,7 @@ def load_morphologies(filepaths):
     for filepath in filepaths:
         try:
             cell = load_morphology(filepath)
-        except (RawDataError, UnknownFileType) as exc:
-            #L.warning('%s failed to load: %s', filepath, exc)
+        except (RawDataError, UnknownFileType):
             continue
         yield cell
 

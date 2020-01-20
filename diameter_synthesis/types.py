@@ -1,6 +1,7 @@
 """ Type mappings between NeuroM and MorphIO """
-from neurom import NeuriteType
 from morphio import SectionType
+
+from neurom import NeuriteType
 
 STR_TO_TYPES = {'apical': SectionType.apical_dendrite,
                 'basal': SectionType.basal_dendrite,

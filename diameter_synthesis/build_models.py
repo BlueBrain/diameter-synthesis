@@ -1,573 +1,47 @@
+""" Construct diameter models from cells """
 import os
-import glob
-import shutil
-import json
+from functools import partial
+
 from tqdm import tqdm
 
-import numpy as np
-
-import neurom as nm
-from neurom import COLS
-from neurom.core import iter_sections
-
-from diameter_synthesis.types import STR_TO_TYPES, TYPE_TO_STR
-
-import diameter_synthesis.utils as utils
-from diameter_synthesis.distribution_fitting import fit_distribution, update_params_fit_distribution
 import diameter_synthesis.morph_functions as morph_funcs
 import diameter_synthesis.plotting as plotting
+import diameter_synthesis.utils as utils
+from diameter_synthesis.distribution_fitting import fit_distribution
+from diameter_synthesis.types import STR_TO_TYPES
 
-##############################################
-## Build a model from a set of morphologies ##
-##############################################
+############################################
+# Build a model from a set of morphologies #
+############################################
 
 
-def sampling_model_sibling_asymmetry_trunk(morphologies, neurite_types, extra_params, tqdm_disable=False):
-    """ test for sampling models """
-
-    sibling_sequential = 'asymmetry_threshold'
-    rall_deviation_sequential = 'asymmetry_threshold'
-    terminal_diameters_sequential = None
-    trunk_diameters_sequential = 'max_branch' 
-    tapers_sequential = None
-
-    # initialise dictionaries for collecting morphological quantities
-    sibling_ratios = {}
-    rall_deviations = {}
-    terminal_diameters = {}
-    trunk_diameters = {}
-    trunk_tapers = {}
-    tapers = {}
-    for neurite_type in neurite_types:
-        sibling_ratios[neurite_type] = []
-        rall_deviations[neurite_type] = []
-        terminal_diameters[neurite_type] = []
-        trunk_diameters[neurite_type] = []
-        trunk_tapers[neurite_type] = []
-        tapers[neurite_type] = []
-
-    # loop first over all morphologies (TODO: could be parallelized)
-    i = 0
-    for neuron in tqdm(morphologies, disable=tqdm_disable):
-        # for each neurite in the neuron
-        for neurite in neuron.neurites:
-            # for each type of neurite we consider
-            for neurite_type in neurite_types:
-
-                if neurite.type == STR_TO_TYPES[neurite_type]:
-
-                    # compute here all the morphological values from the neurite
-                    sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(neurite, seq=sibling_sequential)
-                    rall_deviations[neurite_type] += morph_funcs.rall_deviations(neurite, seq=rall_deviation_sequential)
-                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite, threshold=extra_params['terminal_threshold'], seq=terminal_diameters_sequential)
-                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite, seq=trunk_diameters_sequential)
-                    trunk_tapers[neurite_type] += morph_funcs.taper(neurite, only_first=True)
-                    tapers[neurite_type] += morph_funcs.taper(neurite, params=extra_params['taper'], seq=tapers_sequential)
-
-    # do the fits of each morphological values
-    sibling_ratio_models = {}
-    rall_deviation_models = {}
-    terminal_diameters_models = {}
-    trunk_diameters_models = {}
-    trunk_tapers_models = {}
-    tapers_models = {}
-    for neurite_type in neurite_types:
-
-        # sibling ratio
-        sibling_ratio_models[neurite_type] = {}
-        sibling_ratio_models[neurite_type]['distribution'] = 'expon_rev'
-        sibling_ratio_models[neurite_type]['sequential'] = sibling_sequential
-        sibling_ratio_models[neurite_type]['params'] = fit_distribution(sibling_ratios[neurite_type], sibling_ratio_models[neurite_type]['distribution'], seq=sibling_sequential, extra_params=extra_params, name ='sibling', threshold=extra_params['threshold'][neurite_type] )
-
-        # Rall deviation
-        rall_deviation_models[neurite_type] = {}
-        rall_deviation_models[neurite_type]['distribution'] = 'exponnorm'
-        rall_deviation_models[neurite_type]['sequential'] = rall_deviation_sequential
-        rall_deviation_models[neurite_type]['params'] = fit_distribution(rall_deviations[neurite_type], rall_deviation_models[neurite_type]['distribution'], seq=rall_deviation_sequential, extra_params=extra_params, name ='Rall', threshold=extra_params['threshold'][neurite_type] )
-
-        # terminal diameters
-        terminal_diameters_models[neurite_type] = {}
-        terminal_diameters_models[neurite_type]['distribution'] = 'exponnorm'
-        terminal_diameters_models[neurite_type]['sequential'] = terminal_diameters_sequential
-        terminal_diameters_models[neurite_type]['params'] = fit_distribution(terminal_diameters[neurite_type], terminal_diameters_models[neurite_type]['distribution'], seq=terminal_diameters_sequential, extra_params=extra_params)
-
-        # trunk diameters
-        trunk_diameters_models[neurite_type] = {}
-        trunk_diameters_models[neurite_type]['distribution'] = 'exponnorm'
-        trunk_diameters_models[neurite_type]['sequential'] = trunk_diameters_sequential
-        trunk_diameters_models[neurite_type]['params'] = fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], seq=trunk_diameters_sequential, extra_params=extra_params)
-
-        # trunk taper 
-        trunk_tapers_models[neurite_type] = {}
-        trunk_tapers_models[neurite_type]['distribution'] = 'exponnorm'
-        trunk_tapers_models[neurite_type]['sequential'] = None
-        trunk_tapers_models[neurite_type]['params'] = fit_distribution(trunk_tapers[neurite_type], trunk_tapers_models[neurite_type]['distribution'], seq=None, extra_params=extra_params)
-
-        # taper
-        tapers_models[neurite_type] = {}
-        tapers_models[neurite_type]['distribution'] = 'exponnorm'
-        tapers_models[neurite_type]['sequential'] = tapers_sequential
-        tapers_models[neurite_type]['params'] = fit_distribution(
-            tapers[neurite_type], tapers_models[neurite_type]['distribution'], seq=tapers_sequential, extra_params=extra_params)
-
-    # collect all models in one dictionary
-    all_models = {
-        'sibling_ratio': sibling_ratio_models,
-        'rall_deviation': rall_deviation_models,
-        'terminal_diameter': terminal_diameters_models,
-        'trunk_diameter': trunk_diameters_models,
-        'trunk_taper': trunk_tapers_models,
-        'taper': tapers_models
-    }
-
-    all_data = {
-        'sibling_ratio': sibling_ratios,
-        'rall_deviation': rall_deviations,
-        'terminal_diameter': terminal_diameters,
-        'trunk_diameter': trunk_diameters,
-        'trunk_taper': trunk_tapers,
-        'taper': tapers
-    }
-
-    return all_models, all_data
-
-def sampling_model_sibling_asymmetry(morphologies, neurite_types, extra_params, tqdm_disable=False):
-    """ test for sampling models """
-
-    sibling_sequential = 'asymmetry_threshold'
-    rall_deviation_sequential = 'asymmetry_threshold'
-    terminal_diameters_sequential = None
-    trunk_diameters_sequential = None #'max_branch' 
-    tapers_sequential = None
-
-    # initialise dictionaries for collecting morphological quantities
-    sibling_ratios = {}
-    rall_deviations = {}
-    terminal_diameters = {}
-    trunk_diameters = {}
-    trunk_tapers = {}
-    tapers = {}
-    for neurite_type in neurite_types:
-        sibling_ratios[neurite_type] = []
-        rall_deviations[neurite_type] = []
-        terminal_diameters[neurite_type] = []
-        trunk_diameters[neurite_type] = []
-        trunk_tapers[neurite_type] = []
-        tapers[neurite_type] = []
-
-    # loop first over all morphologies (TODO: could be parallelized)
-    i = 0
-    for neuron in tqdm(morphologies, disable=tqdm_disable):
-        # for each neurite in the neuron
-        for neurite in neuron.neurites:
-            # for each type of neurite we consider
-            for neurite_type in neurite_types:
-
-                if neurite.type == STR_TO_TYPES[neurite_type]:
-
-                    # compute here all the morphological values from the neurite
-                    sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(neurite, seq=sibling_sequential)
-                    rall_deviations[neurite_type] += morph_funcs.rall_deviations(neurite, seq=rall_deviation_sequential)
-                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite, threshold=extra_params['terminal_threshold'], seq=terminal_diameters_sequential)
-                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite, seq=trunk_diameters_sequential)
-                    trunk_tapers[neurite_type] += morph_funcs.taper(neurite, only_first=True)
-                    tapers[neurite_type] += morph_funcs.taper(neurite, params=extra_params['taper'], seq=tapers_sequential)
-
-    # do the fits of each morphological values
-    sibling_ratio_models = {}
-    rall_deviation_models = {}
-    terminal_diameters_models = {}
-    trunk_diameters_models = {}
-    trunk_tapers_models = {}
-    tapers_models = {}
-    for neurite_type in neurite_types:
-
-        # sibling ratio
-        sibling_ratio_models[neurite_type] = {}
-        sibling_ratio_models[neurite_type]['distribution'] = 'expon_rev'
-        sibling_ratio_models[neurite_type]['sequential'] = sibling_sequential
-        sibling_ratio_models[neurite_type]['params'] = fit_distribution(sibling_ratios[neurite_type], sibling_ratio_models[neurite_type]['distribution'], seq=sibling_sequential, extra_params=extra_params, name ='sibling', threshold=extra_params['threshold'][neurite_type] )
-
-        # Rall deviation
-        rall_deviation_models[neurite_type] = {}
-        rall_deviation_models[neurite_type]['distribution'] = 'exponnorm'
-        rall_deviation_models[neurite_type]['sequential'] = rall_deviation_sequential
-        rall_deviation_models[neurite_type]['params'] = fit_distribution(rall_deviations[neurite_type], rall_deviation_models[neurite_type]['distribution'], seq=rall_deviation_sequential, extra_params=extra_params, name ='Rall', threshold=extra_params['threshold'][neurite_type] )
-
-        # terminal diameters
-        terminal_diameters_models[neurite_type] = {}
-        terminal_diameters_models[neurite_type]['distribution'] = 'exponnorm'
-        terminal_diameters_models[neurite_type]['sequential'] = terminal_diameters_sequential
-        terminal_diameters_models[neurite_type]['params'] = fit_distribution(terminal_diameters[neurite_type], terminal_diameters_models[neurite_type]['distribution'], seq=terminal_diameters_sequential, extra_params=extra_params)
-
-        # trunk diameters
-        trunk_diameters_models[neurite_type] = {}
-        trunk_diameters_models[neurite_type]['distribution'] = 'exponnorm'
-        trunk_diameters_models[neurite_type]['sequential'] = trunk_diameters_sequential
-        trunk_diameters_models[neurite_type]['params'] = fit_distribution(trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], seq=trunk_diameters_sequential, extra_params=extra_params)
-
-        # trunk taper 
-        trunk_tapers_models[neurite_type] = {}
-        trunk_tapers_models[neurite_type]['distribution'] = 'skewnorm'
-        trunk_tapers_models[neurite_type]['sequential'] = None
-        trunk_tapers_models[neurite_type]['params'] = fit_distribution(trunk_tapers[neurite_type], trunk_tapers_models[neurite_type]['distribution'], seq=None, extra_params=extra_params)
-
-        # taper
-        tapers_models[neurite_type] = {}
-        tapers_models[neurite_type]['distribution'] = 'exponnorm'
-        tapers_models[neurite_type]['sequential'] = tapers_sequential
-        tapers_models[neurite_type]['params'] = fit_distribution(
-            tapers[neurite_type], tapers_models[neurite_type]['distribution'], seq=tapers_sequential, extra_params=extra_params)
-
-    # collect all models in one dictionary
-    all_models = {
-        'sibling_ratio': sibling_ratio_models,
-        'rall_deviation': rall_deviation_models,
-        'terminal_diameter': terminal_diameters_models,
-        'trunk_diameter': trunk_diameters_models,
-        'trunk_taper': trunk_tapers_models,
-        'taper': tapers_models
-    }
-
-    all_data = {
-        'sibling_ratio': sibling_ratios,
-        'rall_deviation': rall_deviations,
-        'terminal_diameter': terminal_diameters,
-        'trunk_diameter': trunk_diameters,
-        'trunk_taper': trunk_tapers,
-        'taper': tapers
-    }
-
-    return all_models, all_data
-
-
-def sampling_model_trunk_path(morphologies, neurite_types, extra_params, tqdm_disable=False):
-    """ test for sampling models """
-
-    sibling_sequential = None
-    rall_deviation_sequential = None
-    terminal_diameters_sequential = None
-    trunk_diameters_sequential = 'max_path'
-    tapers_sequential = None
-
-    # initialise dictionaries for collecting morphological quantities
-    sibling_ratios = {}
-    rall_deviations = {}
-    terminal_diameters = {}
-    trunk_diameters = {}
-    tapers = {}
-    for neurite_type in neurite_types:
-        sibling_ratios[neurite_type] = []
-        rall_deviations[neurite_type] = []
-        terminal_diameters[neurite_type] = []
-        trunk_diameters[neurite_type] = []
-        tapers[neurite_type] = []
-
-    # loop first over all morphologies (TODO: could be parallelized)
-    i = 0
-    for neuron in tqdm(morphologies, disable=tqdm_disable):
-        # for each neurite in the neuron
-        for neurite in neuron.neurites:
-            # for each type of neurite we consider
-            for neurite_type in neurite_types:
-
-                if neurite.type == STR_TO_TYPES[neurite_type]:
-
-                    # compute here all the morphological values from the neurite
-                    sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(neurite, seq=sibling_sequential)
-                    rall_deviations[neurite_type] += morph_funcs.rall_deviations(neurite, seq=rall_deviation_sequential)
-                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite, threshold=extra_params['terminal_threshold'], seq=terminal_diameters_sequential)
-                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite, seq=trunk_diameters_sequential)
-                    tapers[neurite_type] += morph_funcs.taper(neurite, params=extra_params['taper'], seq=tapers_sequential)
-
-    # do the fits of each morphological values
-    sibling_ratio_models = {}
-    rall_deviation_models = {}
-    terminal_diameters_models = {}
-    trunk_diameters_models = {}
-    tapers_models = {}
-    for neurite_type in neurite_types:
-
-        # sibling ratio
-        sibling_ratio_models[neurite_type] = {}
-        sibling_ratio_models[neurite_type]['distribution'] = 'expon_rev'
-        sibling_ratio_models[neurite_type]['sequential'] = sibling_sequential
-        sibling_ratio_models[neurite_type]['params'] = fit_distribution(
-            sibling_ratios[neurite_type], sibling_ratio_models[neurite_type]['distribution'], seq=sibling_sequential, extra_params=extra_params)
-
-        # Rall deviation
-        rall_deviation_models[neurite_type] = {}
-        rall_deviation_models[neurite_type]['distribution'] = 'exponnorm'
-        rall_deviation_models[neurite_type]['sequential'] = rall_deviation_sequential
-        rall_deviation_models[neurite_type]['params'] = fit_distribution(
-            rall_deviations[neurite_type], rall_deviation_models[neurite_type]['distribution'], seq=rall_deviation_sequential, extra_params=extra_params)
-
-        # terminal diameters
-        terminal_diameters_models[neurite_type] = {}
-        terminal_diameters_models[neurite_type]['distribution'] = 'exponnorm'
-        terminal_diameters_models[neurite_type]['sequential'] = terminal_diameters_sequential
-        terminal_diameters_models[neurite_type]['params'] = fit_distribution(
-            terminal_diameters[neurite_type], terminal_diameters_models[neurite_type]['distribution'], seq=terminal_diameters_sequential, extra_params=extra_params)
-
-        # trunk diameters
-        trunk_diameters_models[neurite_type] = {}
-        trunk_diameters_models[neurite_type]['distribution'] = 'exponnorm'
-        trunk_diameters_models[neurite_type]['sequential'] = trunk_diameters_sequential
-        trunk_diameters_models[neurite_type]['params'] = fit_distribution(
-            trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], seq=trunk_diameters_sequential, extra_params=extra_params)
-
-        # taper
-        tapers_models[neurite_type] = {}
-        tapers_models[neurite_type]['distribution'] = 'exponnorm'
-        tapers_models[neurite_type]['sequential'] = tapers_sequential
-        tapers_models[neurite_type]['params'] = fit_distribution(
-            tapers[neurite_type], tapers_models[neurite_type]['distribution'], seq=tapers_sequential, extra_params=extra_params)
-
-    # collect all models in one dictionary
-    all_models = {
-        'sibling_ratio': sibling_ratio_models,
-        'rall_deviation': rall_deviation_models,
-        'terminal_diameter': terminal_diameters_models,
-        'trunk_diameter': trunk_diameters_models,
-        'taper': tapers_models
-    }
-
-    all_data = {
-        'sibling_ratio': sibling_ratios,
-        'rall_deviation': rall_deviations,
-        'terminal_diameter': terminal_diameters,
-        'trunk_diameter': trunk_diameters,
-        'taper': tapers
-    }
-
-    return all_models, all_data
-
-
-def sampling_model_astrocyte(morphologies, neurite_types, extra_params, tqdm_disable=False):
-    """ test for sampling models """
-
-    sibling_sequential = None
-    rall_deviation_sequential = None
-    terminal_diameters_sequential = None
-    trunk_diameters_sequential = None
-    tapers_sequential = None
-
-    # initialise dictionaries for collecting morphological quantities
-    sibling_ratios = {}
-    rall_deviations = {}
-    terminal_diameters = {}
-    trunk_diameters = {}
-    tapers = {}
-    for neurite_type in neurite_types:
-        sibling_ratios[neurite_type] = []
-        rall_deviations[neurite_type] = []
-        terminal_diameters[neurite_type] = []
-        trunk_diameters[neurite_type] = []
-        tapers[neurite_type] = []
-
-    # loop first over all morphologies (TODO: could be parallelized)
-    i = 0
-    for neuron in tqdm(morphologies, disable=tqdm_disable):
-        # for each neurite in the neuron
-        for neurite in neuron.neurites:
-            # for each type of neurite we consider
-            for neurite_type in neurite_types:
-
-                if neurite.type == STR_TO_TYPES[neurite_type]:
-
-                    # compute here all the morphological values from the neurite
-                    sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(neurite, seq=sibling_sequential)
-                    rall_deviations[neurite_type] += morph_funcs.rall_deviations(neurite, seq=rall_deviation_sequential, bounds = [0, 10])
-                    terminal_diameters[neurite_type] += morph_funcs.min_diameter(neurite)
-                    trunk_diameters[neurite_type] += morph_funcs.max_diameter(neurite)
-                    tapers[neurite_type] += morph_funcs.taper(neurite, params=extra_params['taper'], seq=tapers_sequential)
-
-    # do the fits of each morphological values
-    sibling_ratio_models = {}
-    rall_deviation_models = {}
-    terminal_diameters_models = {}
-    trunk_diameters_models = {}
-    tapers_models = {}
-    for neurite_type in neurite_types:
-
-        # sibling ratio
-        sibling_ratio_models[neurite_type] = {}
-        sibling_ratio_models[neurite_type]['distribution'] = 'expon_rev'
-        sibling_ratio_models[neurite_type]['sequential'] = sibling_sequential
-        sibling_ratio_models[neurite_type]['params'] = fit_distribution(
-            sibling_ratios[neurite_type], sibling_ratio_models[neurite_type]['distribution'], seq=sibling_sequential, extra_params=extra_params)
-
-        # Rall deviation
-        rall_deviation_models[neurite_type] = {}
-        rall_deviation_models[neurite_type]['distribution'] = 'exponnorm'
-        rall_deviation_models[neurite_type]['sequential'] = rall_deviation_sequential
-        rall_deviation_models[neurite_type]['params'] = fit_distribution(
-            rall_deviations[neurite_type], rall_deviation_models[neurite_type]['distribution'], seq=rall_deviation_sequential, extra_params=extra_params)
-
-        # terminal diameters
-        terminal_diameters_models[neurite_type] = {}
-        terminal_diameters_models[neurite_type]['distribution'] = 'exponnorm'
-        terminal_diameters_models[neurite_type]['sequential'] = terminal_diameters_sequential
-        terminal_diameters_models[neurite_type]['params'] = fit_distribution(
-            terminal_diameters[neurite_type], terminal_diameters_models[neurite_type]['distribution'], seq=terminal_diameters_sequential, extra_params=extra_params)
-
-        # trunk diameters
-        trunk_diameters_models[neurite_type] = {}
-        trunk_diameters_models[neurite_type]['distribution'] = 'exponnorm'
-        trunk_diameters_models[neurite_type]['sequential'] = trunk_diameters_sequential
-        trunk_diameters_models[neurite_type]['params'] = fit_distribution(
-            trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], seq=trunk_diameters_sequential, extra_params=extra_params)
-
-        # taper
-        tapers_models[neurite_type] = {}
-        tapers_models[neurite_type]['distribution'] = 'exponnorm'
-        tapers_models[neurite_type]['sequential'] = tapers_sequential
-        tapers_models[neurite_type]['params'] = fit_distribution(
-            tapers[neurite_type], tapers_models[neurite_type]['distribution'], seq=tapers_sequential, extra_params=extra_params)
-
-    # collect all models in one dictionary
-    all_models = {
-        'sibling_ratio': sibling_ratio_models,
-        'rall_deviation': rall_deviation_models,
-        'terminal_diameter': terminal_diameters_models,
-        'trunk_diameter': trunk_diameters_models,
-        'taper': tapers_models
-    }
-
-    all_data = {
-        'sibling_ratio': sibling_ratios,
-        'rall_deviation': rall_deviations,
-        'terminal_diameter': terminal_diameters,
-        'trunk_diameter': trunk_diameters,
-        'taper': tapers
-    }
-
-    return all_models, all_data
-
-
-def sampling_model_generic(morphologies, neurite_types, extra_params, tqdm_disable=False):
-    """ test for sampling models """
-
-    sibling_sequential = None
-    rall_deviation_sequential = None
-    terminal_diameters_sequential = None
-    trunk_diameters_sequential = None
-    tapers_sequential = None
-
-    # initialise dictionaries for collecting morphological quantities
-    sibling_ratios = {}
-    rall_deviations = {}
-    terminal_diameters = {}
-    trunk_diameters = {}
-    tapers = {}
-    for neurite_type in neurite_types:
-        sibling_ratios[neurite_type] = []
-        rall_deviations[neurite_type] = []
-        terminal_diameters[neurite_type] = []
-        trunk_diameters[neurite_type] = []
-        tapers[neurite_type] = []
-
-    # loop first over all morphologies (TODO: could be parallelized)
-    i = 0
-    for neuron in tqdm(morphologies, disable=tqdm_disable):
-        # for each neurite in the neuron
-        for neurite in neuron.neurites:
-            # for each type of neurite we consider
-            for neurite_type in neurite_types:
-
-                if neurite.type == STR_TO_TYPES[neurite_type]:
-
-                    # compute here all the morphological values from the neurite
-                    sibling_ratios[neurite_type] += morph_funcs.sibling_ratios(neurite, seq=sibling_sequential)
-                    rall_deviations[neurite_type] += morph_funcs.rall_deviations(neurite, seq=rall_deviation_sequential)
-                    terminal_diameters[neurite_type] += morph_funcs.terminal_diameters(neurite, threshold=extra_params['terminal_threshold'], seq=terminal_diameters_sequential)
-                    trunk_diameters[neurite_type] += morph_funcs.trunk_diameter(neurite, seq=trunk_diameters_sequential)
-                    tapers[neurite_type] += morph_funcs.taper(neurite, params=extra_params['taper'], seq=tapers_sequential)
-
-    # do the fits of each morphological values
-    sibling_ratio_models = {}
-    rall_deviation_models = {}
-    terminal_diameters_models = {}
-    trunk_diameters_models = {}
-    tapers_models = {}
-    for neurite_type in neurite_types:
-
-        # sibling ratio
-        sibling_ratio_models[neurite_type] = {}
-        sibling_ratio_models[neurite_type]['distribution'] = 'expon_rev'
-        sibling_ratio_models[neurite_type]['sequential'] = sibling_sequential
-        sibling_ratio_models[neurite_type]['params'] = fit_distribution(
-            sibling_ratios[neurite_type], sibling_ratio_models[neurite_type]['distribution'], seq=sibling_sequential, extra_params=extra_params)
-
-        # Rall deviation
-        rall_deviation_models[neurite_type] = {}
-        rall_deviation_models[neurite_type]['distribution'] = 'exponnorm'
-        rall_deviation_models[neurite_type]['sequential'] = rall_deviation_sequential
-        rall_deviation_models[neurite_type]['params'] = fit_distribution(
-            rall_deviations[neurite_type], rall_deviation_models[neurite_type]['distribution'], seq=rall_deviation_sequential, extra_params=extra_params)
-
-        # terminal diameters
-        terminal_diameters_models[neurite_type] = {}
-        terminal_diameters_models[neurite_type]['distribution'] = 'exponnorm'
-        terminal_diameters_models[neurite_type]['sequential'] = terminal_diameters_sequential
-        terminal_diameters_models[neurite_type]['params'] = fit_distribution(
-            terminal_diameters[neurite_type], terminal_diameters_models[neurite_type]['distribution'], seq=terminal_diameters_sequential, extra_params=extra_params)
-
-        # trunk diameters
-        trunk_diameters_models[neurite_type] = {}
-        trunk_diameters_models[neurite_type]['distribution'] = 'exponnorm'
-        trunk_diameters_models[neurite_type]['sequential'] = trunk_diameters_sequential
-        trunk_diameters_models[neurite_type]['params'] = fit_distribution(
-            trunk_diameters[neurite_type], trunk_diameters_models[neurite_type]['distribution'], seq=trunk_diameters_sequential, extra_params=extra_params)
-
-        # taper
-        tapers_models[neurite_type] = {}
-        tapers_models[neurite_type]['distribution'] = 'exponnorm'
-        tapers_models[neurite_type]['sequential'] = tapers_sequential
-        tapers_models[neurite_type]['params'] = fit_distribution(
-            tapers[neurite_type], tapers_models[neurite_type]['distribution'], seq=tapers_sequential, extra_params=extra_params)
-
-    # collect all models in one dictionary
-    all_models = {
-        'sibling_ratio': sibling_ratio_models,
-        'rall_deviation': rall_deviation_models,
-        'terminal_diameter': terminal_diameters_models,
-        'trunk_diameter': trunk_diameters_models,
-        'taper': tapers_models
-    }
-
-    all_data = {
-        'sibling_ratio': sibling_ratios,
-        'rall_deviation': rall_deviations,
-        'terminal_diameter': terminal_diameters,
-        'trunk_diameter': trunk_diameters,
-        'taper': tapers
-    }
-
-    return all_models, all_data
-
-def build_models(morphologies, config):
-    """ Building the models in the list of models """
-
-    models = config['models']
-    neurite_types = config['neurite_types']
-    extra_params = config['extra_params']
-    fig_folder = config['fig_folder']
-    ext = config['ext']
-    plot = config['plot']
+def get_models(config):
+    """ get the model parameters """
 
     all_models = {}
-    for model in models:
-        if model == 'M0':
-            all_models[model] = sampling_model_generic
-        elif model == 'M1':
-            all_models[model] = sampling_model_sibling_asymmetry
-        elif model == 'M2':
-            all_models[model] = sampling_model_sibling_asymmetry_trunk
-        elif model == 'M3':
-            all_models[model] = sampling_model_astrocyte
+    for model in config["models"]:
+        if model == "M1":
+            distribution_types = {}
+            distribution_types["sibling_ratios"] = ["expon_rev", "asymmetry_threshold"]
+            distribution_types["rall_deviations"] = ["exponnorm", "asymmetry_threshold"]
+            distribution_types["terminal_diameters"] = ["exponnorm", None]
+            distribution_types["trunk_diameters"] = ["exponnorm", None]
+            distribution_types["trunk_tapers"] = ["skewnorm", None]
+            distribution_types["tapers"] = ["exponnorm", None]
 
-    tqdm_1, tqdm_2 = utils.tqdm_disable(morphologies)  # to have a single progression bar
+            all_models[model] = partial(build_single_model, distribution_types)
+
+    return all_models
+
+
+def build_models(morphologies, config, single_model=False):
+    """ Building the models in the list of models """
+
+    all_models = get_models(config)
+
+    tqdm_1, tqdm_2 = utils.tqdm_disable(
+        morphologies
+    )  # to have a single progression bar
 
     # extract the data and the models
     models_params = {}  # dictionary of model parameters for each mtype
@@ -575,60 +49,209 @@ def build_models(morphologies, config):
     for mtype in tqdm(morphologies, disable=tqdm_1):
         models_params[mtype] = {}
         models_data[mtype] = {}
-        for model in models:
-            models_params[mtype][model], models_data[mtype][model] = all_models[model](morphologies[mtype], neurite_types, extra_params[model], tqdm_2)
+        if single_model:
+            models_params[mtype], models_data[mtype] = all_models[config["models"][0]](
+                morphologies[mtype],
+                config["neurite_types"],
+                config["extra_params"][config["models"][0]],
+                tqdm_2,
+            )
+        else:
+            for model in config["models"]:
+                models_params[mtype][model], models_data[mtype][model] = all_models[
+                    model
+                ](
+                    morphologies[mtype],
+                    config["neurite_types"],
+                    config["extra_params"][model],
+                    tqdm_2,
+                )
 
     # plot the distributions and fit of the data
-    if plot:
-        print('Plot the fits...')
-        #shutil.rmtree(fig_folder, ignore_errors=True)
-        if not os.path.isdir(fig_folder):
-            os.mkdir(fig_folder)
-        for mtype in tqdm(morphologies):  # for each mtypes
-            if not os.path.isdir(fig_folder + '/' + mtype):
-                os.mkdir(fig_folder + '/' + mtype)
-            for model in models:  # for each diameter model
-                for fit_tpe in models_data[mtype][model]:  # for each fit of the data we did
-                    plotting.plot_distribution_fit(models_data[mtype][model][fit_tpe], models_params[mtype][model][fit_tpe], neurite_types, fig_name=fig_folder + '/' + mtype + '/' + model + '_' + fit_tpe, ext=ext)
+    if config["plot"]:
+        try:
+            print("Plot the fits...")
+
+            if not os.path.isdir(config["fig_folder"]):
+                os.mkdir(config["fig_folder"])
+
+            for mtype in tqdm(morphologies):  # for each mtypes
+                if not os.path.isdir(os.path.join(config["fig_folder"], mtype)):
+                    os.mkdir(os.path.join(config["fig_folder"], mtype))
+
+                for model in config["models"]:  # for each diameter model
+                    if not single_model:
+                        fit_tpes = models_data[mtype][model]
+                        model_data = models_data[mtype][model]
+                        model_param = models_params[mtype][model]
+                        mtype = os.path.join(mtype, model + '_')
+                    else:
+                        fit_tpes = models_data[mtype]
+                        model_data = models_data[mtype]
+                        model_param = models_params[mtype]
+
+                    # for each fit of the data we did
+                    for fit_tpe in fit_tpes:
+                        fig_name = os.path.join(config["fig_folder"], mtype, fit_tpe)
+
+                        plotting.plot_distribution_fit(
+                            model_data[fit_tpe],
+                            model_param[fit_tpe],
+                            config["neurite_types"],
+                            fig_name=fig_name,
+                            ext=config["ext"],
+                        )
+        except Exception as exc:
+            print('Could not plot models because of', exc)
 
     return models_params
 
-def build_model(morphologies, config):
-    """ Building a single model """
 
-    model = config['models'][0]
-    neurite_types = config['neurite_types']
-    extra_params = config['extra_params']
-    fig_folder = config['fig_folder']
-    ext = config['ext']
-    plot = config['plot']
+def build_single_model(
+        sampling_model, morphologies, neurite_types, extra_params, tqdm_disable=False
+):
+    """ get diameter model from a set of dendrites """
+    all_data = extract_parameters(sampling_model,
+                                  morphologies,
+                                  neurite_types,
+                                  extra_params,
+                                  tqdm_disable)
+
+    all_models = fit_all_models(all_data,
+                                sampling_model,
+                                extra_params,
+                                neurite_types)
+
+    return all_models, all_data
 
 
-    if model == 'M0':
-        model_generator = sampling_model_generic
-    elif model == 'M1':
-        model_generator = sampling_model_sibling_asymmetry
-    elif model == 'M2':
-        model_generator = sampling_model_sibling_asymmetry_trunk
-    elif model == 'M3':
-        model_generator = sampling_model_astrocyte
+def extract_parameters(
+        sampling_model, morphologies, neurite_types, extra_params, tqdm_disable=False
+):
+    """ extract parameters from neurites """
 
-    # extract the data and the models
-    model_params = {}  # dictionary of model parameters for each mtype
-    model_data = {}  # dictionary of model parameters for each mtype
-    for mtype in morphologies:
-        model_params[mtype], model_data[mtype] = model_generator(morphologies[mtype], neurite_types, extra_params[model], False)
+    all_data = {
+        "sibling_ratios": {},
+        "rall_deviations": {},
+        "terminal_diameters": {},
+        "trunk_diameters": {},
+        "trunk_tapers": {},
+        "tapers": {},
+    }
 
-    # plot the distributions and fit of the data
-    if plot:
-        print('Plot the fits...')
-        #shutil.rmtree(fig_folder, ignore_errors=True)
-        if not os.path.isdir(fig_folder):
-            os.mkdir(fig_folder)
-        for mtype in tqdm(morphologies):  # for each mtypes
-            if not os.path.isdir(fig_folder + '/' + mtype):
-                os.mkdir(fig_folder + '/' + mtype)
-            for fit_tpe in model_data[mtype]:  # for each fit of the data we did
-                plotting.plot_distribution_fit(model_data[mtype][fit_tpe], model_params[mtype][fit_tpe], neurite_types, fig_name=fig_folder + '/' + mtype + '/' + fit_tpe, ext=ext)
+    # initialise dictionaries for collecting morphological quantities
+    for neurite_type in neurite_types:
+        all_data['sibling_ratios'][neurite_type] = []
+        all_data['rall_deviations'][neurite_type] = []
+        all_data['terminal_diameters'][neurite_type] = []
+        all_data['trunk_diameters'][neurite_type] = []
+        all_data['trunk_tapers'][neurite_type] = []
+        all_data['tapers'][neurite_type] = []
 
-    return model_params
+    # loop first over all morphologies (TODO: could be parallelized)
+    for neuron in tqdm(morphologies, disable=tqdm_disable):
+        # for each neurite in the neuron
+        for neurite in neuron.neurites:
+            # for each type of neurite we consider
+            for neurite_type in neurite_types:
+
+                if neurite.type == STR_TO_TYPES[neurite_type]:
+
+                    # compute here all the morphological values from the neurite
+                    all_data['sibling_ratios'][neurite_type] += morph_funcs.sibling_ratios(
+                        neurite, seq=sampling_model["sibling_ratios"][1]
+                    )
+                    all_data['rall_deviations'][neurite_type] += morph_funcs.rall_deviations(
+                        neurite, seq=sampling_model["rall_deviations"][1]
+                    )
+                    all_data['terminal_diameters'][neurite_type] += morph_funcs.terminal_diameters(
+                        neurite,
+                        threshold=extra_params["terminal_threshold"],
+                        seq=sampling_model["terminal_diameters"][1],
+                    )
+                    all_data['trunk_diameters'][neurite_type] += morph_funcs.trunk_diameter(
+                        neurite, seq=sampling_model["trunk_diameters"][1]
+                    )
+                    all_data['trunk_tapers'][neurite_type] += morph_funcs.taper(
+                        neurite, only_first=True
+                    )
+                    all_data['tapers'][neurite_type] += morph_funcs.taper(
+                        neurite,
+                        params=extra_params["taper"],
+                        seq=sampling_model["tapers"][1],
+                    )
+    return all_data
+
+
+def fit_all_models(all_data, sampling_model, extra_params, neurite_types):
+    """ fit the model parameters """
+
+    all_models = {
+        "sibling_ratios": {},
+        "rall_deviations": {},
+        "terminal_diameters": {},
+        "trunk_diameters": {},
+        "trunk_tapers": {},
+        "tapers": {},
+    }
+
+    # do the fits of each morphological values
+    for neurite_type in neurite_types:
+
+        extra_params["neurite_type"] = neurite_type
+
+        # sibling ratio
+        all_models['sibling_ratios'][neurite_type] = fit_model(
+            sampling_model["sibling_ratios"],
+            all_data['sibling_ratios'][neurite_type],
+            extra_params,
+        )
+
+        # Rall deviation
+        all_models['rall_deviations'][neurite_type] = fit_model(
+            sampling_model["rall_deviations"],
+            all_data['rall_deviations'][neurite_type],
+            extra_params,
+        )
+
+        # terminal diameters
+        all_models['terminal_diameters'][neurite_type] = fit_model(
+            sampling_model["terminal_diameters"],
+            all_data['terminal_diameters'][neurite_type],
+            extra_params,
+        )
+
+        # trunk diameters
+        all_models['trunk_diameters'][neurite_type] = fit_model(
+            sampling_model["trunk_diameters"],
+            all_data['trunk_diameters'][neurite_type],
+            extra_params,
+        )
+
+        # trunk taper
+        all_models['trunk_tapers'][neurite_type] = fit_model(
+            sampling_model["trunk_tapers"],
+            all_data['trunk_tapers'][neurite_type],
+            extra_params,
+        )
+
+        # taper
+        all_models['tapers'][neurite_type] = fit_model(
+            sampling_model["tapers"],
+            all_data['tapers'][neurite_type],
+            extra_params,
+        )
+
+    return all_models
+
+
+def fit_model(sampling_model, data, extra_params):
+    """ fit a single parameter """
+    output = {}
+    output["distribution"] = sampling_model[0]
+    output["sequential"] = sampling_model[1]
+    output["params"] = fit_distribution(
+        data, sampling_model[0], seq=sampling_model[1], extra_params=extra_params
+    )
+
+    return output

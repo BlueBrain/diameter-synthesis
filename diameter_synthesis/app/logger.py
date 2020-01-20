@@ -3,7 +3,6 @@ Logging utilities.
 """
 import logging
 
-
 L = logging.getLogger('diameter-synthesis')
 
 
