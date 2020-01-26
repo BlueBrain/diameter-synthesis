@@ -131,6 +131,7 @@ def create_morphologies_dict_all(
         if fname.endswith((".h5", ".asc", ".swc")) and os.path.exists(filepath):
             name_dict["generic_type"] += [prefix + fname]
             n_morphs += 1
+
     return name_dict
 
 
@@ -188,6 +189,8 @@ def create_morphologies_dict(
             morph_path,
             prefix=prefix)
 
+        return name_dict
+
     except Exception as exc:  # pylint: disable=broad-except
         print("Could not load any files with exception:" + exc)
 
@@ -208,6 +211,7 @@ def load_morphologies(
         prefix=prefix,
     )
 
+    print(morph_path, name_dict)
     return load_morphologies_from_dict(morph_path, name_dict)
 
 

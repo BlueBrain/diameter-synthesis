@@ -39,14 +39,10 @@ def build_models(morphologies, config, single_model=False):
 
     all_models = get_models(config)
 
-    tqdm_1, tqdm_2 = utils.tqdm_disable(
-        morphologies
-    )  # to have a single progression bar
-
     # extract the data and the models
     models_params = {}  # dictionary of model parameters for each mtype
     models_data = {}  # dictionary of model parameters for each mtype
-    for mtype in tqdm(morphologies, disable=tqdm_1):
+    for mtype in tqdm(morphologies, disable=utils.tqdm_disable(morphologies)[0]):
         models_params[mtype] = {}
         models_data[mtype] = {}
         if single_model:
@@ -54,7 +50,7 @@ def build_models(morphologies, config, single_model=False):
                 morphologies[mtype],
                 config["neurite_types"],
                 config["extra_params"][config["models"][0]],
-                tqdm_2,
+                utils.tqdm_disable(morphologies)[1],
             )
         else:
             for model in config["models"]:
@@ -64,47 +60,51 @@ def build_models(morphologies, config, single_model=False):
                     morphologies[mtype],
                     config["neurite_types"],
                     config["extra_params"][model],
-                    tqdm_2,
+                    utils.tqdm_disable(morphologies)[2],
                 )
 
     # plot the distributions and fit of the data
     if config["plot"]:
-        try:
-            print("Plot the fits...")
-
-            if not os.path.isdir(config["fig_folder"]):
-                os.mkdir(config["fig_folder"])
-
-            for mtype in tqdm(morphologies):  # for each mtypes
-                if not os.path.isdir(os.path.join(config["fig_folder"], mtype)):
-                    os.mkdir(os.path.join(config["fig_folder"], mtype))
-
-                for model in config["models"]:  # for each diameter model
-                    if not single_model:
-                        fit_tpes = models_data[mtype][model]
-                        model_data = models_data[mtype][model]
-                        model_param = models_params[mtype][model]
-                        mtype = os.path.join(mtype, model + '_')
-                    else:
-                        fit_tpes = models_data[mtype]
-                        model_data = models_data[mtype]
-                        model_param = models_params[mtype]
-
-                    # for each fit of the data we did
-                    for fit_tpe in fit_tpes:
-                        fig_name = os.path.join(config["fig_folder"], mtype, fit_tpe)
-
-                        plotting.plot_distribution_fit(
-                            model_data[fit_tpe],
-                            model_param[fit_tpe],
-                            config["neurite_types"],
-                            fig_name=fig_name,
-                            ext=config["ext"],
-                        )
-        except Exception as exc:
-            print('Could not plot models because of', exc)
+        plot_models(morphologies, config, models_params, models_data, single_model=single_model)
 
     return models_params
+
+
+def plot_models(morphologies, config, models_params, models_data, single_model=False):
+    """plot the models"""
+    try:
+        print("Plot the fits...")
+
+        if not os.path.isdir(config["fig_folder"]):
+            os.mkdir(config["fig_folder"])
+
+        for mtype in tqdm(morphologies):  # for each mtypes
+            if not os.path.isdir(os.path.join(config["fig_folder"], mtype)):
+                os.mkdir(os.path.join(config["fig_folder"], mtype))
+
+            for model in config["models"]:  # for each diameter model
+                if not single_model:
+                    fit_tpes = models_data[mtype][model]
+                    model_data = models_data[mtype][model]
+                    model_param = models_params[mtype][model]
+                    mtype = os.path.join(mtype, model + '_')
+                else:
+                    fit_tpes = models_data[mtype]
+                    model_data = models_data[mtype]
+                    model_param = models_params[mtype]
+
+                # for each fit of the data we did
+                for fit_tpe in fit_tpes:
+                    fig_name = os.path.join(config["fig_folder"], mtype) + fit_tpe
+                    plotting.plot_distribution_fit(
+                        model_data[fit_tpe],
+                        model_param[fit_tpe],
+                        config["neurite_types"],
+                        fig_name=fig_name,
+                        ext=config["ext"],
+                    )
+    except Exception as exc:  # pylint: disable=broad-except
+        print('Could not plot models because of', exc)
 
 
 def build_single_model(

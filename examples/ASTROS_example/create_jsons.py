@@ -7,7 +7,7 @@ extract_models_params = {
     'mtypes_sort': 'all', 
     'n_morphs_max': None, 
     'n_mtypes_max': 60,
-    'models': ['M3',], 
+    'models': ['M1',], 
     'neurite_types': ['basal', 'axon'],
     'models_params_file': 'model_params.json',
     'plot': True,
@@ -19,6 +19,7 @@ extract_models_params = {
 
 for model in extract_models_params['models']:
     extract_models_params['extra_params'][model] = {
+                'terminal_threshold': 2., 
                 'taper': {'max_residual': 1000, 'zeros':-1e-8, 'max': 100.005, 'min': -100.0025},
                 'threshold': {'basal': 1., 'axon':1.}
                 }
@@ -32,14 +33,14 @@ generate_diameters_params = {
     'mtypes_sort': 'all',
     'n_morphs_max': None, 
     'n_mtypes_max': 60,
-    'models': ['M3'],
-    'neurite_types': ['basal',],
+    'models': ['M1'],
+    'neurite_types': ['basal', 'axon'],
     'models_params_file': 'model_params.json',
     'new_morph_path': 'new_morphologies/', 
     #'new_morph_path': '../scripts/extract_morphometrics/new_morphologies_super_mtypes/', 
     'plot': True, 
-    'n_cpu': 3, 
-    'n_samples': 10,
+    'n_cpu': 5, 
+    'n_samples': 5,
     'ext': '.png',
     'extra_params': {}
 }

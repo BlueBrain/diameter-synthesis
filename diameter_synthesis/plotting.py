@@ -128,16 +128,13 @@ def plot_distribution_fit(  # noqa, pylint: disable=too-many-locals,too-many-arg
     plt.figure()
     save_plot = False
     for neurite_type in neurite_types:
-        try:
-            if model[neurite_type]['sequential'] == 'asymmetry_threshold':
-                tpes = np.asarray(data[neurite_type])[:, 1]  # collect the type of point
-                values = np.asarray(data[neurite_type])[:, 0]  # collect the type of point
+        if model[neurite_type]['sequential'] == 'asymmetry_threshold':
+            tpes = np.asarray(data[neurite_type])[:, 1]  # collect the type of point
+            values = np.asarray(data[neurite_type])[:, 0]  # collect the type of point
 
-                plt.scatter(values, tpes, s=5, c=COLORS[neurite_type], alpha=0.5)
-                plt.axhline(0.2, c='k')
-                save_plot = True
-        except:
-            pass
+            plt.scatter(values, tpes, s=5, c=COLORS[neurite_type], alpha=0.5)
+            plt.axhline(0.2, c='k')
+            save_plot = True
     if save_plot:
         plt.savefig(fig_name + '_scatter' + ext)
     plt.close()
@@ -146,99 +143,96 @@ def plot_distribution_fit(  # noqa, pylint: disable=too-many-locals,too-many-arg
 
     for neurite_type in neurite_types:
         # if the fits are done sequantially
-        try:
-            if not isinstance(model[neurite_type]['sequential'], str) \
-                    or model[neurite_type]['sequential'] == 'asymmetry_threshold':
+        if not isinstance(model[neurite_type]['sequential'], str) \
+                or model[neurite_type]['sequential'] == 'asymmetry_threshold':
 
-                min_val = model[neurite_type]['params']['min']
-                max_val = model[neurite_type]['params']['max']
+            min_val = model[neurite_type]['params']['min']
+            max_val = model[neurite_type]['params']['max']
 
-                if len(data[neurite_type]) > 0:
-                    if len(np.shape(data[neurite_type])) > 1:
-                        plt.hist(np.array(data[neurite_type])[:, 0],
-                                 bins=50,
-                                 log=False,
-                                 density=True,
-                                 histtype='bar',
-                                 lw=0.5,
-                                 color=COLORS[neurite_type],
-                                 alpha=0.5,
-                                 range=[min_val * 0.8, max_val * 1.2])
-                    else:
-                        plt.hist(data[neurite_type],
-                                 bins=50,
-                                 log=False,
-                                 density=True,
-                                 histtype='bar',
-                                 lw=0.5,
-                                 color=COLORS[neurite_type],
-                                 alpha=0.5,
-                                 range=[min_val * 0.8, max_val * 1.2])
+            if len(data[neurite_type]) > 0:
+                if len(np.shape(data[neurite_type])) > 1:
+                    plt.hist(np.array(data[neurite_type])[:, 0],
+                             bins=50,
+                             log=False,
+                             density=True,
+                             histtype='bar',
+                             lw=0.5,
+                             color=COLORS[neurite_type],
+                             alpha=0.5,
+                             range=[min_val * 0.8, max_val * 1.2])
+                else:
+                    plt.hist(data[neurite_type],
+                             bins=50,
+                             log=False,
+                             density=True,
+                             histtype='bar',
+                             lw=0.5,
+                             color=COLORS[neurite_type],
+                             alpha=0.5,
+                             range=[min_val * 0.8, max_val * 1.2])
 
-                    var_x = np.linspace(min_val, max_val, 1000)
-                    plt.plot(var_x, evaluate_distribution(var_x, model[neurite_type]['distribution'],
-                                                          model[neurite_type]['params']),
-                             c=COLORS[neurite_type], lw=3, ls='--', label=neurite_type)
+                var_x = np.linspace(min_val, max_val, 1000)
+                plt.plot(var_x, evaluate_distribution(var_x, model[neurite_type]['distribution'],
+                                                      model[neurite_type]['params']),
+                         c=COLORS[neurite_type], lw=3, ls='--', label=neurite_type)
 
-                plt.legend(loc='best')
-                plt.gca().set_xlim(min_val * 0.8, max_val * 1.2)
+            plt.legend(loc='best')
+            plt.gca().set_xlim(min_val * 0.8, max_val * 1.2)
 
-            else:
+        else:
 
-                tpes = np.asarray(data[neurite_type])[:, 1]  # collect the type of point
-                values = np.asarray(data[neurite_type])[:, 0]  # collect the data itself
+            tpes = np.asarray(data[neurite_type])[:, 1]  # collect the type of point
+            values = np.asarray(data[neurite_type])[:, 0]  # collect the data itself
 
-                bins, _ = utils.set_bins(tpes, n_bins)
+            bins, _ = utils.set_bins(tpes, n_bins)
 
-                min_val = 1e10
-                max_val = -1e10
+            min_val = 1e10
+            max_val = -1e10
 
-                for i in range(len(bins) - 1):
-                    values_tpe = values[(tpes >= bins[i]) & (tpes < bins[i + 1])
-                                        ]  # select the values by its type
-                    tpe_mean = (bins[i] + bins[i + 1]) / 2.
+            for i in range(len(bins) - 1):
+                values_tpe = values[(tpes >= bins[i]) & (tpes < bins[i + 1])
+                                    ]  # select the values by its type
+                tpe_mean = (bins[i] + bins[i + 1]) / 2.
 
-                    bottom_shift = tpe_mean
+                bottom_shift = tpe_mean
 
-                    height = (bins[i + 1] - bins[i]) / 2.
+                height = (bins[i + 1] - bins[i]) / 2.
 
-                    plt.axhline(bottom_shift, lw=0.2, c='k')
-                    try:  # try to plot, may not be a fit to plot
-                        min_tpe = evaluate_spline(tpe_mean, model[neurite_type]['params']['min'])
-                        max_tpe = evaluate_spline(tpe_mean, model[neurite_type]['params']['max'])
+                plt.axhline(bottom_shift, lw=0.2, c='k')
+                try:  # try to plot, may not be a fit to plot
+                    min_tpe = evaluate_spline(tpe_mean, model[neurite_type]['params']['min'])
+                    max_tpe = evaluate_spline(tpe_mean, model[neurite_type]['params']['max'])
 
-                        min_val = np.min([min_val, min_tpe])
-                        max_val = np.max([max_val, max_tpe])
-                        values_tpe = values_tpe[values_tpe < max_tpe * 1.2]
-                        values_tpe = values_tpe[values_tpe > min_tpe * 0.8]
+                    min_val = np.min([min_val, min_tpe])
+                    max_val = np.max([max_val, max_tpe])
+                    values_tpe = values_tpe[values_tpe < max_tpe * 1.2]
+                    values_tpe = values_tpe[values_tpe > min_tpe * 0.8]
 
-                        var_n, var_b = np.histogram(values_tpe, bins=20)
-                        plt.bar(var_b[1:], height * np.array(var_n)
-                                / np.max(var_n), width=var_b[1] - var_b[0],
-                                bottom=bottom_shift, color=COLORS[neurite_type], alpha=0.5)
+                    var_n, var_b = np.histogram(values_tpe, bins=20)
+                    plt.bar(var_b[1:], height * np.array(var_n)
+                            / np.max(var_n), width=var_b[1] - var_b[0],
+                            bottom=bottom_shift, color=COLORS[neurite_type], alpha=0.5)
 
-                        var_x = np.linspace(min_tpe, max_tpe, 1000)
-                        params = {}
-                        try:
-                            params['a'] = evaluate_spline(tpe_mean, model[neurite_type]['params']['a'])
-                        except BaseException:  # pylint: disable=broad-except
-                            pass
-                        params['loc'] = evaluate_spline(tpe_mean, model[neurite_type]['params']['loc'])
-                        params['scale'] = evaluate_spline(
-                            tpe_mean, model[neurite_type]['params']['scale'])
-                        pdf = evaluate_distribution(var_x, model[neurite_type]['distribution'], params)
+                    var_x = np.linspace(min_tpe, max_tpe, 1000)
+                    params = {}
+                    try:
+                        params['a'] = evaluate_spline(tpe_mean, model[neurite_type]['params']['a'])
+                    except BaseException:  # pylint: disable=broad-except
+                        pass
+                    params['loc'] = evaluate_spline(tpe_mean, model[neurite_type]['params']['loc'])
+                    params['scale'] = evaluate_spline(
+                        tpe_mean, model[neurite_type]['params']['scale'])
+                    pdf = evaluate_distribution(var_x, model[neurite_type]['distribution'], params)
 
-                        plt.plot(var_x, bottom_shift + height * pdf / np.max(pdf),
-                                 c=COLORS[neurite_type], lw=1, ls='--')
-                    except Exception as exc:  # pylint: disable=broad-except
-                        print('plotting exception:', exc)
-                        var_n, var_b = np.histogram(values_tpe, bins=20)
-                        plt.bar(var_b[:-1], height * np.array(var_n) / np.max(var_n),
-                                width=var_b[1] - var_b[0],
-                                bottom=bottom_shift, color=COLORS[neurite_type], alpha=0.5)
+                    plt.plot(var_x, bottom_shift + height * pdf / np.max(pdf),
+                             c=COLORS[neurite_type], lw=1, ls='--')
+                except Exception as exc:  # pylint: disable=broad-except
+                    print('plotting exception:', exc)
+                    var_n, var_b = np.histogram(values_tpe, bins=20)
+                    plt.bar(var_b[:-1], height * np.array(var_n) / np.max(var_n),
+                            width=var_b[1] - var_b[0],
+                            bottom=bottom_shift, color=COLORS[neurite_type], alpha=0.5)
 
-        except:
-            pass
     title_txt = 'Fit parameters:\n'
     try:
         for neurite_type in neurite_types:
@@ -455,7 +449,7 @@ def plot_diameter_diff(  # pylint: disable=too-many-locals,too-many-arguments
 
     for neurite_type in neurite_types:
         neurites_orig = [neurite for neurite in neuron_orig.neurites if neurite.type ==
-                    STR_TO_TYPES[neurite_type]]
+                         STR_TO_TYPES[neurite_type]]
         neurites_new = [neurite for neurite in neuron_new.neurites if neurite.type ==
                         STR_TO_TYPES[neurite_type]]
         neurites_diff_neg = [neurite for neurite in neuron_diff_neg.neurites
@@ -463,24 +457,23 @@ def plot_diameter_diff(  # pylint: disable=too-many-locals,too-many-arguments
         neurites_diff_pos = [neurite for neurite in neuron_diff_pos.neurites
                              if neurite.type == STR_TO_TYPES[neurite_type]]
 
-        for neurite_orig, neurite_new, neurite_diff_pos, neurite_diff_neg in zip(neurites_orig, neurites_new, neurites_diff_pos, neurites_diff_neg):
+        for neurite_orig, neurite_new, neurite_diff_pos, neurite_diff_neg in \
+                zip(neurites_orig, neurites_new, neurites_diff_pos, neurites_diff_neg):
 
             diam_orig = []
             diam_new = []
-            for section_orig, section_new in zip(iter_sections(neurite_orig), iter_sections(neurite_new)) :
+            for section_orig, section_new in \
+                    zip(iter_sections(neurite_orig), iter_sections(neurite_new)):
                 if section_orig.id != section_new.id:
                     print('id', section_orig.id, section_new.id, neurite_type, neuron_orig.name)
-                if len(section_orig.points) !=  len(section_new.points):
-                    print('len', len(section_orig.points), len(section_new.points), neurite_type, neuron_orig.name)
+                if len(section_orig.points) != len(section_new.points):
+                    print('len', len(section_orig.points), len(section_new.points), neurite_type,
+                          neuron_orig.name)
                 diam_orig.append(utils.get_diameters(section_orig))
                 diam_new.append(utils.get_diameters(section_new))
 
             for j, section in enumerate(iter_sections(neurite_diff_pos)):
-                try:
-                    diff = diam_new[j] - diam_orig[j]
-                except:
-                    print(diam_new[j], diam_orig[j])
-                    diff = diam_new[j]*100
+                diff = diam_new[j] - diam_orig[j]
                 diff_pos = diff.copy()
                 diff_pos[diff_pos < 0] = 0
                 utils.set_diameters(section, diff_pos)

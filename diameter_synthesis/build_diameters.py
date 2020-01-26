@@ -65,6 +65,7 @@ def build_diameters_pool(model, models_params, config, neuron_input):
 
     io.save_neuron(neuron, model, config['new_morph_path'])
 
+
 def build_diameters_single_neuron(neuron, models_params, config):
     """ Building the diameters from the generated diameter models of a neuron"""
 
@@ -98,7 +99,7 @@ def build_diameters_single_neuron(neuron, models_params, config):
             plotting.plot_diameter_diff(neuron.name, config['morph_path'],
                                         neuron, model, config['neurite_types'],
                                         folder=folder, ext=config['ext'])
-        except Exception as exc:
+        except Exception as exc:  # pylint: disable=broad-except
             print(neuron.name, neuron, exc)
 
 
