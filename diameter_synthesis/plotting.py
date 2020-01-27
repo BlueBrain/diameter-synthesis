@@ -273,7 +273,7 @@ def plot_fit_param_boxes(  # pylint: disable=too-many-locals,too-many-arguments,
 
     data = collections.OrderedDict()
 
-    mtype = [*model_params][0]
+    mtype = list(model_params)[0]
     for fit in model_params[mtype][model]:
         if fit != 'trunk_diameter':
             for params in model_params[mtype][model][fit][neurite_type]['params']:
@@ -298,7 +298,7 @@ def plot_fit_param_boxes(  # pylint: disable=too-many-locals,too-many-arguments,
 
     plt.figure(figsize=figsize)
     plt.boxplot(data.values())
-    plt.xticks(np.arange(1, len(data) + 1), [*data], rotation='vertical')
+    plt.xticks(np.arange(1, len(data) + 1), list(data), rotation='vertical')
     # plt.axis([0, len(data)+1, 0., 5])
     plt.savefig(figname + ext, bbox_inches='tight')
     plt.close()
@@ -306,7 +306,7 @@ def plot_fit_param_boxes(  # pylint: disable=too-many-locals,too-many-arguments,
     data = collections.OrderedDict()
 
     bos = ['0.0', '1.0', '2.0', '3.0', '4.0', '5.0', '6.0', '7.0', '8.0', ]
-    mtype = [*model_params][0]
+    mtype = list(model_params)[0]
     for fit in model_params[mtype][model]:
         if fit == 'trunk_diameter':
             for params in model_params[mtype][model][fit][neurite_type]['params_data']['0.0']:
@@ -326,7 +326,7 @@ def plot_fit_param_boxes(  # pylint: disable=too-many-locals,too-many-arguments,
 
     plt.figure(figsize=figsize)
     plt.boxplot(data.values())
-    plt.xticks(np.arange(1, len(data) + 1), [*data], rotation='vertical')
+    plt.xticks(np.arange(1, len(data) + 1), list(data) rotation='vertical')
     # plt.axis([0, len(data)+1, 0., 5])
     plt.savefig(figname + '_trunk' + ext, bbox_inches='tight')
     plt.close()
