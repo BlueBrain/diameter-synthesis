@@ -103,7 +103,7 @@ def sample_distribution(model, tpe=0):
         return sample_distribution_single(model)
 
     # if our sample is out of the bins used for fitting, restrict to these bins
-    tpes = [*model['params']['params_data'].keys()]
+    tpes = list(model['params']['params_data'].keys())
     tpe_min = float(tpes[0])
     tpe_max = float(tpes[-1])
     tpe = np.clip(tpe, tpe_min, tpe_max)
@@ -253,8 +253,8 @@ def update_params_fit_distribution(params_data):
     params['params_data'] = params_data  # save the data params for plotting
 
     if len(params_data) > 1:  # only try that if we have a sequence of more than two fits
-        tpes_model = [*params_data]  # fancy python3 way to get dict.keys()
-        params_values = [*params_data.values()]
+        tpes_model = list(params_data)  # fancy python3 way to get dict.keys()
+        params_values = list(params_data.values())
 
         try:
             var_as = np.array([v['a'] for v in params_values])

@@ -33,7 +33,7 @@ def plot_fit_distribution_params(model, neurite_types, fig_name='test', ext='.pn
     try:
         ax1 = fig.add_subplot(511)
         for neurite_type in neurite_types:
-            tpes_model = [*model[neurite_type]['params']['params_data']]
+            tpes_model = list(model[neurite_type]['params']['params_data'])
 
             var_x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
             ax1.plot(var_x, evaluate_spline(var_x, model[neurite_type]
@@ -57,7 +57,7 @@ def plot_fit_distribution_params(model, neurite_types, fig_name='test', ext='.pn
 
     ax2 = fig.add_subplot(512 - n_plot)
     for neurite_type in neurite_types:
-        tpes_model = [*model[neurite_type]['params']['params_data']]
+        tpes_model = list(model[neurite_type]['params']['params_data'])
 
         var_x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
         ax2.plot(var_x, evaluate_spline(var_x, model[neurite_type]
@@ -72,7 +72,7 @@ def plot_fit_distribution_params(model, neurite_types, fig_name='test', ext='.pn
 
     ax3 = fig.add_subplot(513 - n_plot)
     for neurite_type in neurite_types:
-        tpes_model = [*model[neurite_type]['params']['params_data']]
+        tpes_model = list(model[neurite_type]['params']['params_data'])
 
         var_x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
         ax3.plot(var_x, evaluate_spline(var_x, model[neurite_type]
@@ -84,7 +84,7 @@ def plot_fit_distribution_params(model, neurite_types, fig_name='test', ext='.pn
 
     ax4 = fig.add_subplot(514 - n_plot)
     for neurite_type in neurite_types:
-        tpes_model = [*model[neurite_type]['params']['params_data']]
+        tpes_model = list(model[neurite_type]['params']['params_data'])
 
         var_x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
         ax4.plot(var_x, evaluate_spline(var_x, model[neurite_type]
@@ -96,7 +96,7 @@ def plot_fit_distribution_params(model, neurite_types, fig_name='test', ext='.pn
 
     ax5 = fig.add_subplot(515 - n_plot)
     for neurite_type in neurite_types:
-        tpes_model = [*model[neurite_type]['params']['params_data']]
+        tpes_model = list(model[neurite_type]['params']['params_data'])
 
         var_x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
         ax5.plot(var_x, evaluate_spline(var_x, model[neurite_type]
