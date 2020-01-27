@@ -326,7 +326,7 @@ def plot_fit_param_boxes(  # pylint: disable=too-many-locals,too-many-arguments,
 
     plt.figure(figsize=figsize)
     plt.boxplot(data.values())
-    plt.xticks(np.arange(1, len(data) + 1), list(data) rotation='vertical')
+    plt.xticks(np.arange(1, len(data) + 1), list(data), rotation='vertical')
     # plt.axis([0, len(data)+1, 0., 5])
     plt.savefig(figname + '_trunk' + ext, bbox_inches='tight')
     plt.close()
