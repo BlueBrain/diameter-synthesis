@@ -60,7 +60,7 @@ def build_models(morphologies, config, single_model=False):
                     morphologies[mtype],
                     config["neurite_types"],
                     config["extra_params"][model],
-                    utils.tqdm_disable(morphologies)[2],
+                    utils.tqdm_disable(morphologies)[1],
                 )
 
     # plot the distributions and fit of the data

@@ -1,7 +1,10 @@
 
 SOURCES.txt
+*.json
+*.svg
+*.png
+*.DS_Store
 
-.DS_Store
 *~
 *.pyc
 egg-info/

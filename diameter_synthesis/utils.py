@@ -211,7 +211,6 @@ def load_morphologies(
         prefix=prefix,
     )
 
-    print(morph_path, name_dict)
     return load_morphologies_from_dict(morph_path, name_dict)
 
 
