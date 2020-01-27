@@ -4,7 +4,7 @@ import logging
 import os
 
 import neurom as nm
-from neurom.exceptions import RawDataError, UnknownFileType
+from morphio import RawDataError, UnknownFileType
 
 L = logging.getLogger(__name__)
 

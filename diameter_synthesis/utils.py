@@ -22,9 +22,12 @@ A_MAX = 4
 A_MIN = 0.3
 SPLINE_SMOOTH = 0.0001
 
+# taken from jira ticket BBPP82-127
 FORBIDDEN_MTYPES = [
     "L4_NGC",
     "L4_CHC",
+    "L5_NGC",
+    "L6_BP",
     "L6_CHC",
     "L6_DBC",
 ]
