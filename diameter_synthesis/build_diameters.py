@@ -61,12 +61,12 @@ def build_diameters_pool(model, models_params, config, neuron_input):
     filepath = os.path.join(config['morph_path'], fname)
     neuron = io.load_morphology(filepath)
 
-    build_diameters_single_neuron(neuron, models_params[mtype][model], config)
+    build(neuron, models_params[mtype][model], config)
 
     io.save_neuron(neuron, model, config['new_morph_path'])
 
 
-def build_diameters_single_neuron(neuron, models_params, config):
+def build(neuron, models_params, config):
     """ Building the diameters from the generated diameter models of a neuron"""
 
     model = config['models'][0]
@@ -74,7 +74,8 @@ def build_diameters_single_neuron(neuron, models_params, config):
     extra_params = config['extra_params']
     n_samples = config['n_samples']
 
-    np.random.seed(extra_params[model]['seed'])
+    if 'seed' in extra_params[model]:
+        np.random.seed(extra_params[model]['seed'])
 
     diameter_generator = select_model(model)
 

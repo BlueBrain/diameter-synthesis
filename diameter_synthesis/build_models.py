@@ -34,6 +34,21 @@ def get_models(config):
     return all_models
 
 
+def build(morphologies, config):
+    """ Building a model from a set of morphologies and a config file"""
+
+    all_models = get_models(config)
+    # extract the data and the models
+    models_params, _ = all_models[config["models"][0]](
+        morphologies,
+        config["neurite_types"],
+        config["extra_params"][config["models"][0]],
+        utils.tqdm_disable(morphologies)[1]
+    )
+
+    return models_params
+
+
 def build_models(morphologies, config, single_model=False):
     """ Building the models in the list of models """
 

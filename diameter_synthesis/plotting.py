@@ -7,15 +7,16 @@ import numpy as np
 import pylab as plt
 from scipy import stats
 
-import diameter_synthesis.utils as utils
 import neurom
+from neurom.core import Neurite, Neuron, Soma, Tree, iter_sections
+from neurom.view import (common, plot_dendrogram, plot_neuron, plot_neuron3d,
+                         plot_soma, plot_soma3d, plot_tree, plot_tree3d)
+
 from diameter_synthesis import io
 from diameter_synthesis.distribution_fitting import (evaluate_distribution,
                                                      evaluate_spline)
 from diameter_synthesis.types import STR_TO_TYPES
-from neurom.core import Neurite, Neuron, Soma, Tree, iter_sections
-from neurom.view import (common, plot_dendrogram, plot_neuron, plot_neuron3d,
-                         plot_soma, plot_soma3d, plot_tree, plot_tree3d)
+import diameter_synthesis.utils as utils
 
 matplotlib.use('Agg')
 

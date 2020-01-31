@@ -10,6 +10,10 @@ from diameter_synthesis.utils import A_MAX, A_MIN, MIN_DATA_POINTS, ROUND
 # Distribution related functions #
 ##################################
 
+N_BINS = 10
+PERCENTILE = 5
+MIN_SAMPLE_NUM = 10
+
 
 def build_spline(val_x, val_y, weights):
     """ build a spline model and return parameters"""
@@ -126,7 +130,7 @@ def sample_distribution(model, tpe=0):
         raise Exception('error in parameters for tpe ', tpe, ' with model ', model_tpe)
 
 
-def fit_distribution_single(data, distribution, percentile=5):
+def fit_distribution_single(data, distribution):
     """ generic function to fit a distribution with scipy (single slice)"""
     if len(data) > MIN_DATA_POINTS:
 
@@ -135,7 +139,7 @@ def fit_distribution_single(data, distribution, percentile=5):
 
             return {'loc': np.round(loc, ROUND),
                     'scale': np.round(scale, ROUND),
-                    'min': np.round(np.percentile(data, percentile), ROUND),
+                    'min': np.round(np.percentile(data, PERCENTILE), ROUND),
                     'max': np.round(max(data), ROUND),
                     'num_value': len(data)}
 
@@ -150,8 +154,8 @@ def fit_distribution_single(data, distribution, percentile=5):
             return {'a': np.round(var_a, ROUND),
                     'loc': np.round(loc, ROUND),
                     'scale': np.round(scale, ROUND),
-                    'min': np.round(np.percentile(data, percentile), ROUND),
-                    'max': np.round(np.percentile(data, 100 - percentile), ROUND),
+                    'min': np.round(np.percentile(data, PERCENTILE), ROUND),
+                    'max': np.round(np.percentile(data, 100 - PERCENTILE), ROUND),
                     'num_value': len(data)}
 
         if distribution == 'skewnorm':
@@ -165,8 +169,8 @@ def fit_distribution_single(data, distribution, percentile=5):
             return {'a': np.round(var_a, ROUND),
                     'loc': np.round(loc, ROUND),
                     'scale': np.round(scale, ROUND),
-                    'min': np.round(np.percentile(data, percentile), ROUND),
-                    'max': np.round(np.percentile(data, 100 - percentile), ROUND),
+                    'min': np.round(np.percentile(data, PERCENTILE), ROUND),
+                    'max': np.round(np.percentile(data, 100 - PERCENTILE), ROUND),
                     'num_value': len(data)}
 
         if distribution == 'gamma':
@@ -180,8 +184,8 @@ def fit_distribution_single(data, distribution, percentile=5):
             return {'a': np.round(var_a, ROUND),
                     'loc': np.round(loc, ROUND),
                     'scale': np.round(scale, ROUND),
-                    'min': np.round(np.percentile(data, percentile), ROUND),
-                    'max': np.round(np.percentile(data, 100 - percentile), ROUND),
+                    'min': np.round(np.percentile(data, PERCENTILE), ROUND),
+                    'max': np.round(np.percentile(data, 100 - PERCENTILE), ROUND),
                     'num_value': len(data)}
 
         raise Exception('Distribution not understood')
@@ -192,13 +196,10 @@ def fit_distribution_single(data, distribution, percentile=5):
 def fit_distribution(data, distribution, seq=None, extra_params=None):
     """ generic function to fit a distribution with scipy """
 
-    n_bins = 10
-    percentile = 5
-    min_sample_num = 10
     threshold = extra_params['threshold'][extra_params['neurite_type']]
 
     if not isinstance(seq, str):  # if no sequential fitting needed
-        return fit_distribution_single(data, distribution, percentile=percentile)
+        return fit_distribution_single(data, distribution)
 
     if seq == 'asymmetry_threshold':
 
@@ -209,7 +210,7 @@ def fit_distribution(data, distribution, seq=None, extra_params=None):
 
             values = values[tpes < threshold]
 
-            return fit_distribution_single(values, distribution, percentile=percentile)
+            return fit_distribution_single(values, distribution)
         return 0
 
     if len(data) > 0:
@@ -218,14 +219,14 @@ def fit_distribution(data, distribution, seq=None, extra_params=None):
 
         # set the bins for estimating parameters if we can otherwise use two bins
         # to be able to fit later
-        bins, _ = utils.set_bins(tpes, n_bins, n_min=min_sample_num)
+        bins, _ = utils.set_bins(tpes, N_BINS, n_min=MIN_SAMPLE_NUM)
 
         params = {}
         for i in range(len(bins) - 1):
             data_tpe = values[(tpes >= bins[i]) & (tpes < bins[i + 1])
                               ]  # select the values by its type
             params[np.round((bins[i + 1] + bins[i]) / 2., ROUND)
-                   ] = fit_distribution_single(data_tpe, distribution, percentile=percentile)
+                   ] = fit_distribution_single(data_tpe, distribution)
         return update_params_fit_distribution(params)
 
     return {
