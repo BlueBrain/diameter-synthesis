@@ -94,7 +94,7 @@ def build(neuron, models_params, config):
 
         utils.set_all_diameters(neuron, diameters)
 
-    if config['plot']:
+    if 'plot' in config:
         try:
             folder = 'shapes_' + os.path.basename(config['new_morph_path'][:-1])
             plotting.plot_diameter_diff(neuron.name, config['morph_path'],

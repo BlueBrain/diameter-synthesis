@@ -198,6 +198,6 @@ def taper(neurite, params=None, seq=None, only_first=False):
             return [-tap, ]
         return []
 
-    tapers = nm.get('section_taper_rate', neurite)
+    tapers = nm.get('section_taper_rates', neurite)
     tapers = tapers[abs(tapers) > params['zeros']]
     return sequential(tapers, seq, neurite, bounds=[params['min'], params['max']])
