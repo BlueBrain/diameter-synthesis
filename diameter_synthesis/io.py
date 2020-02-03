@@ -40,7 +40,7 @@ def load_neuron(name, model_name, directory):
             filepath = os.path.join(directory, '{}{}.asc'.format(prefix, name))
             return load_morphology(filepath)
     except (RawDataError, UnknownFileType):
-        print('file not found')
+        L.exception('file not found')
 
 
 def load_morphologies(filepaths):

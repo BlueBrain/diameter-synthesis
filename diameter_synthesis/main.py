@@ -1,7 +1,8 @@
 """ main functions to learn and generate diameters """
 import json
+import logging
+import os
 
-# diable warnings
 import morphio
 import numpy as np
 
@@ -10,9 +11,8 @@ from diameter_synthesis.build_diameters import build_diameters
 from diameter_synthesis.build_models import build_models
 
 morphio.set_maximum_warnings(0)
-
-
-# hack to convert numpy types to python types for json compatibility
+L = logging.getLogger(__name__)
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -35,7 +35,7 @@ def run_models(config_file):
     with open(config_file, 'r') as filename:
         config = json.load(filename)
 
-    print('Loading morphologies...')
+    L.info('Loading morphologies...')
     # load all the morphologies
     morphologies_tmp = utils.load_morphologies(
         config['morph_path'],
@@ -47,7 +47,7 @@ def run_models(config_file):
         if len(morphologies_tmp[morph]) == 0:
             del morphologies[morph]
 
-    print('Extracting model parameters...')
+    L.info('Extracting model parameters...')
     # compute the model
     models_params = build_models(morphologies, config)
 
@@ -63,13 +63,13 @@ def run_diameters(config_file):
     with open(config_file, 'r') as filename:
         config = json.load(filename)
 
-    print('Loading morphologies...')
+    L.info('Loading morphologies...')
     # load all the morphologies
     morphologies_dict = utils.create_morphologies_dict(
         config['morph_path'],
         mtypes_sort=config['mtypes_sort'])
 
-    print('Generate diameters...')
+    L.info('Generate diameters...')
     with open(config['models_params_file'], 'r') as filename:
         models_params = json.load(filename)
 

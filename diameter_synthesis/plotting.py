@@ -1,10 +1,10 @@
 """ plotting functions """
 import collections
 import os
+import logging
 
-import matplotlib
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 from scipy import stats
 
 import neurom
@@ -18,9 +18,7 @@ from diameter_synthesis.distribution_fitting import (evaluate_distribution,
 from diameter_synthesis.types import STR_TO_TYPES
 import diameter_synthesis.utils as utils
 
-matplotlib.use('Agg')
-
-
+L = logging.getLogger(__name__)
 COLORS = {'basal': 'r', 'apical': 'm', 'axon': 'b'}
 
 ######################
@@ -232,7 +230,7 @@ def plot_distribution_fit(  # noqa, pylint: disable=too-many-locals,too-many-arg
                     plt.plot(var_x, bottom_shift + height * pdf / np.max(pdf),
                              c=COLORS[neurite_type], lw=1, ls='--')
                 except Exception as exc:  # pylint: disable=broad-except
-                    print('plotting exception:', exc)
+                    L.exception('plotting exception: %s', exc)
                     var_n, var_b = np.histogram(values_tpe, bins=20)
                     plt.bar(var_b[:-1], height * np.array(var_n) / np.max(var_n),
                             width=var_b[1] - var_b[0],
@@ -469,11 +467,6 @@ def plot_diameter_diff(  # pylint: disable=too-many-locals,too-many-arguments
             diam_new = []
             for section_orig, section_new in \
                     zip(iter_sections(neurite_orig), iter_sections(neurite_new)):
-                if section_orig.id != section_new.id:
-                    print('id', section_orig.id, section_new.id, neurite_type, neuron_orig.name)
-                if len(section_orig.points) != len(section_new.points):
-                    print('len', len(section_orig.points), len(section_new.points), neurite_type,
-                          neuron_orig.name)
                 diam_orig.append(utils.get_diameters(section_orig))
                 diam_new.append(utils.get_diameters(section_new))
 
@@ -542,7 +535,7 @@ def _create_data(feature1, feature2, original_cells, diametrized_cells, step_siz
         try:
             upper_bound = find_upper_bound(data_pairs)
         except BaseException:  # pylint: disable=broad-except
-            print('failed to find upper bound, most likely due to no data points')
+            L.exception('failed to find upper bound, most likely due to no data points')
             upper_bound = 2000
 
         bin_centers, bins = create_bins(step_size, upper_bound)

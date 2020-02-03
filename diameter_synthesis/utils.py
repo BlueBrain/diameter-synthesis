@@ -5,7 +5,6 @@ import os
 from xml.etree import ElementTree as ET
 
 import numpy as np
-from tqdm import tqdm
 
 from neurom import COLS
 from neurom.core import iter_sections
@@ -13,7 +12,6 @@ from neurom.core import iter_sections
 from .io import load_morphologies_from_dict
 
 L = logging.getLogger(__name__)
-
 
 ROUND = 4  # number of digits for the fitted parameters
 MIN_DATA_POINTS = 1  # minimum number of points to fit a distribution
@@ -44,7 +42,7 @@ def create_morphologies_dict_json(
         morph_name = json.load(filename)
 
     name_dict = {}
-    for fname in tqdm(os.listdir(morph_path)):
+    for fname in os.listdir(morph_path):
         filepath = os.path.join(morph_path, fname)
         if fname.endswith((".h5", ".asc", ".swc")) and os.path.exists(filepath):
             # get the mtype
@@ -65,7 +63,7 @@ def create_morphologies_dict_folder(
 
     n_morphs = 0
     name_dict = {}
-    for fold_name in tqdm(os.listdir(morph_path)):
+    for fold_name in os.listdir(morph_path):
         for fname in os.listdir(os.path.join(morph_path, fold_name)):
             if fname.endswith((".h5", ".asc", ".swc")):
                 # get the mtype
@@ -115,7 +113,7 @@ def create_morphologies_dict_xml(
                         name_dict[mtype] += [prefix + morph.find("name").text + ext]
 
             except Exception as exc:  # pylint: disable=broad-except
-                print("Failed to process", exc)
+                L.exception("Failed to process %s", exc)
 
     return name_dict
 
@@ -129,7 +127,7 @@ def create_morphologies_dict_all(
     n_morphs = 0
     name_dict = {}
     name_dict["generic_type"] = []
-    for fname in tqdm(os.listdir(morph_path)):
+    for fname in os.listdir(morph_path):
         filepath = os.path.join(morph_path, fname)
         if fname.endswith((".h5", ".asc", ".swc")) and os.path.exists(filepath):
             name_dict["generic_type"] += [prefix + fname]
@@ -154,7 +152,7 @@ def create_morphologies_dict(
             mtype_file=mtype_file,
             prefix=prefix)
 
-        print("found morph.json file")
+        L.info("found morph.json file")
         return name_dict
 
     except BaseException:  # pylint: disable=broad-except
@@ -165,7 +163,7 @@ def create_morphologies_dict(
             morph_path,
             prefix=prefix)
 
-        print("found folder structure per mtype")
+        L.info("found folder structure per mtype")
         return name_dict
 
     except BaseException:  # pylint: disable=broad-except
@@ -179,14 +177,14 @@ def create_morphologies_dict(
             ext=ext,
             prefix=prefix)
 
-        print("found neuronDB.xml")
+        L.info("found neuronDB.xml")
         return name_dict
 
     except BaseException:  # pylint: disable=broad-except
         pass
 
     try:
-        print("use all files as single mtype")
+        L.info("use all files as single mtype")
 
         name_dict = create_morphologies_dict_all(
             morph_path,
@@ -195,7 +193,7 @@ def create_morphologies_dict(
         return name_dict
 
     except Exception as exc:  # pylint: disable=broad-except
-        print("Could not load any files with exception:" + exc)
+        L.info("Could not load any files with exception: %s", exc)
 
 
 def load_morphologies(

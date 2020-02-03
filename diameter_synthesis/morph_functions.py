@@ -1,4 +1,5 @@
 """ morphologe extraction functions """
+import logging
 
 import numpy as np
 from numpy.polynomial import polynomial
@@ -9,6 +10,7 @@ from neurom.core import iter_sections
 from diameter_synthesis.utils import (get_diameters, get_mean_diameter,
                                       section_lengths)
 
+L = logging.getLogger(__name__)
 ##########################
 # morphometric functions #
 ##########################
@@ -43,7 +45,6 @@ def sequential_single(seq, neurite=None, section=None):  # noqa, pylint: disable
                 else:
                     out = abs(var_n - var_m)
                 return out
-            # print('single children, use asymetry = 1')
             return 1.
 
         raise Exception('Please provide either a neurite or a section, not both')
@@ -55,7 +56,7 @@ def sequential_single(seq, neurite=None, section=None):  # noqa, pylint: disable
                 return [nm.features.bifurcationfunc.partition_pair(section), ]
             except BaseException:  # pylint: disable=broad-except
                 # cathing the fact that some bifurcation are triple
-                print('triple bifurcation for partition asymetry')
+                L.exception('triple bifurcation for partition asymetry')
                 return [(0.5, 1)]
         else:
             raise Exception('Please provide either a section only')
@@ -198,6 +199,6 @@ def taper(neurite, params=None, seq=None, only_first=False):
             return [-tap, ]
         return []
 
-    tapers = nm.get('section_taper_rate', neurite)
+    tapers = nm.get('section_taper_rates', neurite)
     tapers = tapers[abs(tapers) > params['zeros']]
     return sequential(tapers, seq, neurite, bounds=[params['min'], params['max']])
