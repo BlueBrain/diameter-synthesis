@@ -37,7 +37,7 @@ generate_diameters_params = {
     'models_params_file': 'model_params_' + m_sort + '.json',
     'new_morph_path': 'new_morphologies_' + m_sort + '/', 
     'plot': True, 
-    'n_cpu': 1, 
+    'n_cpu': 5, 
     'n_samples': 1,
     'ext': '.png',
     'extra_params': {}

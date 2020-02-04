@@ -2,13 +2,14 @@
 import json
 import os
 import random
+import time
 from collections import deque
 from functools import partial
-from multiprocessing import Pool
+import multiprocessing
+import logging
 
 import numpy as np
 from numpy.polynomial import polynomial
-from tqdm import tqdm
 
 import neurom as nm
 
@@ -21,10 +22,35 @@ from diameter_synthesis.types import STR_TO_TYPES
 from diameter_synthesis.utils import get_diameters, set_diameters
 
 TRUNK_FRAC_DECREASE = 0.1
+L = logging.getLogger(__name__)
 
 ################################
 # Build diameters from a model #
 ################################
+
+
+class Worker:
+    """worker for building diameters"""
+    def __init__(self, model, models_params, config):
+        self.model = model
+        self.models_params = models_params
+        self.config = config
+
+    def __call__(self, neuron_input):
+
+        fname = neuron_input[0]
+        mtype = neuron_input[1]
+
+        L.info("%s...", fname)
+        time_0 = time.time()
+
+        neuron = io.load_morphology(os.path.join(self.config['morph_path'], fname))
+
+        build(neuron, self.models_params[mtype][self.model], self.config)
+
+        io.save_neuron(neuron, self.model, self.config['new_morph_path'])
+
+        L.info("%s... done in %.2f seconds", fname, np.round(time.time() - time_0, 2))
 
 
 def build_diameters(morphologies_dict, models_params, config):
@@ -36,7 +62,7 @@ def build_diameters(morphologies_dict, models_params, config):
 
     # collect neurons paths and mtypes
     for model in config['models']:
-        print('Generating model', model)
+        L.info('Generating model %s', model)
         neurons = []
         for mtype in morphologies_dict:
             for neuron in morphologies_dict[mtype]:
@@ -46,24 +72,9 @@ def build_diameters(morphologies_dict, models_params, config):
                     neurons.append([neuron, mtype])
 
         # generate diameters in parallel
-        build_diameters_poolf = partial(build_diameters_pool, model, models_params, config)
-        with Pool(processes=config['n_cpu']) as p_build:
-            list(tqdm(p_build.imap(build_diameters_poolf, neurons),
-                      total=len(neurons)))
-
-
-def build_diameters_pool(model, models_params, config, neuron_input):
-    """ function to build diameter of a neuron an plot it, for multiprocessing """
-
-    fname = neuron_input[0]
-    mtype = neuron_input[1]
-
-    filepath = os.path.join(config['morph_path'], fname)
-    neuron = io.load_morphology(filepath)
-
-    build(neuron, models_params[mtype][model], config)
-
-    io.save_neuron(neuron, model, config['new_morph_path'])
+        worker = Worker(model, models_params, config)
+        pool = multiprocessing.Pool(config['n_cpu'])
+        pool.map(worker, neurons)
 
 
 def build(neuron, models_params, config):
@@ -101,7 +112,7 @@ def build(neuron, models_params, config):
                                         neuron, model, config['neurite_types'],
                                         folder=folder, ext=config['ext'])
         except Exception as exc:  # pylint: disable=broad-except
-            print(neuron.name, neuron, exc)
+            L.exception(neuron.name, neuron, exc)
 
 
 ###################
@@ -156,7 +167,7 @@ def diametrize_model(params_tree, neuron, params, neurite_types, extra_params):
 
                 if trunk_diam < 0.01:
                     trunk_diam = 1.0
-                    print('sampled trunk diameter < 0.01, so use 1 instead')
+                    L.warning('sampled trunk diameter < 0.01, so use 1 instead')
 
                 params_tree['trunk_diam'] = trunk_diam
                 params_tree['trunk_taper'] = trunk_taper
@@ -171,7 +182,7 @@ def diametrize_model(params_tree, neuron, params, neurite_types, extra_params):
                 # don't try to much and keep the latest try
                 if (n_tries > extra_params['trunk_max_tries'] and
                         extra_params['trunk_max_tries'] > 1):
-                    print('max tries attained with', neurite_type)
+                    L.warning('max tries attained with %s', neurite_type)
                     wrong_tips = False
 
 

@@ -1,5 +1,6 @@
 """ Construct diameter models from cells """
 import os
+import logging
 from functools import partial
 
 from tqdm import tqdm
@@ -9,6 +10,8 @@ import diameter_synthesis.plotting as plotting
 import diameter_synthesis.utils as utils
 from diameter_synthesis.distribution_fitting import fit_distribution
 from diameter_synthesis.types import STR_TO_TYPES
+
+L = logging.getLogger(__name__)
 
 ############################################
 # Build a model from a set of morphologies #
@@ -88,7 +91,7 @@ def build_models(morphologies, config, single_model=False):
 def plot_models(morphologies, config, models_params, models_data, single_model=False):
     """plot the models"""
     try:
-        print("Plot the fits...")
+        L.info("Plot the fits...")
 
         if not os.path.isdir(config["fig_folder"]):
             os.mkdir(config["fig_folder"])
@@ -119,7 +122,7 @@ def plot_models(morphologies, config, models_params, models_data, single_model=F
                         ext=config["ext"],
                     )
     except Exception as exc:  # pylint: disable=broad-except
-        print('Could not plot models because of', exc)
+        L.exception('Could not plot models because of %s', exc)
 
 
 def build_single_model(
