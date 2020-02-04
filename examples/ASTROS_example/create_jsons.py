@@ -39,8 +39,8 @@ generate_diameters_params = {
     'new_morph_path': 'new_morphologies/', 
     #'new_morph_path': '../scripts/extract_morphometrics/new_morphologies_super_mtypes/', 
     'plot': True, 
-    'n_cpu': 5, 
-    'n_samples': 5,
+    'n_cpu': 3, 
+    'n_samples': 1,
     'ext': '.png',
     'extra_params': {}
 }

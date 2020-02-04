@@ -30,8 +30,7 @@ setup(
     ],
     #dependency_links=[,],
     entry_points={
-        'console_scripts': ['diameter-synthesis-app=diameter_synthesis.app.__main__:app',
-                            'diameter-synthesis=diameter_synthesis.cli:cli'],
+        'console_scripts': ['diameter-synthesis=diameter_synthesis.cli:cli'],
     },
     packages=find_packages(),
     classifiers=[
