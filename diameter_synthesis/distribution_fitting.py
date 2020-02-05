@@ -14,7 +14,7 @@ N_BINS = 10
 PERCENTILE = 5
 MIN_SAMPLE_NUM = 10
 
-np.seterr(divide='ignore')
+np.seterr(invalid='ignore', divide='ignore')
 
 def build_spline(val_x, val_y, weights):
     """ build a spline model and return parameters"""
