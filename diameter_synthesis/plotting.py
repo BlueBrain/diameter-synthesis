@@ -3,6 +3,7 @@ import collections
 import json
 import logging
 import os
+from tqdm import tqdm
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,8 +15,10 @@ import seaborn
 
 import diameter_synthesis.utils as utils
 from diameter_synthesis import io
-from diameter_synthesis.distribution_fitting import (evaluate_distribution,
-                                                     evaluate_spline)
+from diameter_synthesis.distribution_fitting import (
+    evaluate_distribution,
+    evaluate_spline,
+)
 from diameter_synthesis.io import iter_morphology_filenames, load_morphology
 from diameter_synthesis.types import STR_TO_TYPES
 
@@ -31,16 +34,20 @@ CUMULATIVE_FEATURE_PAIRS = [
     ("section_branch_orders", "section_areas"),
 ]
 
-feat_list = [
+VIOLIN_FEATURES_LIST = [
     "segment_radii",
     "section_areas",
     "section_volumes",
+    "sibling_ratio",
+    "diameter_power_relation",
 ]
 
-feat_names = [
+VIOLIN_FEATURES_NAME = [
     "Segment radii",
     "Section areas",
     "Section volumes",
+    "Sibling ratios",
+    "Diameter power relation",
 ]
 
 
@@ -614,7 +621,7 @@ def _create_data(
             upper_bound = find_upper_bound(data_pairs)
         except BaseException:  # pylint: disable=broad-except
             L.exception("failed to find upper bound, most likely due to no data points")
-            upper_bound = 2000
+            upper_bound = 200
 
         bin_centers, bins = create_bins(step_size, upper_bound)
 
@@ -801,6 +808,7 @@ def make_cumulative_figures(
     config,
     out_dir,
     individual=False,
+    figname_prefix="",
 ):  # pylint: disable=too-many-locals
 
     """make plots for cumulative distributions for a pair of features"""
@@ -813,7 +821,9 @@ def make_cumulative_figures(
         original_cells, diametrized_cells, feature1, feature2, config["neurite_types"]
     )
 
-    figure_name = "cumulative_{}_{}_{}".format(prefix1, basename1, basename2)
+    figure_name = figname_prefix + "cumulative_{}_{}_{}".format(
+        prefix1, basename1, basename2
+    )
 
     fig.savefig(os.path.join(out_dir, figure_name + ".svg"), bbox_inches="tight")
     plt.close(fig)
@@ -877,18 +887,31 @@ def cumulative_analysis(config, out_dir, individual):
             "multiple models provided, will only use the first in the list for analysis"
         )
 
-    original_cells, diametrized_cells = _load_cells(config)
+    all_original_cells = utils.load_morphologies(
+        config["morph_path"], mtypes_sort=config["mtypes_sort"]
+    )
 
-    for feature1, feature2 in CUMULATIVE_FEATURE_PAIRS:
-        make_cumulative_figures(
-            original_cells,
-            diametrized_cells,
-            feature1,
-            feature2,
-            config,
-            out_dir,
-            individual=individual,
-        )
+    all_diametrized_cells = utils.load_morphologies(
+        config["new_morph_path"], mtypes_sort=config["mtypes_sort"]
+    )
+
+    for mtype in tqdm(all_original_cells):
+        original_cells = all_original_cells[mtype]
+        diametrized_cells = all_diametrized_cells[mtype]
+        try:
+            for feature1, feature2 in CUMULATIVE_FEATURE_PAIRS:
+                make_cumulative_figures(
+                    original_cells,
+                    diametrized_cells,
+                    feature1,
+                    feature2,
+                    config,
+                    out_dir,
+                    individual=individual,
+                    figname_prefix=mtype,
+                )
+        except BaseException:  # pylint: disable=broad-except
+            pass
 
 
 def get_features_all(object1, object2, flist, neurite_type):
@@ -958,7 +981,6 @@ def violin_analysis(config, out_dir):
     with open(config, "r") as filename:
         config = json.load(filename)
 
-    out_dir += "_" + config["mtypes_sort"]
     if not os.path.isdir(out_dir):
         os.mkdir(out_dir)
 
@@ -967,21 +989,52 @@ def violin_analysis(config, out_dir):
             "multiple models provided, will only use the first in the list for analysis"
         )
 
-    original_cells, diametrized_cells = _load_cells(config)
+    # original_cells, diametrized_cells = _load_cells(config)
 
-    pop_names = ["Original cells", "Diametrized cells"]
-    data = get_features_all(
-        original_cells, diametrized_cells, flist=feat_list, neurite_type=BASAL_DENDRITE
+    all_original_cells = utils.load_morphologies(
+        config["morph_path"], mtypes_sort=config["mtypes_sort"]
     )
-    data_frame = transform2DataFrame(data, pop_names, flist=feat_list)
-    ax = plot_violins(data_frame)
-    ax.set_ylim(-3, 5)
-    plt.savefig(os.path.join(out_dir, "violin_basal.png"))
 
-    data = get_features_all(
-        original_cells, diametrized_cells, flist=feat_list, neurite_type=APICAL_DENDRITE
+    all_diametrized_cells = utils.load_morphologies(
+        config["new_morph_path"], mtypes_sort=config["mtypes_sort"]
     )
-    data_frame = transform2DataFrame(data, pop_names, flist=feat_list)
-    ax = plot_violins(data_frame)
-    ax.set_ylim(-3, 5)
-    plt.savefig(os.path.join(out_dir, "violin_apical.png"))
+
+    for mtype in tqdm(all_original_cells):
+        original_cells = all_original_cells[mtype]
+        diametrized_cells = all_diametrized_cells[mtype]
+
+        pop_names = ["Original cells of " + mtype, "Diametrized cells of" + mtype]
+        data = get_features_all(
+            original_cells,
+            diametrized_cells,
+            flist=VIOLIN_FEATURES_LIST,
+            neurite_type=BASAL_DENDRITE,
+        )
+
+        try:
+            data_frame = transform2DataFrame(
+                data, pop_names, flist=VIOLIN_FEATURES_NAME
+            )
+            ax = plot_violins(data_frame)
+            ax.set_ylim(-3, 5)
+            plt.savefig(os.path.join(out_dir, "violin_basal_" + mtype + ".png"))
+            plt.close()
+        except BaseException:  # pylint: disable=broad-except
+            pass
+
+        try:
+            data = get_features_all(
+                original_cells,
+                diametrized_cells,
+                flist=VIOLIN_FEATURES_LIST,
+                neurite_type=APICAL_DENDRITE,
+            )
+            data_frame = transform2DataFrame(
+                data, pop_names, flist=VIOLIN_FEATURES_NAME
+            )
+            ax = plot_violins(data_frame)
+            ax.set_ylim(-3, 5)
+            plt.savefig(os.path.join(out_dir, "violin_apical_" + mtype + ".png"))
+            plt.close()
+        except BaseException:  # pylint: disable=broad-except
+            pass

@@ -23,7 +23,7 @@ def get_models(config):
 
     all_models = {}
     for model in config["models"]:
-        if model == "M1":
+        if model == "generic":
             distribution_types = {}
             distribution_types["sibling_ratios"] = ["expon_rev", "asymmetry_threshold"]
             distribution_types["rall_deviations"] = ["exponnorm", "asymmetry_threshold"]
