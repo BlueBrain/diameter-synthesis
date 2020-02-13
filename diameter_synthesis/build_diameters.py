@@ -14,7 +14,6 @@ from numpy.polynomial import polynomial
 import neurom as nm
 
 import diameter_synthesis.morph_functions as morph_funcs
-import diameter_synthesis.plotting as plotting
 import diameter_synthesis.utils as utils
 from diameter_synthesis import io
 from diameter_synthesis.distribution_fitting import sample_distribution
@@ -114,14 +113,14 @@ def build(neuron, models_params, config):
 
     if "plot" in config and config["plot"]:
         try:
-            folder = "shapes_" + os.path.basename(config["new_morph_path"][:-1])
-            plotting.plot_diameter_diff(
+            import diameter_synthesis.plotting as plot  # pylint: disable=import-outside-toplevel
+            plot.plot_diameter_diff(
                 neuron.name,
                 config["morph_path"],
                 neuron,
                 model,
                 config["neurite_types"],
-                folder=folder,
+                folder="shapes_" + os.path.basename(config["new_morph_path"][:-1]),
                 ext=config["ext"],
             )
         except Exception as exc:  # pylint: disable=broad-except
@@ -136,13 +135,14 @@ def build(neuron, models_params, config):
 def select_model(model):
     """ select a model to use from available ones """
     if model == "generic":
-
         params_tree = {}
         params_tree["mode_sibling"] = "threshold"
         params_tree["mode_rall"] = "threshold"
         params_tree["with_asymmetry"] = True
         params_tree["no_taper"] = False
         params_tree["reduction_factor_max"] = 1.0
+    else:
+        raise Exception('Unknown dimaeter model')
 
     return partial(diametrize_model, params_tree)
 

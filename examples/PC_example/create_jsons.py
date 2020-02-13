@@ -8,10 +8,10 @@ extract_models_params = {
     'morph_path': 'PC_neurons/', 
     #'morph_path': '/gpfs/bbp.cscs.ch/project/proj81/InputData/2017Release/OriginalData/05_RepairUnravel-asc/', 
     'mtypes_sort': m_sort, 
-    'models': ['M1',], 
+    'models': ['generic',], 
     'neurite_types': ['basal', 'apical'],
     'models_params_file': 'model_params_' + m_sort + '.json',
-    'plot': True,
+    'plot': False,
     'fig_folder': 'figures_' + m_sort, 
     'ext': '.svg',
     'extra_params': {}
@@ -32,7 +32,7 @@ with open('extract_models_params.json', 'w') as json_file:
 generate_diameters_params = {
     'morph_path': 'PC_neurons/', 
     'mtypes_sort': m_sort,
-    'models': ['M1'],
+    'models': ['generic'],
     'neurite_types': ['basal', 'apical'],
     'models_params_file': 'model_params_' + m_sort + '.json',
     'new_morph_path': 'new_morphologies_' + m_sort + '/', 
