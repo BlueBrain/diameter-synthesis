@@ -6,7 +6,6 @@ from functools import partial
 from tqdm import tqdm
 
 import diameter_synthesis.morph_functions as morph_funcs
-import diameter_synthesis.plotting as plotting
 import diameter_synthesis.utils as utils
 from diameter_synthesis.distribution_fitting import fit_distribution
 from diameter_synthesis.types import STR_TO_TYPES
@@ -91,6 +90,7 @@ def build_models(morphologies, config, single_model=False):
 def plot_models(morphologies, config, models_params, models_data, single_model=False):
     """plot the models"""
     try:
+        import diameter_synthesis.plotting as plot  # pylint: disable=import-outside-toplevel
         L.info("Plot the fits...")
 
         if not os.path.isdir(config["fig_folder"]):
@@ -114,7 +114,7 @@ def plot_models(morphologies, config, models_params, models_data, single_model=F
                 # for each fit of the data we did
                 for fit_tpe in fit_tpes:
                     fig_name = os.path.join(config["fig_folder"], mtype) + fit_tpe
-                    plotting.plot_distribution_fit(
+                    plot.plot_distribution_fit(
                         model_data[fit_tpe],
                         model_param[fit_tpe],
                         config["neurite_types"],

@@ -45,7 +45,12 @@ class Worker:
         time_0 = time.time()
         neuron = io.load_morphology(os.path.join(self.config["morph_path"], fname))
 
-        build(neuron, self.models_params[mtype][self.model], self.config)
+        build(
+            neuron,
+            self.models_params[mtype][self.model],
+            self.config["neurite_types"],
+            self.config
+        )
 
         save_path = self.config["new_morph_path"]
         if len(os.path.dirname(fname)) > 0:
@@ -82,11 +87,10 @@ def build_diameters(morphologies_dict, models_params, config):
         pool.map(worker, neurons)
 
 
-def build(neuron, models_params, config):
+def build(neuron, models_params, neurite_types, config):
     """ Building the diameters from the generated diameter models of a neuron"""
 
     model = config["models"][0]
-    neurite_types = config["neurite_types"]
     extra_params = config["extra_params"]
     n_samples = config["n_samples"]
 
@@ -114,6 +118,7 @@ def build(neuron, models_params, config):
     if "plot" in config and config["plot"]:
         try:
             import diameter_synthesis.plotting as plot  # pylint: disable=import-outside-toplevel
+
             plot.plot_diameter_diff(
                 neuron.name,
                 config["morph_path"],
@@ -142,7 +147,7 @@ def select_model(model):
         params_tree["no_taper"] = False
         params_tree["reduction_factor_max"] = 1.0
     else:
-        raise Exception('Unknown dimaeter model')
+        raise Exception("Unknown dimaeter model")
 
     return partial(diametrize_model, params_tree)
 
