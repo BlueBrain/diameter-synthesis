@@ -75,11 +75,7 @@ def build_diameters(morphologies_dict, models_params, config):
         neurons = []
         for mtype in morphologies_dict:
             for neuron in morphologies_dict[mtype]:
-                _, neuron_ext = os.path.splitext(neuron)
-                if neuron_ext in {".h5", ".asc", ".swc"} and os.path.exists(
-                    os.path.join(config["morph_path"], neuron)
-                ):
-                    neurons.append([neuron, mtype])
+                neurons.append([neuron, mtype])
 
         # generate diameters in parallel
         worker = Worker(model, models_params, config)
