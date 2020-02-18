@@ -222,22 +222,18 @@ def load_morphologies(
 
 def set_diameters(section, diameters):
     """hack to set diameters with neurom"""
-
-    new_points = section.points
-    new_points[:, COLS.R] = 0.5 * diameters
-    section.points = new_points
+    section.morphio_section.diameters = diameters
 
 
 def get_mean_diameter(section):
     """ Section mean diameter by averaging the segment truncated cone
     diameters and weighting them by their length.
     """
-    points = section.points[:, COLS.XYZ]
-    radii = section.points[:, COLS.R]
+    points = section.morphio_section.points[:, COLS.XYZ]
+    radii = section.morphio_section.points[:, COLS.R]
 
     segment_lengths = np.linalg.norm(points[1:] - points[:-1], axis=1)
 
-    # mean_diameter_i = (2.0 * r_(i+1) + 2.0 * r_(i)) / 2.0
     segment_mean_diams = radii[1:] + radii[:-1]
 
     return np.sum(segment_mean_diams * segment_lengths) / segment_lengths.sum()
@@ -259,8 +255,8 @@ def set_all_diameters(neuron, diameters):
 
 
 def get_diameters(section):
-    """hack to get diameters with neurom"""
-    return 2.0 * section.points[:, COLS.R]
+    """hack to get diameters with neurom (faster to access morphio directly)"""
+    return section.morphio_section.diameters
 
 
 def redefine_diameter_section(section, diam_ind, diam_new):

@@ -4,7 +4,7 @@ import os
 import random
 import time
 from collections import deque
-from functools import partial
+from functools import partial, lru_cache
 import multiprocessing
 import logging
 
@@ -45,11 +45,17 @@ class Worker:
         time_0 = time.time()
         neuron = io.load_morphology(os.path.join(self.config["morph_path"], fname))
 
+        # reset the cached functions
+        morph_funcs._sec_length.cache_clear()
+        morph_funcs._partition_asymetry_length.cache_clear()
+        _interval_lengths.cache_clear()
+        _child_length.cache_clear()
+
         build(
             neuron,
             self.models_params[mtype][self.model],
             self.config["neurite_types"],
-            self.config
+            self.config,
         )
 
         save_path = self.config["new_morph_path"]
@@ -80,7 +86,12 @@ def build_diameters(morphologies_dict, models_params, config):
         # generate diameters in parallel
         worker = Worker(model, models_params, config)
         pool = multiprocessing.Pool(config["n_cpu"])
-        pool.map(worker, neurons)
+        if config["n_cpu"]:
+            mapping = map
+        else:
+            mapping = pool.map
+
+        list(mapping(worker, neurons))
 
 
 def build(neuron, models_params, neurite_types, config):
@@ -211,17 +222,13 @@ def diametrize_model(params_tree, neuron, params, neurite_types, extra_params):
                     wrong_tips = False
 
 
-def get_sibling_ratio(section, params, mode="generic", tot_length=1.0, threshold=0.3):
+def get_sibling_ratio(params, seq_value, mode="generic", threshold=0.3):
     """return a sampled sibling ratio"""
     if mode == "generic":
-        seq_value = morph_funcs.sequential_single(params["sequential"], section=section)
         sibling_ratio = sample_distribution(params, seq_value)
 
     elif mode == "threshold":
         # use a threshold to make sibling ratio = 0
-        seq_value = morph_funcs.sequential_single(params["sequential"], section=section)
-        seq_value /= tot_length
-
         if seq_value > threshold:
             sibling_ratio = 0.0
         else:
@@ -234,20 +241,16 @@ def get_sibling_ratio(section, params, mode="generic", tot_length=1.0, threshold
     return sibling_ratio
 
 
-def get_rall_deviation(section, params, mode="generic", tot_length=1.0, threshold=0.3):
+def get_rall_deviation(params, seq_value, mode="generic", threshold=0.3):
     """return a sampled rall deviation"""
     if mode == "generic":
         # sample a Rall deviation
-        seq_value = morph_funcs.sequential_single(params["sequential"], section=section)
-        seq_value /= tot_length
         rall_deviation = sample_distribution(params, seq_value)
 
     elif mode == "exact":
         rall_deviation = 1.0
 
     elif mode == "threshold":
-        seq_value = morph_funcs.sequential_single(params["sequential"], section=section)
-        seq_value /= tot_length
         if seq_value > threshold:
             rall_deviation = 1.0
         else:
@@ -302,18 +305,24 @@ def get_daughter_diameters(section, params, params_tree):
     reduction_factor = params_tree["reduction_factor_max"] + 1.0
     # try until we get a reduction of diameter in the branching
     while reduction_factor > params_tree["reduction_factor_max"]:
+
+        seq_value = morph_funcs.sequential_single(
+            params["sibling_ratios"][params_tree["neurite_type"]]["sequential"],
+            section=section,
+        )
+        seq_value /= params_tree["tot_length"]
+
         sibling_ratio = get_sibling_ratio(
-            section,
             params["sibling_ratios"][params_tree["neurite_type"]],
+            seq_value=seq_value,
             mode=params_tree["mode_sibling"],
-            tot_length=params_tree["tot_length"],
             threshold=params_tree["sibling_threshold"],
         )
+
         rall_deviation = get_rall_deviation(
-            section,
             params["rall_deviations"][params_tree["neurite_type"]],
+            seq_value=seq_value,
             mode=params_tree["mode_rall"],
-            tot_length=params_tree["tot_length"],
             threshold=params_tree["rall_threshold"],
         )
 
@@ -340,7 +349,7 @@ def get_daughter_diameters(section, params, params_tree):
         # if we want to use the asymmetry to set diameters, re-oreder them
         part = []
         for child in section.children:
-            part.append(sum(1 for _ in child.ipreorder()))
+            part.append(_child_length(child))
 
         # sort them by larger first and create a list of diameters
         child_sort = np.argsort(part)[::-1]
@@ -351,6 +360,11 @@ def get_daughter_diameters(section, params, params_tree):
         random.shuffle(diams)
 
     return diams
+
+
+@lru_cache(maxsize=None)
+def _child_length(child):
+    return sum(1 for _ in child.ipreorder())
 
 
 def diametrize_tree(neurite, params, params_tree):
@@ -419,16 +433,21 @@ def diametrize_tree(neurite, params, params_tree):
     return wrong_tips
 
 
+@lru_cache(maxsize=None)
+def _interval_lengths(section):
+    """cached function for speedup"""
+    return nm.morphmath.interval_lengths(section.points, prepend_zero=True)
+
+
 def diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=10.0):
     """Corrects the diameters of a section"""
 
     diams = [initial_diam]
 
-    # lengths of each segments will be used for scaling of tapering
-    lengths = [0] + utils.section_lengths(section)
+    lengths = _interval_lengths(section)
 
     diams = polynomial.polyval(lengths, [initial_diam, taper])
-    diams = np.clip(diams, min_diam, max_diam)
+    diams = np.clip(diams, min_diam, max_diam, out=diams)
 
     set_diameters(section, np.array(diams, dtype=np.float32))
 

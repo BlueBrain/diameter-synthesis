@@ -59,18 +59,18 @@ def evaluate_distribution(val_x, distribution, params):
 
 
 def truncate(sample_func, min_value, max_value):
-    """ truncatet a sampled distribution """
+    """ truncate a sampled distribution """
     sample = sample_func()
-
     while sample > max_value or sample < min_value:
         sample = sample_func()
-
     return sample
 
 
 def sample_distribution_single(model):
     """ sample from a distribution (no slicing)"""
     params = model["params"]
+    if "a" in params:
+        a_clip = np.clip(params["a"], A_MIN, A_MAX)
 
     if model["distribution"] == "expon_rev":
 
@@ -83,9 +83,7 @@ def sample_distribution_single(model):
     if model["distribution"] == "exponnorm":
 
         return truncate(
-            lambda: exponnorm.rvs(
-                np.clip(params["a"], A_MIN, A_MAX), params["loc"], params["scale"]
-            ),
+            lambda: exponnorm.rvs(a_clip, params["loc"], params["scale"]),
             params["min"],
             params["max"],
         )
@@ -93,9 +91,7 @@ def sample_distribution_single(model):
     if model["distribution"] == "gamma":
 
         return truncate(
-            lambda: gamma.rvs(
-                np.clip(params["a"], A_MIN, A_MAX), params["loc"], params["scale"]
-            ),
+            lambda: gamma.rvs(a_clip, params["loc"], params["scale"]),
             params["min"],
             params["max"],
         )
@@ -103,9 +99,7 @@ def sample_distribution_single(model):
     if model["distribution"] == "skewnorm":
 
         return truncate(
-            lambda: skewnorm.rvs(
-                np.clip(params["a"], A_MIN, A_MAX), params["loc"], params["scale"]
-            ),
+            lambda: skewnorm.rvs(a_clip, params["loc"], params["scale"]),
             params["min"],
             params["max"],
         )
@@ -125,7 +119,7 @@ def sample_distribution(model, tpe=0):
     tpes = list(model["params"]["params_data"].keys())
     tpe_min = float(tpes[0])
     tpe_max = float(tpes[-1])
-    tpe = np.clip(tpe, tpe_min, tpe_max)
+    tpe = np.clip(tpe, tpe_min, tpe_max, out=tpe)
 
     model_tpe = {}
     model_tpe["params"] = {}
@@ -296,7 +290,7 @@ def update_params_fit_distribution(params_data):
         try:
             var_as = np.array([v["a"] for v in params_values])
             # prevent large or small values of a from bad fits
-            var_as = np.clip(var_as, A_MIN, A_MAX)
+            var_as = np.clip(var_as, A_MIN, A_MAX, out=var_as)
         except BaseException:  # pylint: disable=broad-except
             pass
         locs = np.array([v["loc"] for v in params_values])
