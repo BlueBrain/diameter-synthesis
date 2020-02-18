@@ -85,10 +85,10 @@ def build_diameters(morphologies_dict, models_params, config):
 
         # generate diameters in parallel
         worker = Worker(model, models_params, config)
-        pool = multiprocessing.Pool(config["n_cpu"])
-        if config["n_cpu"]:
+        if config["n_cpu"] == 1:
             mapping = map
         else:
+            pool = multiprocessing.Pool(config["n_cpu"])
             mapping = pool.map
 
         list(mapping(worker, neurons))
