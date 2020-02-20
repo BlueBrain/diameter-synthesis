@@ -21,20 +21,18 @@ A_MIN = 0.3
 SPLINE_SMOOTH = 0.0001
 
 # taken from jira ticket BBPP82-127
-FORBIDDEN_MTYPES = [
-    "L4_NGC",
-    "L4_CHC",
-    "L5_NGC",
-    "L6_BP",
-    "L6_CHC",
-    "L6_DBC",
-]
+FORBIDDEN_MTYPES = []
+#    "L4_NGC",
+#    "L4_CHC",
+#    "L5_NGC",
+#    "L6_BP",
+#    "L6_CHC",
+#    "L6_DBC",
+# ]
 
 
 def create_morphologies_dict_json(
-        morph_path,
-        mtype_file="neuronDB.xml",
-        prefix="",
+    morph_path, mtype_file="neuronDB.xml", prefix="",
 ):
     """ Create dict to load the morphologies from a directory, with json """
 
@@ -56,8 +54,7 @@ def create_morphologies_dict_json(
 
 
 def create_morphologies_dict_folder(
-        morph_path,
-        prefix="",
+    morph_path, prefix="",
 ):
     """ Create dict to load the morphologies from a directory, from folders """
 
@@ -78,11 +75,7 @@ def create_morphologies_dict_folder(
 
 
 def create_morphologies_dict_xml(
-        morph_path,
-        mtypes_sort="all",
-        mtype_file="neuronDB.xml",
-        ext=".asc",
-        prefix="",
+    morph_path, mtypes_sort="all", mtype_file="neuronDB.xml", ext=".asc", prefix="",
 ):
     """ Create dict to load the morphologies from a directory, from xml """
     # first load the neuronDB.xml file
@@ -119,8 +112,7 @@ def create_morphologies_dict_xml(
 
 
 def create_morphologies_dict_all(
-        morph_path,
-        prefix="",
+    morph_path, prefix="",
 ):
     """ Create dict to load the morphologies from a directory, all together """
 
@@ -137,20 +129,15 @@ def create_morphologies_dict_all(
 
 
 def create_morphologies_dict(
-        morph_path,
-        mtypes_sort="all",
-        mtype_file="neuronDB.xml",
-        ext=".asc",
-        prefix="",
+    morph_path, mtypes_sort="all", mtype_file="neuronDB.xml", ext=".asc", prefix="",
 ):
     """ Create dict to load the morphologies from a directory, by mtypes or all at once """
 
     try:
 
         name_dict = create_morphologies_dict_json(
-            morph_path,
-            mtype_file=mtype_file,
-            prefix=prefix)
+            morph_path, mtype_file=mtype_file, prefix=prefix
+        )
 
         L.info("found morph.json file")
         return name_dict
@@ -159,9 +146,7 @@ def create_morphologies_dict(
         pass
 
     try:
-        name_dict = create_morphologies_dict_folder(
-            morph_path,
-            prefix=prefix)
+        name_dict = create_morphologies_dict_folder(morph_path, prefix=prefix)
 
         L.info("found folder structure per mtype")
         return name_dict
@@ -175,7 +160,8 @@ def create_morphologies_dict(
             mtypes_sort=mtypes_sort,
             mtype_file=mtype_file,
             ext=ext,
-            prefix=prefix)
+            prefix=prefix,
+        )
 
         L.info("found neuronDB.xml")
         return name_dict
@@ -186,9 +172,7 @@ def create_morphologies_dict(
     try:
         L.info("use all files as single mtype")
 
-        name_dict = create_morphologies_dict_all(
-            morph_path,
-            prefix=prefix)
+        name_dict = create_morphologies_dict_all(morph_path, prefix=prefix)
 
         return name_dict
 
@@ -197,11 +181,7 @@ def create_morphologies_dict(
 
 
 def load_morphologies(
-        morph_path,
-        mtypes_sort="all",
-        mtype_file="./neuronDB.xml",
-        ext=".asc",
-        prefix="",
+    morph_path, mtypes_sort="all", mtype_file="./neuronDB.xml", ext=".asc", prefix="",
 ):
     """ Load the morphologies from a directory, by mtypes or all at once """
     name_dict = create_morphologies_dict(
@@ -309,7 +289,7 @@ def set_bins(data, n_bins, n_min=20):
 
         # if the last bins have to few points, reduce the window
         # second condition is to prevent shrinking for ever
-        while (values[-1] < n_min and max_data - min_data > 0.1 * diff_max):
+        while values[-1] < n_min and max_data - min_data > 0.1 * diff_max:
             max_data = bins[-2]
             values, bins = np.histogram(data, bins=n_bins, range=(min_data, max_data))
 
