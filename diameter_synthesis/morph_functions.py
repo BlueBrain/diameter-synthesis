@@ -43,7 +43,7 @@ def sequential_single(
     """ return the value for sequencial slicing"""
     if seq in ("asymmetry", "asymmetry_threshold"):
         if neurite is not None and section is None:
-            out = nm.get("partition_asymmetry_length", [neurite, ])
+            out = nm.get("partition_asymmetry_length", [neurite])
             return np.array(out)
 
         if section is not None and neurite is None:
@@ -145,8 +145,10 @@ def rall_reduction_factor(
 
 def terminal_diameters(neurite, method="mean", threshold=1.0, seq=None, bounds=None):
     """Returns the model for the terminations"""
-
-    mean_diameter = np.mean(get_diameters(neurite))
+    diameters = []
+    for section in iter_sections(neurite):
+        diameters += list(get_diameters(section))
+    mean_diameter = np.mean(diameters)
 
     if method == "mean":
         term_diam = [
@@ -180,7 +182,7 @@ def min_diameter(neurite, seq=None, bounds=None):
     if not bounds:
         bounds = [0, 100]
 
-    return sequential([min_diam, ], seq, neurite, bounds=bounds)
+    return sequential([min_diam], seq, neurite, bounds=bounds)
 
 
 def max_diameter(neurite, seq=None, bounds=None):
@@ -192,7 +194,7 @@ def max_diameter(neurite, seq=None, bounds=None):
     if not bounds:
         bounds = [0, 100]
 
-    return sequential([max_diam, ], seq, neurite, bounds=bounds)
+    return sequential([max_diam], seq, neurite, bounds=bounds)
 
 
 def trunk_diameter(neurite, seq=None, method="last", bounds=None):
@@ -208,7 +210,7 @@ def trunk_diameter(neurite, seq=None, method="last", bounds=None):
     if not bounds:
         bounds = [0, 100]
 
-    return sequential([trunk_diam, ], seq, neurite, bounds=bounds)
+    return sequential([trunk_diam], seq, neurite, bounds=bounds)
 
 
 def taper(neurite, params=None, seq=None, only_first=False):

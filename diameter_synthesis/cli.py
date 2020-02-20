@@ -1,12 +1,13 @@
 """ click module """
-import click
 import os
+
+import click
 from tqdm import tqdm
 
-from .main import run_models as run_models_main
-from .main import run_diameters as run_diameters_main
-from .utils import create_morphologies_dict
 from .io import load_morphology
+from .main import run_diameters as run_diameters_main
+from .main import run_models as run_models_main
+from .utils import create_morphologies_dict
 
 
 @click.group()
@@ -39,9 +40,9 @@ def run_diameters(config_file):
 def run_analysis(config, out_dir, cumulative, individual, violin):
     """produce figures for validation/analysis"""
     if cumulative:
-        from .plotting import (
+        from .plotting import (  # pylint: disable=import-outside-toplevel
             cumulative_analysis,
-        )  # pylint: disable=import-outside-toplevel
+        )
 
         cumulative_analysis(config, out_dir, individual)
     if violin:
@@ -63,10 +64,6 @@ def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=10):
 
     morphologies_dict_original = create_morphologies_dict(
         original_folder, mtypes_sort="mtype"
-    )
-
-    morphologies_dict_diametrized = create_morphologies_dict(
-        diametrized_folder, mtypes_sort="mtype"
     )
 
     for mtype in tqdm(morphologies_dict_original):
