@@ -20,7 +20,7 @@ from diameter_synthesis.distribution_fitting import sample_distribution
 from diameter_synthesis.types import STR_TO_TYPES
 from diameter_synthesis.utils import get_diameters, set_diameters
 
-TRUNK_FRAC_DECREASE = 0.1
+TRUNK_FRAC_DECREASE = 0.05
 L = logging.getLogger(__name__)
 
 ################################

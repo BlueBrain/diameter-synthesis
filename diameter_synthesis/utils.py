@@ -5,6 +5,7 @@ import os
 from xml.etree import ElementTree as ET
 
 import numpy as np
+import pandas as pd
 
 from neurom import COLS
 from neurom.core import iter_sections
@@ -13,30 +14,27 @@ from .io import load_morphologies_from_dict
 
 L = logging.getLogger(__name__)
 
-ROUND = 4  # number of digits for the fitted parameters
-MIN_DATA_POINTS = 1  # minimum number of points to fit a distribution
-# maximum value for the a (shape) parameter of fits (can get really large when low number of points)
-A_MAX = 4
-A_MIN = 0.3
-SPLINE_SMOOTH = 0.0001
 
-# taken from jira ticket BBPP82-127
-FORBIDDEN_MTYPES = []
-#    "L4_NGC",
-#    "L4_CHC",
-#    "L5_NGC",
-#    "L6_BP",
-#    "L6_CHC",
-#    "L6_DBC",
-# ]
+def create_morphologies_dict_dat(  # pylint: disable=unused-argument
+    morph_path, mtypes_file="neurondb.dat", prefix="", ext='.asc'
+):
+    """ Create dict to load the morphologies from a directory, with dat file """
+    morph_name = pd.read_csv(mtypes_file, sep=" ")
+    name_dict = {}
+    for morph in morph_name.values:
+        if morph[2] in name_dict:
+            name_dict[morph[2]] += [prefix + morph[0] + ext]
+        else:
+            name_dict[morph[2]] = [prefix + morph[0] + ext]
+    return name_dict
 
 
 def create_morphologies_dict_json(
-    morph_path, mtype_file="neuronDB.xml", prefix="",
+    morph_path, mtypes_file="neuronDB.xml", prefix="",
 ):
     """ Create dict to load the morphologies from a directory, with json """
 
-    with open(mtype_file, "r") as filename:
+    with open(mtypes_file, "r") as filename:
         morph_name = json.load(filename)
 
     name_dict = {}
@@ -75,12 +73,12 @@ def create_morphologies_dict_folder(
 
 
 def create_morphologies_dict_xml(
-    morph_path, mtypes_sort="all", mtype_file="neuronDB.xml", ext=".asc", prefix="",
+    morph_path, mtypes_sort="all", mtypes_file="neuronDB.xml", ext=".asc", prefix="",
 ):
     """ Create dict to load the morphologies from a directory, from xml """
     # first load the neuronDB.xml file
 
-    filedb = ET.parse(morph_path + mtype_file)
+    filedb = ET.parse(morph_path + mtypes_file)
     root = filedb.findall("listing")[0]
     morphs = root.findall("morphology")
 
@@ -97,13 +95,10 @@ def create_morphologies_dict_xml(
                 if morph.find("msubtype").text:
                     mtype = mtype + ":" + morph.find("msubtype").text
 
-                # hack to not consider some bad mtypes
-                if mtype not in FORBIDDEN_MTYPES:
-                    # if it is a new mtype, add en entry to name_dict
-                    if mtype not in name_dict:
-                        name_dict[mtype] = [prefix + morph.find("name").text + ext]
-                    elif mtype in name_dict:
-                        name_dict[mtype] += [prefix + morph.find("name").text + ext]
+                if mtype not in name_dict:
+                    name_dict[mtype] = [prefix + morph.find("name").text + ext]
+                elif mtype in name_dict:
+                    name_dict[mtype] += [prefix + morph.find("name").text + ext]
 
             except Exception as exc:  # pylint: disable=broad-except
                 L.exception("Failed to process %s", exc)
@@ -129,14 +124,26 @@ def create_morphologies_dict_all(
 
 
 def create_morphologies_dict(
-    morph_path, mtypes_sort="all", mtype_file="neuronDB.xml", ext=".asc", prefix="",
+    morph_path, mtypes_sort="all", mtypes_file="neuronDB.xml", ext=".asc", prefix="",
 ):
     """ Create dict to load the morphologies from a directory, by mtypes or all at once """
 
     try:
 
+        name_dict = create_morphologies_dict_dat(
+            morph_path, mtypes_file=mtypes_file, prefix=prefix
+        )
+
+        L.info("found dat file")
+        return name_dict
+
+    except BaseException:  # pylint: disable=broad-except
+        pass
+
+    try:
+
         name_dict = create_morphologies_dict_json(
-            morph_path, mtype_file=mtype_file, prefix=prefix
+            morph_path, mtypes_file=mtypes_file, prefix=prefix
         )
 
         L.info("found morph.json file")
@@ -158,7 +165,7 @@ def create_morphologies_dict(
         name_dict = create_morphologies_dict_xml(
             morph_path,
             mtypes_sort=mtypes_sort,
-            mtype_file=mtype_file,
+            mtypes_file=mtypes_file,
             ext=ext,
             prefix=prefix,
         )
@@ -181,17 +188,16 @@ def create_morphologies_dict(
 
 
 def load_morphologies(
-    morph_path, mtypes_sort="all", mtype_file="./neuronDB.xml", ext=".asc", prefix="",
+    morph_path, mtypes_sort="all", mtypes_file="./neuronDB.xml", ext=".asc", prefix="",
 ):
     """ Load the morphologies from a directory, by mtypes or all at once """
     name_dict = create_morphologies_dict(
         morph_path,
         mtypes_sort=mtypes_sort,
-        mtype_file=mtype_file,
+        mtypes_file=mtypes_file,
         ext=ext,
         prefix=prefix,
     )
-
     return load_morphologies_from_dict(morph_path, name_dict)
 
 
@@ -209,8 +215,8 @@ def get_mean_diameter(section):
     """ Section mean diameter by averaging the segment truncated cone
     diameters and weighting them by their length.
     """
-    points = section.morphio_section.points[:, COLS.XYZ]
-    radii = section.morphio_section.points[:, COLS.R]
+    points = section.morphio_section.points
+    radii = section.morphio_section.diameters / 2.
 
     segment_lengths = np.linalg.norm(points[1:] - points[:-1], axis=1)
 

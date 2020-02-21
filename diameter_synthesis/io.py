@@ -55,16 +55,10 @@ def load_morphologies(filepaths):
         yield cell
 
 
-def load_morphologies_from_folder(directory, filenames, n_morphs_max=None):
+def load_morphologies_from_folder(directory, filenames):
     """ Load the morphologies from a list of files in a folder """
-
     filepaths_it = iter_morphology_filepaths(directory, filenames=filenames)
-    morphs_it = load_morphologies(filepaths_it)
-
-    if n_morphs_max is None:
-        return list(morphs_it)
-
-    return [cell for n, cell in enumerate(morphs_it) if n < n_morphs_max]
+    return list(load_morphologies(filepaths_it))
 
 
 def load_morphologies_from_dict(directory, filenames_per_mtype):

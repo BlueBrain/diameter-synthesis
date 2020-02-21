@@ -39,7 +39,8 @@ def run_models(config_file):
     # load all the morphologies
     morphologies = utils.load_morphologies(
         config['morph_path'],
-        mtypes_sort=config['mtypes_sort'])
+        mtypes_sort=config['mtypes_sort'],
+        mtypes_file=config['mtypes_file'])
 
     L.info('Extracting model parameters...')
     # compute the model
@@ -61,7 +62,8 @@ def run_diameters(config_file):
     # load all the morphologies
     morphologies_dict = utils.create_morphologies_dict(
         config['morph_path'],
-        mtypes_sort=config['mtypes_sort'])
+        mtypes_sort=config['mtypes_sort'],
+        mtypes_file=config['mtypes_file'])
 
     L.info('Generate diameters...')
     with open(config['models_params_file'], 'r') as filename:

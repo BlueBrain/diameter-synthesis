@@ -4,11 +4,16 @@ from scipy.interpolate import UnivariateSpline
 from scipy.stats import expon, exponnorm, gamma, skewnorm
 
 import diameter_synthesis.utils as utils
-from diameter_synthesis.utils import A_MAX, A_MIN, MIN_DATA_POINTS, ROUND
 
 ##################################
 # Distribution related functions #
 ##################################
+
+ROUND = 4  # number of digits for the fitted parameters
+MIN_DATA_POINTS = 1  # minimum number of points to fit a distribution
+A_MAX = 4
+A_MIN = 0.3
+SPLINE_SMOOTH = 0.0001
 
 N_BINS = 10
 PERCENTILE = 5
@@ -23,7 +28,7 @@ def build_spline(val_x, val_y, weights):
         val_x,
         val_y,
         w=np.array(weights) / np.sum(weights),
-        s=len(weights) * utils.SPLINE_SMOOTH,
+        s=len(weights) * SPLINE_SMOOTH,
         k=3,
     )
     return spl._eval_args  # pylint: disable=protected-access

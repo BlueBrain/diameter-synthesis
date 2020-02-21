@@ -18,6 +18,7 @@ from diameter_synthesis import io
 from diameter_synthesis.distribution_fitting import (
     evaluate_distribution,
     evaluate_spline,
+    A_MAX
 )
 from diameter_synthesis.io import iter_morphology_filenames, load_morphology
 from diameter_synthesis.types import STR_TO_TYPES
@@ -88,7 +89,7 @@ def plot_fit_distribution_params(
             )
 
             # prevent large values of a from bad fitting
-            var_as[var_as > utils.A_MAX] = utils.A_MAX
+            var_as[var_as > A_MAX] = A_MAX
             ax1.scatter(
                 tpes_model,
                 var_as,
@@ -211,12 +212,17 @@ def plot_distribution_fit(  # noqa, pylint: disable=too-many-locals,too-many-arg
     save_plot = False
     for neurite_type in neurite_types:
         if model[neurite_type]["sequential"] == "asymmetry_threshold":
-            tpes = np.asarray(data[neurite_type])[:, 1]  # collect the type of point
-            values = np.asarray(data[neurite_type])[:, 0]  # collect the type of point
+            try:
+                tpes = np.asarray(data[neurite_type])[:, 1]  # collect the type of point
+                values = np.asarray(data[neurite_type])[
+                    :, 0
+                ]  # collect the type of point
 
-            plt.scatter(values, tpes, s=5, c=COLORS[neurite_type], alpha=0.5)
-            plt.axhline(0.2, c="k")
-            save_plot = True
+                plt.scatter(values, tpes, s=5, c=COLORS[neurite_type], alpha=0.5)
+                plt.axhline(0.2, c="k")
+                save_plot = True
+            except BaseException:  # pylint: disable=broad-except
+                pass
     if save_plot:
         plt.savefig(fig_name + "_scatter" + ext)
     plt.close()
@@ -229,52 +235,55 @@ def plot_distribution_fit(  # noqa, pylint: disable=too-many-locals,too-many-arg
             not isinstance(model[neurite_type]["sequential"], str)
             or model[neurite_type]["sequential"] == "asymmetry_threshold"
         ):
+            try:
+                min_val = model[neurite_type]["params"]["min"]
+                max_val = model[neurite_type]["params"]["max"]
 
-            min_val = model[neurite_type]["params"]["min"]
-            max_val = model[neurite_type]["params"]["max"]
+                if len(data[neurite_type]) > 0:
+                    if len(np.shape(data[neurite_type])) > 1:
+                        plt.hist(
+                            np.array(data[neurite_type])[:, 0],
+                            bins=50,
+                            log=False,
+                            density=True,
+                            histtype="bar",
+                            lw=0.5,
+                            color=COLORS[neurite_type],
+                            alpha=0.5,
+                            range=[min_val * 0.8, max_val * 1.2],
+                        )
+                    else:
+                        plt.hist(
+                            data[neurite_type],
+                            bins=50,
+                            log=False,
+                            density=True,
+                            histtype="bar",
+                            lw=0.5,
+                            color=COLORS[neurite_type],
+                            alpha=0.5,
+                            range=[min_val * 0.8, max_val * 1.2],
+                        )
 
-            if len(data[neurite_type]) > 0:
-                if len(np.shape(data[neurite_type])) > 1:
-                    plt.hist(
-                        np.array(data[neurite_type])[:, 0],
-                        bins=50,
-                        log=False,
-                        density=True,
-                        histtype="bar",
-                        lw=0.5,
-                        color=COLORS[neurite_type],
-                        alpha=0.5,
-                        range=[min_val * 0.8, max_val * 1.2],
-                    )
-                else:
-                    plt.hist(
-                        data[neurite_type],
-                        bins=50,
-                        log=False,
-                        density=True,
-                        histtype="bar",
-                        lw=0.5,
-                        color=COLORS[neurite_type],
-                        alpha=0.5,
-                        range=[min_val * 0.8, max_val * 1.2],
-                    )
-
-                var_x = np.linspace(min_val, max_val, 1000)
-                plt.plot(
-                    var_x,
-                    evaluate_distribution(
+                    var_x = np.linspace(min_val, max_val, 1000)
+                    plt.plot(
                         var_x,
-                        model[neurite_type]["distribution"],
-                        model[neurite_type]["params"],
-                    ),
-                    c=COLORS[neurite_type],
-                    lw=3,
-                    ls="--",
-                    label=neurite_type,
-                )
+                        evaluate_distribution(
+                            var_x,
+                            model[neurite_type]["distribution"],
+                            model[neurite_type]["params"],
+                        ),
+                        c=COLORS[neurite_type],
+                        lw=3,
+                        ls="--",
+                        label=neurite_type,
+                    )
+                # plt.gca().set_xlim(min_val * 0.8, max_val * 1.2)
+
+            except BaseException:  # pylint: disable=broad-except
+                pass
 
             plt.legend(loc="best")
-            plt.gca().set_xlim(min_val * 0.8, max_val * 1.2)
 
         else:
 
