@@ -79,7 +79,7 @@ def load_morphologies_from_dict(directory, filenames_per_mtype):
 def save_neuron(neuron, model, folder):
     """ save the neuron morphology for later analysis """
 
-    if not os.path.isdir(folder):
+    if not os.path.exists(folder):
         L.warning('Directory %s is created.', folder)
         os.mkdir(folder)
 
