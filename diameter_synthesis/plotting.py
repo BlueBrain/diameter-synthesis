@@ -18,7 +18,7 @@ from diameter_synthesis import io
 from diameter_synthesis.distribution_fitting import (
     evaluate_distribution,
     evaluate_spline,
-    A_MAX
+    A_MAX,
 )
 from diameter_synthesis.io import iter_morphology_filenames, load_morphology
 from diameter_synthesis.types import STR_TO_TYPES
@@ -43,12 +43,40 @@ VIOLIN_FEATURES_LIST = [
     "diameter_power_relation",
 ]
 
+# to include morphologies only features
+VIOLIN_FEATURES_LIST += [
+    "number_of_neurites",
+    "number_of_sections_per_neurite",
+    "number_of_terminations",
+    "number_of_bifurcations",
+    "section_lengths",
+    "section_tortuosity",
+    "section_radial_distances",
+    "section_path_distances",
+    "section_branch_orders",
+    "remote_bifurcation_angles",
+]
+
 VIOLIN_FEATURES_NAME = [
     "Segment radii",
     "Section areas",
     "Section volumes",
     "Sibling ratios",
     "Diameter power relation",
+]
+
+# to include morphologies only features
+VIOLIN_FEATURES_NAME += [
+    "Number of neurites",
+    "Number of sections",
+    "Number of terminations",
+    "Number of bifurcations",
+    "Section lengths",
+    "Section tortuosity",
+    "Section radial distances",
+    "Section path distances",
+    "Section branch orders",
+    "Remote bif angles",
 ]
 
 
@@ -1012,7 +1040,7 @@ def violin_analysis(config, out_dir):
         original_cells = all_original_cells[mtype]
         diametrized_cells = all_diametrized_cells[mtype]
 
-        pop_names = ["Original cells of " + mtype, "Diametrized cells of" + mtype]
+        pop_names = ["Original cells of " + mtype, "Diametrized cells of " + mtype]
         data = get_features_all(
             original_cells,
             diametrized_cells,
