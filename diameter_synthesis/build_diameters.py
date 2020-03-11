@@ -2,17 +2,18 @@
 import json
 import os
 import random
-import time
 from collections import deque
 from functools import partial, lru_cache
 import multiprocessing
 import logging
+from tqdm import tqdm
 
 import numpy as np
 from numpy.polynomial import polynomial
 
 import neurom as nm
 
+from diameter_synthesis.exception import DiameterSynthesisError
 import diameter_synthesis.morph_functions as morph_funcs
 import diameter_synthesis.utils as utils
 from diameter_synthesis import io
@@ -22,10 +23,6 @@ from diameter_synthesis.utils import get_diameters, set_diameters
 
 TRUNK_FRAC_DECREASE = 0.1
 L = logging.getLogger(__name__)
-
-################################
-# Build diameters from a model #
-################################
 
 
 class Worker:
@@ -41,9 +38,7 @@ class Worker:
         fname = neuron_input[0]
         mtype = neuron_input[1]
 
-        L.info("%s...", fname)
-        time_0 = time.time()
-        neuron = io.load_morphology(os.path.join(self.config["morph_path"], fname))
+        neuron = io.load_neuron(os.path.splitext(fname)[0], self.config["morph_path"])
 
         # reset the cached functions
         morph_funcs._sec_length.cache_clear()
@@ -64,8 +59,6 @@ class Worker:
             if not os.path.isdir(save_path):
                 os.mkdir(save_path)
         io.save_neuron(neuron, self.model, save_path)
-
-        L.info("%s... done in %.2f seconds", fname, np.round(time.time() - time_0, 2))
 
 
 def build_diameters(morphologies_dict, models_params, config):
@@ -89,9 +82,9 @@ def build_diameters(morphologies_dict, models_params, config):
             mapping = map
         else:
             pool = multiprocessing.Pool(config["n_cpu"])
-            mapping = pool.map
+            mapping = pool.imap
 
-        list(mapping(worker, neurons))
+        list(tqdm(mapping(worker, neurons), total=len(neurons)))
 
 
 def build(neuron, models_params, neurite_types, config):
@@ -154,7 +147,7 @@ def select_model(model):
         params_tree["no_taper"] = False
         params_tree["reduction_factor_max"] = 1.0
     else:
-        raise Exception("Unknown dimaeter model")
+        raise DiameterSynthesisError("Unknown diameter model")
 
     return partial(diametrize_model, params_tree)
 
@@ -236,7 +229,7 @@ def get_sibling_ratio(params, seq_value, mode="generic", threshold=0.3):
                 params, 0
             )  # sample from smallest distribution
     else:
-        raise Exception("type not understood")
+        raise DiameterSynthesisError("mode not understood {}".format(mode))
 
     return sibling_ratio
 
@@ -256,7 +249,7 @@ def get_rall_deviation(params, seq_value, mode="generic", threshold=0.3):
         else:
             rall_deviation = sample_distribution(params, seq_value)
     else:
-        raise Exception("type not understood")
+        raise DiameterSynthesisError("mode not understood {}".format(mode))
 
     return rall_deviation
 

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas
 from neurom import APICAL_DENDRITE, BASAL_DENDRITE, get, iter_sections, viewer
+import neurom as nm
 from neurom.geom import bounding_box
 from scipy import stats
 import seaborn
@@ -20,7 +21,7 @@ from diameter_synthesis.distribution_fitting import (
     evaluate_spline,
     A_MAX,
 )
-from diameter_synthesis.io import iter_morphology_filenames, load_morphology
+from diameter_synthesis.io import iter_morphology_filenames
 from diameter_synthesis.types import STR_TO_TYPES
 
 L = logging.getLogger(__name__)
@@ -904,8 +905,8 @@ def _load_cells(config):
         for filename in filenames_diametrized
     )
 
-    original_cells = list(map(load_morphology, original_filepaths))
-    diametrized_cells = list(map(load_morphology, diametrized_filepaths))
+    original_cells = list(map(nm.load_neuron, original_filepaths))
+    diametrized_cells = list(map(nm.load_neuron, diametrized_filepaths))
 
     return original_cells, diametrized_cells
 

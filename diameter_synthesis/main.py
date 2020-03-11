@@ -69,5 +69,5 @@ def run_diameters(config_file):
     with open(config['models_params_file'], 'r') as filename:
         models_params = json.load(filename)
 
-    # generate diamet[ers
+    # generate diameters
     build_diameters(morphologies_dict, models_params, config)

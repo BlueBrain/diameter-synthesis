@@ -32,7 +32,7 @@ with open('extract_models_params.json', 'w') as json_file:
 generate_diameters_params = {
     'morph_path': 'PC_neurons/', 
     'mtypes_sort': m_sort,
-    'models': ['generic'],
+    'models': ['generic2'],
     'neurite_types': ['basal', 'apical'],
     'models_params_file': 'model_params_' + m_sort + '.json',
     'new_morph_path': 'new_morphologies_' + m_sort + '/', 

@@ -1,4 +1,4 @@
-""" morphologe extraction functions """
+""" morphology extraction functions """
 import logging
 from functools import lru_cache
 import numpy as np
@@ -7,12 +7,10 @@ from numpy.polynomial import polynomial
 import neurom as nm
 from neurom.core import iter_sections
 
+from diameter_synthesis.exception import DiameterSynthesisError
 from diameter_synthesis.utils import get_diameters, get_mean_diameter, section_lengths
 
 L = logging.getLogger(__name__)
-##########################
-# morphometric functions #
-##########################
 
 
 def sibling_ratios(neurite, method="mean", seq=None, bounds=None):
@@ -51,7 +49,7 @@ def sequential_single(
                 return _partition_asymetry_length(section)
             return 1.0
 
-        raise Exception("Please provide either a neurite or a section, not both")
+        raise DiameterSynthesisError("Please provide either a neurite or a section, not both")
 
     if seq == "asymmetry_pair":
 
@@ -65,33 +63,33 @@ def sequential_single(
                 L.exception("triple bifurcation for partition asymetry")
                 return [(0.5, 1)]
         else:
-            raise Exception("Please provide either a section only")
+            raise DiameterSynthesisError("Please provide either a section only")
 
     if seq == "tot_length":
         if neurite is not None and section is None:
             return nm.get("total_length", neurite)
-        raise Exception("Please provide only a neuritet")
+        raise DiameterSynthesisError("Please provide only a neuritet")
 
     if seq == "max_path":
         if neurite is not None and section is None:
             return [
                 np.max(nm.get("section_path_distances", neurite)),
             ]
-        raise Exception("Please provide only a neuritet")
+        raise DiameterSynthesisError("Please provide only a neuritet")
 
     if seq == "max_branch":
         if neurite is not None and section is None:
             return [
                 np.max(nm.get("section_branch_orders", neurite)),
             ]
-        raise Exception("Please provide only a neuritet")
+        raise DiameterSynthesisError("Please provide only a neuritet")
 
     if seq == "root_strahler":
         if neurite is not None and section is None:
             return [
                 nm.get("section_strahler_orders", neurite)[0],
             ]
-        raise Exception("Please provide only a neuritet")
+        raise DiameterSynthesisError("Please provide only a neuritet")
 
     if seq == "sibling":
         if neurite is not None and section is None:
@@ -165,7 +163,7 @@ def terminal_diameters(neurite, method="mean", threshold=1.0, seq=None, bounds=N
         ]
 
     else:
-        raise Exception("Method for singling computation not understood!")
+        raise DiameterSynthesisError("Method for singling computation not understood!")
 
     if not bounds:
         bounds = [0, 100]

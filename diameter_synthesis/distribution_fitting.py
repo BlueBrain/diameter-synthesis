@@ -4,6 +4,7 @@ from scipy.interpolate import UnivariateSpline
 from scipy.stats import expon, exponnorm, gamma, skewnorm
 
 import diameter_synthesis.utils as utils
+from diameter_synthesis.exception import DiameterSynthesisError
 
 ##################################
 # Distribution related functions #
@@ -60,7 +61,7 @@ def evaluate_distribution(val_x, distribution, params):
 
         return skewnorm.pdf(val_x, params["a"], params["loc"], params["scale"])
 
-    raise Exception("Distribution not understood")
+    raise DiameterSynthesisError("Distribution not understood")
 
 
 def truncate(sample_func, min_value, max_value):
@@ -109,7 +110,7 @@ def sample_distribution_single(model):
             params["max"],
         )
 
-    raise Exception("Distribution not understood")
+    raise DiameterSynthesisError("Distribution not understood")
 
 
 def sample_distribution(model, tpe=0):
@@ -141,7 +142,7 @@ def sample_distribution(model, tpe=0):
     try:
         return sample_distribution_single(model_tpe)
     except BaseException:  # pylint: disable=broad-except
-        raise Exception("error in parameters for tpe ", tpe, " with model ", model_tpe)
+        raise DiameterSynthesisError("error in parameters for tpe ", tpe, " with model ", model_tpe)
 
 
 def fit_distribution_single(data, distribution):
@@ -210,7 +211,7 @@ def fit_distribution_single(data, distribution):
                 "num_value": len(data),
             }
 
-        raise Exception("Distribution not understood")
+        raise DiameterSynthesisError("Distribution not understood")
     # if no data, return null parameters (for neurons without apical dentrites)
     return {
         "a": 0.0,

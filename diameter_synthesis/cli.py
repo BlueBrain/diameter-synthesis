@@ -4,7 +4,7 @@ import os
 import click
 from tqdm import tqdm
 
-from .io import load_morphology
+from .io import load_neuron
 from .main import run_diameters as run_diameters_main
 from .main import run_models as run_models_main
 from .utils import create_morphologies_dict
@@ -69,7 +69,7 @@ def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=10):
     for mtype in tqdm(morphologies_dict_original):
         count = 0
         for neuron_name in morphologies_dict_original[mtype]:
-            neuron_new = load_morphology(os.path.join(diametrized_folder, neuron_name))
+            neuron_new = load_neuron(neuron_name, diametrized_folder)
             neurite_types = ["basal", "apical"]
             plot_diameter_diff(
                 os.path.splitext(neuron_name)[0],
