@@ -12,6 +12,7 @@ import numpy as np
 from numpy.polynomial import polynomial
 
 import neurom as nm
+from neurom.core._neuron import Neuron
 
 from diameter_synthesis.exception import DiameterSynthesisError
 import diameter_synthesis.morph_functions as morph_funcs
@@ -87,8 +88,13 @@ def build_diameters(morphologies_dict, models_params, config):
         list(tqdm(mapping(worker, neurons), total=len(neurons)))
 
 
-def build(neuron, models_params, neurite_types, config):
+def build(
+    neuron_morphio, models_params, neurite_types, config
+):  # pylint: disable=too-many-locals
     """ Building the diameters from the generated diameter models of a neuron"""
+
+    # convert to neurom neuron
+    neuron = Neuron(neuron_morphio)
 
     model = config["models"][0]
     extra_params = config["extra_params"]
@@ -114,6 +120,13 @@ def build(neuron, models_params, neurite_types, config):
             diams /= n_samples
 
         utils.set_all_diameters(neuron, diameters)
+
+    # copy diameters back to original morphio object
+    neuron_morphio_copy = super(Neuron, neuron)
+    for section_orig, section_copy in zip(
+        neuron_morphio.iter(), neuron_morphio_copy.iter()
+    ):
+        section_orig.diameters = section_copy.diameters
 
     if "plot" in config and config["plot"]:
         try:
