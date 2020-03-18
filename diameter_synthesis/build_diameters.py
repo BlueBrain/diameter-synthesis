@@ -88,13 +88,25 @@ def build_diameters(morphologies_dict, models_params, config):
         list(tqdm(mapping(worker, neurons), total=len(neurons)))
 
 
+def _to_neurom(neuron):
+    return Neuron(neuron)
+
+
+def _to_morphio(neuron):
+    return super(Neuron, neuron)
+
+
+def _copy_diameters(neuron_a, neuron_b):
+    """copy diamters from neuron b to neuron a"""
+    for section_a, section_b in zip(neuron_a.iter(), neuron_b.iter()):
+        section_a.diameters = section_b.diameters
+
+
 def build(
     neuron_morphio, models_params, neurite_types, config
 ):  # pylint: disable=too-many-locals
     """ Building the diameters from the generated diameter models of a neuron"""
-
-    # convert to neurom neuron
-    neuron = Neuron(neuron_morphio)
+    neuron = _to_neurom(neuron_morphio)
 
     model = config["models"][0]
     extra_params = config["extra_params"]
@@ -121,12 +133,8 @@ def build(
 
         utils.set_all_diameters(neuron, diameters)
 
-    # copy diameters back to original morphio object
-    neuron_morphio_copy = super(Neuron, neuron)
-    for section_orig, section_copy in zip(
-        neuron_morphio.iter(), neuron_morphio_copy.iter()
-    ):
-        section_orig.diameters = section_copy.diameters
+    neuron_morphio_copy = _to_morphio(neuron)
+    _copy_diameters(neuron_morphio, neuron_morphio_copy)
 
     if "plot" in config and config["plot"]:
         try:

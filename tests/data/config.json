@@ -1,0 +1,27 @@
+{
+    "extra_params": {
+        "generic": {
+            "taper": {
+                "max": 0.005,
+                "max_residual": 100,
+                "min": -0.01,
+                "zeros": 1e-08
+            },
+            "terminal_threshold": 2.0,
+            "threshold": {
+                "apical": 0.2,
+                "basal": 1.0
+            },
+    	    "trunk_max_tries": 100,
+            "seed": 0
+        }
+    },
+    "models": [
+        "generic"
+    ],
+    "neurite_types": [
+        "basal",
+        "apical"
+    ],
+    "n_samples": 10
+}
