@@ -1,29 +1,27 @@
-""" plotting functions """
-import collections
+"""plotting functions"""
 import json
 import logging
 import os
-from tqdm import tqdm
 
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas
-from neurom import APICAL_DENDRITE, BASAL_DENDRITE, get, iter_sections, viewer
+import matplotlib
+import matplotlib.pyplot as plt
 import neurom as nm
+import numpy as np
+
+from neurom import APICAL_DENDRITE, BASAL_DENDRITE, get, iter_sections, viewer
 from neurom.geom import bounding_box
 from scipy import stats
-import seaborn
+from tqdm import tqdm
 
-import diameter_synthesis.utils as utils
-from diameter_synthesis import io
-from diameter_synthesis.distribution_fitting import (
-    evaluate_distribution,
-    evaluate_spline,
-    A_MAX,
-)
+from diameter_synthesis import io, utils
+from diameter_synthesis.distribution_fitting import evaluate_distribution
 from diameter_synthesis.io import iter_morphology_filenames
 from diameter_synthesis.types import STR_TO_TYPES
 
+# pylint: disable=too-many-statements,too-many-locals,too-many-arguments
+
+matplotlib.use("Agg")
 L = logging.getLogger(__name__)
 COLORS = {"basal": "r", "apical": "m", "axon": "b"}
 
@@ -81,455 +79,67 @@ VIOLIN_FEATURES_NAME += [
 ]
 
 
-######################
-# plotting functions #
-######################
-
-
-def plot_fit_distribution_params(
-    model, neurite_types, fig_name="test", ext=".png"
-):  # pylint: disable=too-many-locals
-
-    """ plot the fit of the parameter of the distributions """
-
-    fig = plt.figure(figsize=(5, 8))
-
-    fig.subplots_adjust(hspace=0.0)
-    try:
-        ax1 = fig.add_subplot(511)
-        for neurite_type in neurite_types:
-            tpes_model = list(model[neurite_type]["params"]["params_data"])
-
-            var_x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
-            ax1.plot(
-                var_x,
-                evaluate_spline(var_x, model[neurite_type]["params"]["a"]),
-                c=COLORS[neurite_type],
-            )
-
-            var_as = np.array(
-                [v["a"] for v in model[neurite_type]["params"]["params_data"].values()]
-            )
-            var_w = np.array(
-                [
-                    v["num_value"]
-                    for v in model[neurite_type]["params"]["params_data"].values()
-                ]
-            )
-
-            # prevent large values of a from bad fitting
-            var_as[var_as > A_MAX] = A_MAX
-            ax1.scatter(
-                tpes_model,
-                var_as,
-                s=var_w,
-                edgecolors=COLORS[neurite_type],
-                facecolors="none",
-            )
-
-        ax1.set_xlabel("max path distance")
-        ax1.set_ylabel("a")
-        n_plot = 0
-    except BaseException:  # pylint: disable=broad-except
-        n_plot = 101
-
-    ax2 = fig.add_subplot(512 - n_plot)
+def _compute_neurite_diff(
+    neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_neg, neurite_types
+):
+    """compute the differences between neurite diameters"""
     for neurite_type in neurite_types:
-        tpes_model = list(model[neurite_type]["params"]["params_data"])
-
-        var_x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
-        ax2.plot(
-            var_x,
-            evaluate_spline(var_x, model[neurite_type]["params"]["loc"]),
-            c=COLORS[neurite_type],
-        )
-
-        locs = [v["loc"] for v in model[neurite_type]["params"]["params_data"].values()]
-        var_w = np.array(
-            [
-                v["num_value"]
-                for v in model[neurite_type]["params"]["params_data"].values()
-            ]
-        )
-
-        ax2.scatter(
-            tpes_model,
-            locs,
-            s=var_w,
-            edgecolors=COLORS[neurite_type],
-            facecolors="none",
-        )
-    ax2.set_ylabel("loc")
-
-    ax3 = fig.add_subplot(513 - n_plot)
-    for neurite_type in neurite_types:
-        tpes_model = list(model[neurite_type]["params"]["params_data"])
-
-        var_x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
-        ax3.plot(
-            var_x,
-            evaluate_spline(var_x, model[neurite_type]["params"]["scale"]),
-            c=COLORS[neurite_type],
-        )
-
-        scales = [
-            v["scale"] for v in model[neurite_type]["params"]["params_data"].values()
+        neurites_orig = [
+            neurite
+            for neurite in neuron_orig.neurites
+            if neurite.type == STR_TO_TYPES[neurite_type]
         ]
-        ax3.scatter(
-            tpes_model,
-            scales,
-            s=var_w,
-            edgecolors=COLORS[neurite_type],
-            facecolors="none",
-        )
-    ax3.set_ylabel("scale")
+        neurites_new = [
+            neurite
+            for neurite in neuron_new.neurites
+            if neurite.type == STR_TO_TYPES[neurite_type]
+        ]
+        neurites_diff_neg = [
+            neurite
+            for neurite in neuron_diff_neg.neurites
+            if neurite.type == STR_TO_TYPES[neurite_type]
+        ]
+        neurites_diff_pos = [
+            neurite
+            for neurite in neuron_diff_pos.neurites
+            if neurite.type == STR_TO_TYPES[neurite_type]
+        ]
 
-    ax4 = fig.add_subplot(514 - n_plot)
-    for neurite_type in neurite_types:
-        tpes_model = list(model[neurite_type]["params"]["params_data"])
-
-        var_x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
-        ax4.plot(
-            var_x,
-            evaluate_spline(var_x, model[neurite_type]["params"]["min"]),
-            c=COLORS[neurite_type],
-        )
-
-        mins = [v["min"] for v in model[neurite_type]["params"]["params_data"].values()]
-        ax4.scatter(
-            tpes_model,
-            mins,
-            s=var_w,
-            edgecolors=COLORS[neurite_type],
-            facecolors="none",
-        )
-    ax4.set_ylabel("min")
-
-    ax5 = fig.add_subplot(515 - n_plot)
-    for neurite_type in neurite_types:
-        tpes_model = list(model[neurite_type]["params"]["params_data"])
-
-        var_x = np.linspace(tpes_model[0], tpes_model[-1], 1000)
-        ax5.plot(
-            var_x,
-            evaluate_spline(var_x, model[neurite_type]["params"]["max"]),
-            c=COLORS[neurite_type],
-        )
-
-        maxs = [v["max"] for v in model[neurite_type]["params"]["params_data"].values()]
-        ax5.scatter(
-            tpes_model,
-            maxs,
-            s=var_w,
-            edgecolors=COLORS[neurite_type],
-            facecolors="none",
-        )
-
-    ax5.set_xlabel("max branching order")
-    ax5.set_ylabel("max")
-
-    fig.savefig(fig_name + ext, bbox_inches="tight")
-    plt.close(fig)
-
-
-def plot_distribution_fit(  # noqa, pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
-    data, model, neurite_types, fig_name="test", ext=".png", figsize=(5, 4), n_bins=10
-):
-    """ Plot the data distribution and its fit """
-
-    plt.figure()
-    save_plot = False
-    for neurite_type in neurite_types:
-        if model[neurite_type]["sequential"] == "asymmetry_threshold":
-            try:
-                tpes = np.asarray(data[neurite_type])[:, 1]  # collect the type of point
-                values = np.asarray(data[neurite_type])[
-                    :, 0
-                ]  # collect the type of point
-
-                plt.scatter(values, tpes, s=5, c=COLORS[neurite_type], alpha=0.5)
-                plt.axhline(0.2, c="k")
-                save_plot = True
-            except BaseException:  # pylint: disable=broad-except
-                pass
-    if save_plot:
-        plt.savefig(fig_name + "_scatter" + ext)
-    plt.close()
-
-    fig = plt.figure(figsize=figsize)
-
-    for neurite_type in neurite_types:
-        # if the fits are done sequantially
-        if (
-            not isinstance(model[neurite_type]["sequential"], str)
-            or model[neurite_type]["sequential"] == "asymmetry_threshold"
+        for neurite_orig, neurite_new, neurite_diff_pos, neurite_diff_neg in zip(
+            neurites_orig, neurites_new, neurites_diff_pos, neurites_diff_neg
         ):
-            try:
-                min_val = model[neurite_type]["params"]["min"]
-                max_val = model[neurite_type]["params"]["max"]
+            diam_orig = []
+            diam_new = []
+            for section_orig, section_new in zip(
+                iter_sections(neurite_orig), iter_sections(neurite_new)
+            ):
+                diam_orig.append(utils._get_diameters(section_orig))
+                diam_new.append(utils._get_diameters(section_new))
 
-                if len(data[neurite_type]) > 0:
-                    if len(np.shape(data[neurite_type])) > 1:
-                        plt.hist(
-                            np.array(data[neurite_type])[:, 0],
-                            bins=50,
-                            log=False,
-                            density=True,
-                            histtype="bar",
-                            lw=0.5,
-                            color=COLORS[neurite_type],
-                            alpha=0.5,
-                            range=[min_val * 0.8, max_val * 1.2],
-                        )
-                    else:
-                        plt.hist(
-                            data[neurite_type],
-                            bins=50,
-                            log=False,
-                            density=True,
-                            histtype="bar",
-                            lw=0.5,
-                            color=COLORS[neurite_type],
-                            alpha=0.5,
-                            range=[min_val * 0.8, max_val * 1.2],
-                        )
+            for j, section in enumerate(iter_sections(neurite_diff_pos)):
+                diff = diam_new[j] - diam_orig[j]
+                diff_pos = diff.copy()
+                diff_pos[diff_pos < 0] = 0
+                utils._set_diameters(section, diff_pos)
 
-                    var_x = np.linspace(min_val, max_val, 1000)
-                    plt.plot(
-                        var_x,
-                        evaluate_distribution(
-                            var_x,
-                            model[neurite_type]["distribution"],
-                            model[neurite_type]["params"],
-                        ),
-                        c=COLORS[neurite_type],
-                        lw=3,
-                        ls="--",
-                        label=neurite_type,
-                    )
-                # plt.gca().set_xlim(min_val * 0.8, max_val * 1.2)
-
-            except BaseException:  # pylint: disable=broad-except
-                pass
-
-            plt.legend(loc="best")
-
-        else:
-
-            tpes = np.asarray(data[neurite_type])[:, 1]  # collect the type of point
-            values = np.asarray(data[neurite_type])[:, 0]  # collect the data itself
-
-            bins, _ = utils.set_bins(tpes, n_bins)
-
-            min_val = 1e10
-            max_val = -1e10
-
-            for i in range(len(bins) - 1):
-                values_tpe = values[
-                    (tpes >= bins[i]) & (tpes < bins[i + 1])
-                ]  # select the values by its type
-                tpe_mean = (bins[i] + bins[i + 1]) / 2.0
-
-                bottom_shift = tpe_mean
-
-                height = (bins[i + 1] - bins[i]) / 2.0
-
-                plt.axhline(bottom_shift, lw=0.2, c="k")
-                try:  # try to plot, may not be a fit to plot
-                    min_tpe = evaluate_spline(
-                        tpe_mean, model[neurite_type]["params"]["min"]
-                    )
-                    max_tpe = evaluate_spline(
-                        tpe_mean, model[neurite_type]["params"]["max"]
-                    )
-
-                    min_val = np.min([min_val, min_tpe])
-                    max_val = np.max([max_val, max_tpe])
-                    values_tpe = values_tpe[values_tpe < max_tpe * 1.2]
-                    values_tpe = values_tpe[values_tpe > min_tpe * 0.8]
-
-                    var_n, var_b = np.histogram(values_tpe, bins=20)
-                    plt.bar(
-                        var_b[1:],
-                        height * np.array(var_n) / np.max(var_n),
-                        width=var_b[1] - var_b[0],
-                        bottom=bottom_shift,
-                        color=COLORS[neurite_type],
-                        alpha=0.5,
-                    )
-
-                    var_x = np.linspace(min_tpe, max_tpe, 1000)
-                    params = {}
-                    try:
-                        params["a"] = evaluate_spline(
-                            tpe_mean, model[neurite_type]["params"]["a"]
-                        )
-                    except BaseException:  # pylint: disable=broad-except
-                        pass
-                    params["loc"] = evaluate_spline(
-                        tpe_mean, model[neurite_type]["params"]["loc"]
-                    )
-                    params["scale"] = evaluate_spline(
-                        tpe_mean, model[neurite_type]["params"]["scale"]
-                    )
-                    pdf = evaluate_distribution(
-                        var_x, model[neurite_type]["distribution"], params
-                    )
-
-                    plt.plot(
-                        var_x,
-                        bottom_shift + height * pdf / np.max(pdf),
-                        c=COLORS[neurite_type],
-                        lw=1,
-                        ls="--",
-                    )
-                except Exception as exc:  # pylint: disable=broad-except
-                    L.exception("plotting exception: %s", exc)
-                    var_n, var_b = np.histogram(values_tpe, bins=20)
-                    plt.bar(
-                        var_b[:-1],
-                        height * np.array(var_n) / np.max(var_n),
-                        width=var_b[1] - var_b[0],
-                        bottom=bottom_shift,
-                        color=COLORS[neurite_type],
-                        alpha=0.5,
-                    )
-
-    title_txt = "Fit parameters:\n"
-    try:
-        for neurite_type in neurite_types:
-            params_title = {}
-            for param in model[neurite_type]["params"]:
-                if param != "params_data":
-                    params_title[param] = model[neurite_type]["params"][param]
-            title_txt += neurite_type + ": " + str(params_title)
-            title_txt += "\n"
-    except BaseException:  # pylint: disable=broad-except
-        title_txt += " no parameter could be fitted."
-
-    # plt.title(title_txt, fontsize = 8)
-
-    plt.savefig(fig_name + ext, bbox_inches="tight")
-    plt.close(fig)
-
-    if (
-        isinstance(
-            # if the fits are done sequantially
-            model[neurite_type]["sequential"],
-            str,
-        )
-        and model[neurite_type]["sequential"] != "asymmetry_threshold"
-    ):
-        plot_fit_distribution_params(
-            model, neurite_types, fig_name=fig_name + "_param_fit", ext=ext
-        )
+            for j, section in enumerate(iter_sections(neurite_diff_neg)):
+                diff = diam_new[j] - diam_orig[j]
+                diff_neg = -diff.copy()
+                diff_neg[diff_neg < 0] = 0
+                utils._set_diameters(section, diff_neg)
 
 
-def plot_fit_param_boxes(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches
-    model_params,
-    model="M0",
-    neurite_type="basal",
-    figname="test",
-    ext=".png",
-    figsize=(6, 3),
+def plot_diameter_diff(
+    neuron_name, morph_path, neuron_new, neurite_types, folder, ext="png"
 ):
-    """ box plots for the fits of the model parameters """
-
-    data = collections.OrderedDict()
-
-    mtype = list(model_params)[0]
-    for fit in model_params[mtype][model]:
-        if fit != "trunk_diameter":
-            for params in model_params[mtype][model][fit][neurite_type]["params"]:
-                data[fit + "_" + params] = []
-        else:
-            for params in model_params[mtype][model][fit][neurite_type]["params"]:
-                data[fit + "_" + params + "_0"] = []
-                data[fit + "_" + params + "_1"] = []
-
-    for mtype in model_params:
-        for fit in model_params[mtype][model]:
-            if fit != "trunk_diameter":
-                for params in model_params[mtype][model][fit][neurite_type]["params"]:
-                    data[fit + "_" + params].append(
-                        model_params[mtype][model][fit][neurite_type]["params"][params]
-                    )
-            else:
-                for params in model_params[mtype][model][fit][neurite_type]["params"]:
-                    params_0 = model_params[mtype][model][fit][neurite_type]["params"][
-                        params
-                    ][0]
-                    params_1 = model_params[mtype][model][fit][neurite_type]["params"][
-                        params
-                    ][1]
-                    data[fit + "_" + params + "_0"].append(params_0)
-                    data[fit + "_" + params + "_1"].append(params_1)
-
-    plt.figure(figsize=figsize)
-    plt.boxplot(data.values())
-    plt.xticks(np.arange(1, len(data) + 1), list(data), rotation="vertical")
-    # plt.axis([0, len(data)+1, 0., 5])
-    plt.savefig(figname + ext, bbox_inches="tight")
-    plt.close()
-
-    data = collections.OrderedDict()
-
-    bos = [
-        "0.0",
-        "1.0",
-        "2.0",
-        "3.0",
-        "4.0",
-        "5.0",
-        "6.0",
-        "7.0",
-        "8.0",
-    ]
-    mtype = list(model_params)[0]
-    for fit in model_params[mtype][model]:
-        if fit == "trunk_diameter":
-            for params in model_params[mtype][model][fit][neurite_type]["params_data"][
-                "0.0"
-            ]:
-                for branch_order in bos:
-                    data[branch_order + "_" + params] = []
-
-    for mtype in model_params:
-        fit_gen = (fit for fit in model_params[mtype][model] if fit == "trunk_diameter")
-        for _ in fit_gen:
-            params_tmp = model_params[mtype][model][fit][neurite_type]["params_data"]
-            bo_gen = (
-                bo
-                for bo in model_params[mtype][model][fit][neurite_type]["params_data"]
-                if bo in bos
-            )
-            for branch_order in bo_gen:
-                bo_list = model_params[mtype][model][fit][neurite_type]["params_data"][
-                    branch_order
-                ]
-                for params in bo_list:
-                    data[branch_order + "_" + params].append(params_tmp)
-
-    plt.figure(figsize=figsize)
-    plt.boxplot(data.values())
-    plt.xticks(np.arange(1, len(data) + 1), list(data), rotation="vertical")
-    # plt.axis([0, len(data)+1, 0., 5])
-    plt.savefig(figname + "_trunk" + ext, bbox_inches="tight")
-    plt.close()
-
-
-def plot_diameter_diff(  # pylint: disable=too-many-locals,too-many-arguments
-    neuron_name, morph_path, neuron_new, model, neurite_types, folder, ext=".png"
-):
-    """ plot original morphology, new one and differences """
+    """plot original morphology, new one and differences"""
 
     if not os.path.isdir(folder):
         os.mkdir(folder)
 
-    neuron_orig = io.load_neuron(neuron_name, None, morph_path)
-    neuron_diff_pos = io.load_neuron(neuron_name, None, morph_path)
-    neuron_diff_neg = io.load_neuron(neuron_name, None, morph_path)
-
+    neuron_orig = io.load_neuron(neuron_name, morph_path)
+    neuron_diff_pos = io.load_neuron(neuron_name, morph_path)
+    neuron_diff_neg = io.load_neuron(neuron_name, morph_path)
     _compute_neurite_diff(
         neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_neg, neurite_types
     )
@@ -562,61 +172,89 @@ def plot_diameter_diff(  # pylint: disable=too-many-locals,too-many-arguments
     axs[1, 1].set_ylim([bbox[0, 1], bbox[1, 1]])
     axs[1, 1].set_aspect("equal")
 
-    fig.savefig(
-        folder + "/" + model + "_" + neuron_new.name + "_" + folder + "_" + model + ext,
-        dpi=500,
-    )
-    plt.close("all")
+    fig.savefig(os.path.join(folder, neuron_new.name + "." + ext), dpi=500)
+    plt.close()
 
 
-def _compute_neurite_diff(
-    neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_neg, neurite_types
-):  # pylint: disable=too-many-locals
-    """compute the differences between neurite diameters"""
+def _plot_attribute_scatter(data, model, neurite_types, fig_name, figsize, ext):
+    """plot scatter of parameters with attribute if any attributes"""
+    plt.figure(figsize=figsize)
+    save_plot = False
+    max_val = -1e10
+    min_val = 1e10
     for neurite_type in neurite_types:
-        neurites_orig = [
-            neurite
-            for neurite in neuron_orig.neurites
-            if neurite.type == STR_TO_TYPES[neurite_type]
-        ]
-        neurites_new = [
-            neurite
-            for neurite in neuron_new.neurites
-            if neurite.type == STR_TO_TYPES[neurite_type]
-        ]
-        neurites_diff_neg = [
-            neurite
-            for neurite in neuron_diff_neg.neurites
-            if neurite.type == STR_TO_TYPES[neurite_type]
-        ]
-        neurites_diff_pos = [
-            neurite
-            for neurite in neuron_diff_pos.neurites
-            if neurite.type == STR_TO_TYPES[neurite_type]
-        ]
+        if model[neurite_type]["sequential"] == "asymmetry_threshold":
+            save_plot = True
+            tpes = np.asarray(data[neurite_type])[:, 1]
+            values = np.asarray(data[neurite_type])[:, 0]
+            plt.scatter(values, tpes, s=5, c=COLORS[neurite_type], alpha=0.5)
+            plt.axhline(0.2, c="k")
 
-        for neurite_orig, neurite_new, neurite_diff_pos, neurite_diff_neg in zip(
-            neurites_orig, neurites_new, neurites_diff_pos, neurites_diff_neg
-        ):
-            diam_orig = []
-            diam_new = []
-            for section_orig, section_new in zip(
-                iter_sections(neurite_orig), iter_sections(neurite_new)
-            ):
-                diam_orig.append(utils.get_diameters(section_orig))
-                diam_new.append(utils.get_diameters(section_new))
+            min_val = min(min_val, model[neurite_type]["params"]["min"])
+            max_val = max(max_val, model[neurite_type]["params"]["max"])
 
-            for j, section in enumerate(iter_sections(neurite_diff_pos)):
-                diff = diam_new[j] - diam_orig[j]
-                diff_pos = diff.copy()
-                diff_pos[diff_pos < 0] = 0
-                utils.set_diameters(section, diff_pos)
+    if os.path.basename(fig_name) == "sibling_ratios":
+        plt.gca().set_xlim(0.0, 1.0)
+    else:
+        plt.gca().set_xlim(min_val * 0.5, max_val * 2.0)
 
-            for j, section in enumerate(iter_sections(neurite_diff_neg)):
-                diff = diam_new[j] - diam_orig[j]
-                diff_neg = -diff.copy()
-                diff_neg[diff_neg < 0] = 0
-                utils.set_diameters(section, diff_neg)
+    if save_plot:
+        plt.savefig(fig_name + "_scatter." + ext)
+
+    plt.close()
+
+
+def plot_distribution_fit(
+    data, model, neurite_types, fig_name="test", ext="png", figsize=(5, 4)
+):
+    """ Plot the data distribution and its fit """
+
+    _plot_attribute_scatter(data, model, neurite_types, fig_name, figsize, ext)
+
+    plt.figure()
+    for neurite_type in neurite_types:
+
+        min_val = model[neurite_type]["params"]["min"]
+        max_val = model[neurite_type]["params"]["max"]
+        if os.path.basename(fig_name) == "sibling_ratios":
+            hist_range = [min_val, max_val]
+        else:
+            hist_range = [min_val * 0.5, max_val * 2.0]
+
+        if len(data[neurite_type]) > 0:
+            if len(np.shape(data[neurite_type])) > 1:
+                data_hist = np.array(data[neurite_type])[:, 0]
+            else:
+                data_hist = data[neurite_type]
+
+            plt.hist(
+                data_hist,
+                bins=30,
+                density=True,
+                color=COLORS[neurite_type],
+                alpha=0.5,
+                range=hist_range,
+            )
+
+            values = np.linspace(min_val, max_val, 1000)
+            plt.plot(
+                values,
+                evaluate_distribution(
+                    values,
+                    model[neurite_type]["distribution"],
+                    model[neurite_type]["params"],
+                ),
+                c=COLORS[neurite_type],
+                lw=3,
+                ls="--",
+                label=neurite_type,
+            )
+            plt.legend(loc="best")
+        else:
+            L.warning("No data to plot")
+
+    plt.savefig(fig_name + "." + ext, bbox_inches="tight")
+    plt.close()
 
 
 def _create_data(
@@ -681,7 +319,7 @@ def _create_data(
         yield bin_centers, stats1, stats2
 
 
-def plot_cumulative_distribution(  # noqa, pylint: disable=too-many-statements,too-many-locals,too-many-arguments
+def plot_cumulative_distribution(
     original_cells,
     diametrized_cells,
     feature1,
@@ -728,7 +366,7 @@ def plot_cumulative_distribution(  # noqa, pylint: disable=too-many-statements,t
             bin_centers, means, c=color, linestyle="-", lw=3, label="original cells"
         )
 
-        if len(stats1) > 1:  # don't plot std if there is only one curve
+        if len(stats1) > 1:
             for st1 in stats1:
                 axes[0].plot(
                     bin_centers, st1, c=color, linestyle="-", lw=0.5, alpha=0.2
@@ -779,8 +417,6 @@ def plot_cumulative_distribution(  # noqa, pylint: disable=too-many-statements,t
                 )
 
             diff_sdevs = diffs.std(axis=0)
-            # axes[1].fill_between(bin_centers, diff_means - diff_sdevs,
-            # diff_means + diff_sdevs, color=color, alpha=0.2)
             axes[1].plot(
                 bin_centers, diff_means - diff_sdevs, c=color, linestyle="--", lw=3
             )
@@ -793,10 +429,6 @@ def plot_cumulative_distribution(  # noqa, pylint: disable=too-many-statements,t
 
         axes[1].set_xlabel("path distance")
         axes[1].set_ylabel("difference in cummulative section areas")
-
-        # if len(diffs) > 1:
-        #    for i in range(len(stats1)):
-        #        axes[2].annotate(i, (stats1[i,-1], stats2[i,-1]))
 
         if auto_limit:
             lim_min = 0.5 * np.min(stats1[:, -1])
@@ -817,10 +449,6 @@ def plot_cumulative_distribution(  # noqa, pylint: disable=too-many-statements,t
             + str(np.around(np.linalg.norm(stats2[:, -1] - stats1[:, -1]), 1)),
             loc="left",
         )
-
-        # if len(diffs) > 1:
-        #    axes[2].plot(x,x-diff_means[-1], ls='--', c=color)
-        #    axes[2].plot(x,x+diff_means[-1], ls='--', c=color)
 
         axes[2].set_xlabel("total surface area of original cells")
         axes[2].set_ylabel("total surface area of diametrized cells")
@@ -847,7 +475,7 @@ def make_cumulative_figures(
     out_dir,
     individual=False,
     figname_prefix="",
-):  # pylint: disable=too-many-locals
+):
 
     """make plots for cumulative distributions for a pair of features"""
     prefix1, basename1 = _split_prefix(feature1)
@@ -911,25 +539,40 @@ def _load_cells(config):
     return original_cells, diametrized_cells
 
 
+def _load_morphologies(
+    morph_path, mtypes_sort="all", mtypes_file="./neuronDB.xml", ext=".asc", prefix="",
+):
+    """ Load the morphologies from a directory, by mtypes or all at once """
+    name_dict = utils.create_morphologies_dict(
+        morph_path,
+        mtypes_sort=mtypes_sort,
+        mtypes_file=mtypes_file,
+        ext=ext,
+        prefix=prefix,
+    )
+    return io.load_morphologies_from_dict(morph_path, name_dict)
+
+
 def cumulative_analysis(config, out_dir, individual):
     """make plots for cumulative distributions"""
     with open(config, "r") as filename:
         config = json.load(filename)
 
-    out_dir += "_" + config["mtypes_sort"]
+    # out_dir += "_" + config["mtypes_sort"]
     if not os.path.isdir(out_dir):
         os.mkdir(out_dir)
 
-    if len(config["models"]) > 1:
+    if len(config) > 1:
         L.warning(
             "multiple models provided, will only use the first in the list for analysis"
         )
+    config = config[list(config.keys())[0]]
 
-    all_original_cells = utils.load_morphologies(
+    all_original_cells = _load_morphologies(
         config["morph_path"], mtypes_sort=config["mtypes_sort"]
     )
 
-    all_diametrized_cells = utils.load_morphologies(
+    all_diametrized_cells = _load_morphologies(
         config["new_morph_path"], mtypes_sort=config["mtypes_sort"]
     )
 
@@ -998,6 +641,7 @@ def transform2DataFrame(data, pop_names, flist):
 
 def plot_violins(data, x="Morphological features", y="Values", hues="Data", **kwargs):
     """Plots the split violins of all features"""
+    import seaborn  # pylint: disable=import-outside-toplevel
     plt.figure(figsize=(12, 6))
     axs = seaborn.violinplot(
         x=x,
@@ -1022,18 +666,16 @@ def violin_analysis(config, out_dir):
     if not os.path.isdir(out_dir):
         os.mkdir(out_dir)
 
-    if len(config["models"]) > 1:
+    if len(config) > 1:
         L.warning(
             "multiple models provided, will only use the first in the list for analysis"
         )
-
-    # original_cells, diametrized_cells = _load_cells(config)
-
-    all_original_cells = utils.load_morphologies(
+    config = config[list(config.keys())[0]]
+    all_original_cells = _load_morphologies(
         config["morph_path"], mtypes_sort=config["mtypes_sort"]
     )
 
-    all_diametrized_cells = utils.load_morphologies(
+    all_diametrized_cells = _load_morphologies(
         config["new_morph_path"], mtypes_sort=config["mtypes_sort"]
     )
 

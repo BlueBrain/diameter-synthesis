@@ -1,10 +1,12 @@
 """ Helper functions for loading and writing morphologies """
-
 import logging
 import os
 
 import neurom as nm
 from morphio import RawDataError, UnknownFileType
+from neurom.exceptions import RawDataError as RawDataErrorNeurom
+
+from diameter_synthesis.exception import DiameterSynthesisError
 
 L = logging.getLogger(__name__)
 
@@ -28,14 +30,13 @@ def load_neuron(name, directory, model_name=""):
     """ load the neuron morphology for later analysis """
     prefix = "{}_".format(model_name) if model_name else ""
     try:
-        try:
-            filepath = os.path.join(directory, "{}{}.h5".format(prefix, name))
-            return nm.load_neuron(filepath)
-        except (RawDataError, UnknownFileType):
-            filepath = os.path.join(directory, "{}{}.asc".format(prefix, name))
-            return nm.load_neuron(filepath)
-    except (RawDataError, UnknownFileType):
-        L.exception("file not found")
+        filepath = os.path.join(directory, "{}{}.h5".format(prefix, name))
+        return nm.load_neuron(filepath)
+    except (RawDataError, UnknownFileType, RawDataErrorNeurom, OSError):
+        filepath = os.path.join(directory, "{}{}.asc".format(prefix, name))
+        return nm.load_neuron(filepath)
+
+    raise DiameterSynthesisError("file not found")
 
 
 def load_morphologies(filepaths):
@@ -48,7 +49,7 @@ def load_morphologies(filepaths):
                 os.path.splitext(os.path.basename(filepath))[0],
                 os.path.dirname(filepath),
             )
-        except (RawDataError, UnknownFileType):
+        except (RawDataError, UnknownFileType, RawDataErrorNeurom, OSError):
             continue
         yield cell
 
@@ -77,10 +78,8 @@ def load_morphologies_from_dict(directory, filenames_per_mtype):
 
 
 def save_neuron(neuron, model, folder):
-    """ save the neuron morphology for later analysis """
-
+    """save the neuron morphology for later analysis"""
     if not os.path.exists(folder):
-        L.warning("Directory %s is created.", folder)
         os.mkdir(folder)
 
     if model == "generic":

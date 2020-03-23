@@ -5,18 +5,14 @@ import os
 from xml.etree import ElementTree as ET
 
 import numpy as np
-import pandas as pd
-
 from neurom import COLS
-from neurom.core import iter_sections
-
-from .io import load_morphologies_from_dict
+import pandas as pd
 
 L = logging.getLogger(__name__)
 
 
-def create_morphologies_dict_dat(  # pylint: disable=unused-argument
-    morph_path, mtypes_file="neurondb.dat", prefix="", ext='.asc'
+def _create_morphologies_dict_dat(  # pylint: disable=unused-argument
+    morph_path, mtypes_file="neurondb.dat", prefix="", ext=".asc"
 ):
     """ Create dict to load the morphologies from a directory, with dat file """
     morph_name = pd.read_csv(mtypes_file, sep=" ")
@@ -29,7 +25,7 @@ def create_morphologies_dict_dat(  # pylint: disable=unused-argument
     return name_dict
 
 
-def create_morphologies_dict_json(
+def _create_morphologies_dict_json(
     morph_path, mtypes_file="neuronDB.xml", prefix="",
 ):
     """ Create dict to load the morphologies from a directory, with json """
@@ -51,7 +47,7 @@ def create_morphologies_dict_json(
     return name_dict
 
 
-def create_morphologies_dict_folder(
+def _create_morphologies_dict_folder(
     morph_path, prefix="",
 ):
     """ Create dict to load the morphologies from a directory, from folders """
@@ -72,7 +68,7 @@ def create_morphologies_dict_folder(
     return name_dict
 
 
-def create_morphologies_dict_xml(
+def _create_morphologies_dict_xml(
     morph_path, mtypes_sort="all", mtypes_file="neuronDB.xml", ext=".asc", prefix="",
 ):
     """ Create dict to load the morphologies from a directory, from xml """
@@ -106,7 +102,7 @@ def create_morphologies_dict_xml(
     return name_dict
 
 
-def create_morphologies_dict_all(
+def _create_morphologies_dict_all(
     morph_path, prefix="",
 ):
     """ Create dict to load the morphologies from a directory, all together """
@@ -127,143 +123,86 @@ def create_morphologies_dict(
     morph_path, mtypes_sort="all", mtypes_file="neuronDB.xml", ext=".asc", prefix="",
 ):
     """ Create dict to load the morphologies from a directory, by mtypes or all at once """
-
     try:
-
-        name_dict = create_morphologies_dict_dat(
+        name_dict = _create_morphologies_dict_dat(
             morph_path, mtypes_file=mtypes_file, prefix=prefix
         )
-
         L.info("found dat file")
         return name_dict
-
     except BaseException:  # pylint: disable=broad-except
         pass
 
     try:
-
-        name_dict = create_morphologies_dict_json(
+        name_dict = _create_morphologies_dict_json(
             morph_path, mtypes_file=mtypes_file, prefix=prefix
         )
-
         L.info("found morph.json file")
         return name_dict
-
     except BaseException:  # pylint: disable=broad-except
         pass
 
     try:
-        name_dict = create_morphologies_dict_folder(morph_path, prefix=prefix)
-
+        name_dict = _create_morphologies_dict_folder(morph_path, prefix=prefix)
         L.info("found folder structure per mtype")
         return name_dict
-
     except BaseException:  # pylint: disable=broad-except
         pass
 
     try:
-        name_dict = create_morphologies_dict_xml(
+        name_dict = _create_morphologies_dict_xml(
             morph_path,
             mtypes_sort=mtypes_sort,
             mtypes_file=mtypes_file,
             ext=ext,
             prefix=prefix,
         )
-
         L.info("found neuronDB.xml")
         return name_dict
-
     except BaseException:  # pylint: disable=broad-except
         pass
 
     try:
         L.info("use all files as single mtype")
-
-        name_dict = create_morphologies_dict_all(morph_path, prefix=prefix)
-
+        name_dict = _create_morphologies_dict_all(morph_path, prefix=prefix)
         return name_dict
-
     except Exception as exc:  # pylint: disable=broad-except
         L.info("Could not load any files with exception: %s", exc)
 
 
-def load_morphologies(
-    morph_path, mtypes_sort="all", mtypes_file="./neuronDB.xml", ext=".asc", prefix="",
-):
-    """ Load the morphologies from a directory, by mtypes or all at once """
-    name_dict = create_morphologies_dict(
-        morph_path,
-        mtypes_sort=mtypes_sort,
-        mtypes_file=mtypes_file,
-        ext=ext,
-        prefix=prefix,
-    )
-    return load_morphologies_from_dict(morph_path, name_dict)
-
-
-###############################
-# diameter handling functions #
-###############################
-
-
-def set_diameters(section, diameters):
-    """hack to set diameters with neurom"""
+def _set_diameters(section, diameters):
+    """set diameters (neurom)"""
     section.morphio_section.diameters = diameters
 
 
-def get_mean_diameter(section):
-    """ Section mean diameter by averaging the segment truncated cone
-    diameters and weighting them by their length.
-    """
-    points = section.morphio_section.points
-    radii = section.morphio_section.diameters / 2.
-
-    segment_lengths = np.linalg.norm(points[1:] - points[:-1], axis=1)
-
-    segment_mean_diams = radii[1:] + radii[:-1]
-
+def _get_mean_diameter(section):
+    """Section mean diameter by averaging the segment truncated cone
+    diameters and weighting them by their length. (morphio)"""
+    segment_lengths = np.linalg.norm(section.points[1:] - section.points[:-1], axis=1)
+    segment_mean_diams = (section.diameters[1:] + section.diameters[:-1]) / 2.0
     return np.sum(segment_mean_diams * segment_lengths) / segment_lengths.sum()
 
 
-def get_all_diameters(neuron):
-    """get all neuron diameters"""
-    return list(map(get_diameters, iter_sections(neuron)))
+def _get_all_diameters(neuron):
+    """get all neuron diameters (morphio)"""
+    return [section.diameters for section in neuron.iter()]
 
 
-def set_all_diameters(neuron, diameters):
-    """get all neuron diameters"""
-
-    i = 0
-    for neurite in neuron.neurites:
-        for section in iter_sections(neurite):
-            set_diameters(section, diameters[i])
-            i += 1
+def _set_all_diameters(neuron, diameters):
+    """set all neuron diameters (morphio)"""
+    for diameter, section in zip(diameters, neuron.iter()):
+        section.diameters = diameter
 
 
-def get_diameters(section):
-    """hack to get diameters with neurom (faster to access morphio directly)"""
-    return section.morphio_section.diameters
+def _get_diameters(section):
+    """get diameters (neurom)"""
+    return section.points[:, COLS.R] * 2.0
 
 
-def redefine_diameter_section(section, diam_ind, diam_new):
-    """Hack to replace one diameter at index diam_ind with value diam_new"""
-
-    diameters = get_diameters(section)
+def _redefine_diameter_section(section, diam_ind, diam_new):
+    """Hack to replace one diameter at index diam_ind with value diam_new (morphio)"""
+    diameters = section.diameters
     diameters[diam_ind] = diam_new
-    set_diameters(section, diameters)
-
-
-########################
-# additional functions #
-########################
-
-
-def section_lengths(section):
-    """Computes all segment lengths within section"""
-
-    vecs = np.diff(section.points, axis=0)[:, COLS.XYZ]
-    len_square = [np.dot(p, p) for p in vecs]
-    return list(np.cumsum(np.sqrt(len_square)))
+    section.diameters = diameters
 
 
 def tqdm_disable(morphologies):

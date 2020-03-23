@@ -31,12 +31,13 @@ def test_build():
         config = json.load(filename)
 
     with open(os.path.join(_path, "data/model_params.json"), "r") as filename:
-        model_params = json.load(filename)[mtype][model]
+        model_params = json.load(filename)
 
     neuron = morphio.mut.Morphology(os.path.join(_path, "data/C030796A-P3.h5"))
-    build_diameters.build(neuron, model_params, neurite_types, config)
+    model = 'generic'
+    build_diameters.build(neuron, model, model_params[model][mtype], neurite_types, config[model])
 
-    # neuron.write(os.path.join(_path, 'data/C030796A-P3_diametrized.h5'))
+    #neuron.write(os.path.join(_path, 'data/C030796A-P3_diametrized.h5'))
 
     neuron_diametrized = morphio.Morphology(
         os.path.join(_path, "data/C030796A-P3_diametrized.h5")

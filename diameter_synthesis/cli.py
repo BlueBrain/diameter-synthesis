@@ -1,13 +1,20 @@
-""" click module """
+"""click module"""
+import logging
 import os
 
 import click
+import morphio
 from tqdm import tqdm
 
 from .io import load_neuron
-from .main import run_diameters as run_diameters_main
-from .main import run_models as run_models_main
 from .utils import create_morphologies_dict
+
+morphio.set_maximum_warnings(0)
+L = logging.getLogger(__name__)
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
+
+
+# pylint: disable=import-outside-toplevel,redefined-outer-name
 
 
 @click.group()
@@ -17,16 +24,64 @@ def cli():
 
 @cli.command("run_models")
 @click.argument("config_file", type=click.Path(exists=True))
-def run_models(config_file):
+@click.option("--plot", is_flag=True)
+@click.option("--ext", default="png")
+def run_models(config_file, plot=False, ext="png"):
     """ Run the model extraction from config file"""
-    run_models_main(config_file)
+    from .main import run_models
+
+    run_models(config_file, plot=plot, ext=ext)
 
 
 @cli.command("run_diameters")
 @click.argument("config_file", type=click.Path(exists=True))
-def run_diameters(config_file):
+@click.argument("models_params_file", type=click.Path(exists=True))
+def run_diameters(config_file, models_params_file):
     """ Build new diameters from config file and diameter model"""
-    run_diameters_main(config_file)
+    from .main import run_diameters
+
+    run_diameters(config_file, models_params_file)
+
+
+@cli.command("plot_diff")
+@click.argument("original_folder", type=click.Path(exists=True))
+@click.argument("diametrized_folder", type=click.Path(exists=True))
+@click.argument("plot_folder", type=click.Path())
+@click.option("-n", "--ncells", help="max number of cells to plot")
+def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=None):
+    """plot original and new neurons as well as their differences"""
+    from .plotting import plot_diameter_diff
+
+    if ncells is not None:
+        ncells = int(ncells)
+    else:
+        ncells = -1
+
+    neurite_types = ["basal", "apical"]
+
+    morphologies_dict = create_morphologies_dict(original_folder, mtypes_sort="mtype")
+
+    if not os.path.exists(plot_folder):
+        os.mkdir(plot_folder)
+
+    for mtype in morphologies_dict:
+        plot_folder_mtype = os.path.join(plot_folder, mtype)
+        L.info("Plot mtype %s", mtype)
+        if not os.path.exists(plot_folder_mtype):
+            os.mkdir(plot_folder_mtype)
+
+        for neuron in tqdm(morphologies_dict[mtype][:ncells]):
+            neuron_name = os.path.splitext(neuron)[0]
+            neuron_new = load_neuron(neuron_name, diametrized_folder)
+
+            plot_diameter_diff(
+                neuron_name,
+                original_folder,
+                neuron_new,
+                neurite_types,
+                plot_folder_mtype,
+                ext=".png",
+            )
 
 
 @cli.command("run_analysis")
@@ -40,47 +95,11 @@ def run_diameters(config_file):
 def run_analysis(config, out_dir, cumulative, individual, violin):
     """produce figures for validation/analysis"""
     if cumulative:
-        from .plotting import (  # pylint: disable=import-outside-toplevel
-            cumulative_analysis,
-        )
+        from .plotting import cumulative_analysis
 
         cumulative_analysis(config, out_dir, individual)
+
     if violin:
-        from .plotting import violin_analysis  # pylint: disable=import-outside-toplevel
+        from .plotting import violin_analysis
 
         violin_analysis(config, out_dir)
-
-
-@cli.command("plot_diff")
-@click.argument("original_folder", type=click.Path(exists=True))
-@click.argument("diametrized_folder", type=click.Path(exists=True))
-@click.argument("plot_folder", type=click.Path())
-@click.option("-n", "--ncells", help="Violin distribution plots")
-def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=10):
-    """produce figures for validation/analysis"""
-    from .plotting import plot_diameter_diff  # pylint: disable=import-outside-toplevel
-
-    ncells = int(ncells)
-
-    morphologies_dict_original = create_morphologies_dict(
-        original_folder, mtypes_sort="mtype"
-    )
-
-    for mtype in tqdm(morphologies_dict_original):
-        count = 0
-        for neuron_name in morphologies_dict_original[mtype]:
-            neuron_new = load_neuron(neuron_name, diametrized_folder)
-            neurite_types = ["basal", "apical"]
-            plot_diameter_diff(
-                os.path.splitext(neuron_name)[0],
-                original_folder,
-                neuron_new,
-                "",
-                neurite_types,
-                plot_folder,
-                ext=".png",
-            )
-
-            count += 1
-            if count > ncells:
-                break
