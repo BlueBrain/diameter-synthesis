@@ -80,7 +80,7 @@ def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=None):
                 neuron_new,
                 neurite_types,
                 plot_folder_mtype,
-                ext=".png",
+                ext="png",
             )
 
 

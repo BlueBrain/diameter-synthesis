@@ -25,7 +25,7 @@ setup(
         "morphio>=2.3.4",
         'matplotlib>=2.2.0',
         'pandas>=0.24.0',
-        "neurom>=1.4.20",
+        "neurom>=1.4.2",
     ],
     entry_points={
         "console_scripts": ["diameter-synthesis=diameter_synthesis.cli:cli"],

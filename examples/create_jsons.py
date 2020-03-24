@@ -20,8 +20,9 @@ for model in extract_models_params['models']:
     extract_models_params['extra_params'][model] = {
                 'terminal_threshold': 2., 
                 #'taper': {'max_residual': 100, 'zeros': 1e-8, 'max': 0.005, 'min': -0.010},
-                'taper': {'max_residual': 100, 'zeros': 1e-8, 'max': -0.002, 'min': -0.002},
-                'threshold': {'apical': 0.2, 'basal': 1.}
+                'taper': {'max': 1e-6, 'min': -0.01},
+                #'taper': {'max_residual': 100, 'zeros': 1e-8, 'max': -0.002, 'min': -0.002},
+                'threshold': {'apical': 0.15, 'basal': 1.}
                 }
 
 
@@ -40,10 +41,10 @@ for i, model in enumerate(extract_models_params['models']):
         'new_morph_path': './diametrized_morphologies/', 
         #'plot': False, 
         'n_cpu': 10, 
-        'n_samples': 10,
+        'n_samples': 2,
         'seed': 0,
         'trunk_max_tries': 100,
-        'asymetry_threshold': {'apical': 0.2, 'basal': 1.}
+        'asymetry_threshold': {'apical': 0.15, 'basal': 1.}
     }
 
 with open('generate_diameters_params.json', 'w') as json_file:

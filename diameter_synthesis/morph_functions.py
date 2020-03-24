@@ -170,16 +170,13 @@ def trunk_diameter(neurite, attribute_name=None, bounds=None, method="last"):
 
 def taper(neurite, params=None, attribute_name=None):
     """get the taper rates (neurom)"""
-
     if params is None:
         raise DiameterSynthesisError(
             "Please provide parameters for taper rate computations"
         )
-
     tapers = nm.get("section_taper_rates", neurite)
-    tapers = tapers[abs(tapers) > params["zeros"]]
     return add_additional_attributes(
-        tapers,
+        np.array(tapers),
         neurite,
         attribute_name=attribute_name,
         bounds=[params["min"], params["max"]],

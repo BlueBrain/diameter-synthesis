@@ -14,6 +14,7 @@ from diameter_synthesis.exception import DiameterSynthesisError
 from diameter_synthesis.types import STR_TO_TYPES
 
 TRUNK_FRAC_DECREASE = 0.1
+N_TRIES_BEFORE_REDUC = 5
 L = logging.getLogger(__name__)
 
 
@@ -169,8 +170,8 @@ def _diametrize_tree(neurite, params, params_tree):
             params, params_tree["neurite_type"], no_taper=params_tree["no_taper"],
         )
 
-        params_tree["terminal_diam"] = _get_terminal_diameter(
-            params, params_tree["neurite_type"]
+        params_tree["terminal_diam"] = min(
+            init_diam, _get_terminal_diameter(params, params_tree["neurite_type"])
         )
 
         _diametrize_section(
@@ -187,6 +188,7 @@ def _diametrize_tree(neurite, params, params_tree):
             for i, child in enumerate(section.children):
                 utils._redefine_diameter_section(child, 0, diams[i])
                 active.append(child)
+
         # if we are at a tip, check if tip diameters are small enough
         elif section.diameters[-1] > max_diam:
             wrong_tips = True
@@ -218,7 +220,7 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, extra_params)
                 wrong_tips = _diametrize_tree(neurite, params, params_tree)
 
                 # if we can't get a good model, reduce the trunk diameter progressively
-                if n_tries > 2 * n_tries_step:
+                if n_tries > N_TRIES_BEFORE_REDUC * n_tries_step:
                     trunk_diam_frac -= TRUNK_FRAC_DECREASE
                     n_tries_step += 1
                 if n_tries > extra_params["trunk_max_tries"]:

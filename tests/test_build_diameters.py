@@ -42,6 +42,7 @@ def test_build():
     neuron_diametrized = morphio.Morphology(
         os.path.join(_path, "data/C030796A-P3_diametrized.h5")
     )
+
     _compare_diameters(neuron_diametrized, neuron)
 
 

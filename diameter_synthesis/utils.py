@@ -170,7 +170,7 @@ def create_morphologies_dict(
 
 
 def _set_diameters(section, diameters):
-    """set diameters (neurom)"""
+    """set diameters (neurom v2 only)"""
     section.morphio_section.diameters = diameters
 
 

@@ -91,11 +91,10 @@ def run_models(config_file, plot, ext="png"):
 class DiameterWorker:
     """worker for building diameters"""
 
-    def __init__(self, model, models_params, config, with_subfolders=False):
+    def __init__(self, model, models_params, config):
         self.model = model
         self.models_params = models_params[model]
         self.config = config[model]
-        self.with_subfolders = with_subfolders
 
     def __call__(self, neuron_input):
         fname = neuron_input[0]
@@ -121,14 +120,12 @@ class DiameterWorker:
             self.config,
         )
 
-        if self.with_subfolders:
-            save_path = os.path.join(self.config["new_morph_path"], mtype)
-            if not os.path.exists(save_path):
-                os.mkdir(save_path)
-        else:
-            save_path = self.config["new_morph_path"]
+        if not os.path.exists(self.config["new_morph_path"]):
+            os.mkdir(self.config["new_morph_path"])
 
-        neuron.write(os.path.join(save_path, neuron_name + file_format))
+        neuron.write(
+            os.path.join(self.config["new_morph_path"], neuron_name + file_format)
+        )
 
 
 def run_diameters(config_file, models_params_file):
@@ -148,22 +145,7 @@ def run_diameters(config_file, models_params_file):
             mtypes_file=config[model]["mtypes_file"],
         )
 
-        # dirty hack to create subfolder as the original file structure
-        if (
-            len(
-                os.path.dirname(morphologies_dict[list(morphologies_dict.keys())[0]][0])
-            )
-            > 1
-        ):
-            if not os.path.exists(config[model]["new_morph_path"]):
-                os.mkdir(config[model]["new_morph_path"])
-            with_subfolders = True
-        else:
-            with_subfolders = False
-
-        worker = DiameterWorker(
-            model, models_params, config, with_subfolders=with_subfolders
-        )
+        worker = DiameterWorker(model, models_params, config)
         pool = multiprocessing.Pool(config[model]["n_cpu"])
 
         all_neurons = [

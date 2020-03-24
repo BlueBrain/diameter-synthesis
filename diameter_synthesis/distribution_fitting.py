@@ -56,7 +56,7 @@ def fit_distribution(data, distribution, attribute_name=None, extra_params=None)
     if distribution == "expon_rev":
         from scipy.stats import expon
 
-        loc, scale = expon.fit(-data)
+        loc, scale = expon.fit(-np.array(data))
         return {
             "loc": loc,
             "scale": scale,

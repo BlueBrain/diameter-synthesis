@@ -23,7 +23,8 @@ def _get_model_builder(config):
             ]
             distribution_types["terminal_diameters"] = ["exponnorm", None]
             distribution_types["trunk_diameters"] = ["exponnorm", None]
-            distribution_types["tapers"] = ["exponnorm", None]
+            # distribution_types["tapers"] = ["exponnorm", None]
+            distribution_types["tapers"] = ["expon_rev", None]
         else:
             raise DiameterSynthesisError("model not understood {}".format(model))
 

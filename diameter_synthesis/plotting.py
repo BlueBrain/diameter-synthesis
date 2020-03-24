@@ -216,7 +216,10 @@ def plot_distribution_fit(
 
         min_val = model[neurite_type]["params"]["min"]
         max_val = model[neurite_type]["params"]["max"]
-        if os.path.basename(fig_name) == "sibling_ratios":
+        if (
+            os.path.basename(fig_name) == "sibling_ratios"
+            or os.path.basename(fig_name) == "tapers"
+        ):
             hist_range = [min_val, max_val]
         else:
             hist_range = [min_val * 0.5, max_val * 2.0]
@@ -642,6 +645,7 @@ def transform2DataFrame(data, pop_names, flist):
 def plot_violins(data, x="Morphological features", y="Values", hues="Data", **kwargs):
     """Plots the split violins of all features"""
     import seaborn  # pylint: disable=import-outside-toplevel
+
     plt.figure(figsize=(12, 6))
     axs = seaborn.violinplot(
         x=x,
@@ -697,7 +701,7 @@ def violin_analysis(config, out_dir):
             )
             ax = plot_violins(data_frame)
             ax.set_ylim(-3, 5)
-            plt.savefig(os.path.join(out_dir, "violin_basal_" + mtype + ".png"))
+            plt.savefig(os.path.join(out_dir, "violin_basal_" + mtype + "png"))
             plt.close()
         except BaseException:  # pylint: disable=broad-except
             pass
@@ -714,7 +718,7 @@ def violin_analysis(config, out_dir):
             )
             ax = plot_violins(data_frame)
             ax.set_ylim(-3, 5)
-            plt.savefig(os.path.join(out_dir, "violin_apical_" + mtype + ".png"))
+            plt.savefig(os.path.join(out_dir, "violin_apical_" + mtype + "png"))
             plt.close()
         except BaseException:  # pylint: disable=broad-except
             pass
