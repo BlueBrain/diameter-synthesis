@@ -1,7 +1,8 @@
 """plotting functions"""
 import json
-import logging
 import os
+import logging
+from pathlib import Path
 
 import pandas
 import matplotlib
@@ -14,10 +15,9 @@ from neurom.geom import bounding_box
 from scipy import stats
 from tqdm import tqdm
 
-from diameter_synthesis import io, utils
+from diameter_synthesis import utils
 from diameter_synthesis.distribution_fitting import evaluate_distribution
-from diameter_synthesis.io import iter_morphology_filenames
-from diameter_synthesis.types import STR_TO_TYPES
+from diameter_synthesis.build_diameters import STR_TO_TYPES
 
 # pylint: disable=too-many-statements,too-many-locals,too-many-arguments
 
@@ -129,17 +129,14 @@ def _compute_neurite_diff(
                 utils._set_diameters(section, diff_neg)
 
 
-def plot_diameter_diff(
-    neuron_name, morph_path, neuron_new, neurite_types, folder, ext="png"
-):
+def plot_diameter_diff(neuron_name, neuron_new, neurite_types, folder, ext=".png"):
     """plot original morphology, new one and differences"""
-
-    if not os.path.isdir(folder):
+    if not Path(folder).exists():
         os.mkdir(folder)
 
-    neuron_orig = io.load_neuron(neuron_name, morph_path)
-    neuron_diff_pos = io.load_neuron(neuron_name, morph_path)
-    neuron_diff_neg = io.load_neuron(neuron_name, morph_path)
+    neuron_orig = nm.load_neuron(neuron_name)
+    neuron_diff_pos = nm.load_neuron(neuron_name)
+    neuron_diff_neg = nm.load_neuron(neuron_name)
     _compute_neurite_diff(
         neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_neg, neurite_types
     )
@@ -172,7 +169,7 @@ def plot_diameter_diff(
     axs[1, 1].set_ylim([bbox[0, 1], bbox[1, 1]])
     axs[1, 1].set_aspect("equal")
 
-    fig.savefig(os.path.join(folder, neuron_new.name + "." + ext), dpi=500)
+    fig.savefig((Path(folder) / neuron_name.stem).with_suffix(ext), dpi=500)
     plt.close()
 
 
@@ -183,29 +180,30 @@ def _plot_attribute_scatter(data, model, neurite_types, fig_name, figsize, ext):
     max_val = -1e10
     min_val = 1e10
     for neurite_type in neurite_types:
-        if model[neurite_type]["sequential"] == "asymmetry_threshold":
-            save_plot = True
-            tpes = np.asarray(data[neurite_type])[:, 1]
-            values = np.asarray(data[neurite_type])[:, 0]
-            plt.scatter(values, tpes, s=5, c=COLORS[neurite_type], alpha=0.5)
-            plt.axhline(0.2, c="k")
+        if len(model[neurite_type]) > 0:
+            if model[neurite_type]["sequential"] == "asymmetry_threshold":
+                save_plot = True
+                tpes = np.asarray(data[neurite_type])[:, 1]
+                values = np.asarray(data[neurite_type])[:, 0]
+                plt.scatter(values, tpes, s=5, c=COLORS[neurite_type], alpha=0.5)
+                plt.axhline(0.2, c="k")
 
-            min_val = min(min_val, model[neurite_type]["params"]["min"])
-            max_val = max(max_val, model[neurite_type]["params"]["max"])
+                min_val = min(min_val, model[neurite_type]["params"]["min"])
+                max_val = max(max_val, model[neurite_type]["params"]["max"])
 
-    if os.path.basename(fig_name) == "sibling_ratios":
+    if Path(fig_name).name == "sibling_ratios":
         plt.gca().set_xlim(0.0, 1.0)
     else:
         plt.gca().set_xlim(min_val * 0.5, max_val * 2.0)
 
     if save_plot:
-        plt.savefig(fig_name + "_scatter." + ext)
+        plt.savefig(str(fig_name) + "_scatter" + ext)
 
     plt.close()
 
 
 def plot_distribution_fit(
-    data, model, neurite_types, fig_name="test", ext="png", figsize=(5, 4)
+    data, model, neurite_types, fig_name="test", ext=".png", figsize=(5, 4)
 ):
     """ Plot the data distribution and its fit """
 
@@ -213,50 +211,50 @@ def plot_distribution_fit(
 
     plt.figure()
     for neurite_type in neurite_types:
-
-        min_val = model[neurite_type]["params"]["min"]
-        max_val = model[neurite_type]["params"]["max"]
-        if (
-            os.path.basename(fig_name) == "sibling_ratios"
-            or os.path.basename(fig_name) == "tapers"
-        ):
-            hist_range = [min_val, max_val]
-        else:
-            hist_range = [min_val * 0.5, max_val * 2.0]
-
-        if len(data[neurite_type]) > 0:
-            if len(np.shape(data[neurite_type])) > 1:
-                data_hist = np.array(data[neurite_type])[:, 0]
+        if len(model[neurite_type]) > 0:
+            min_val = model[neurite_type]["params"]["min"]
+            max_val = model[neurite_type]["params"]["max"]
+            if (
+                Path(fig_name).name == "sibling_ratios"
+                or Path(fig_name).name == "tapers"
+            ):
+                hist_range = [min_val, max_val]
             else:
-                data_hist = data[neurite_type]
+                hist_range = [min_val * 0.5, max_val * 2.0]
 
-            plt.hist(
-                data_hist,
-                bins=30,
-                density=True,
-                color=COLORS[neurite_type],
-                alpha=0.5,
-                range=hist_range,
-            )
+            if len(data[neurite_type]) > 0:
+                if len(np.shape(data[neurite_type])) > 1:
+                    data_hist = np.array(data[neurite_type])[:, 0]
+                else:
+                    data_hist = data[neurite_type]
 
-            values = np.linspace(min_val, max_val, 1000)
-            plt.plot(
-                values,
-                evaluate_distribution(
+                plt.hist(
+                    data_hist,
+                    bins=30,
+                    density=True,
+                    color=COLORS[neurite_type],
+                    alpha=0.5,
+                    range=hist_range,
+                )
+
+                values = np.linspace(min_val, max_val, 1000)
+                plt.plot(
                     values,
-                    model[neurite_type]["distribution"],
-                    model[neurite_type]["params"],
-                ),
-                c=COLORS[neurite_type],
-                lw=3,
-                ls="--",
-                label=neurite_type,
-            )
-            plt.legend(loc="best")
-        else:
-            L.warning("No data to plot")
+                    evaluate_distribution(
+                        values,
+                        model[neurite_type]["distribution"],
+                        model[neurite_type]["params"],
+                    ),
+                    c=COLORS[neurite_type],
+                    lw=3,
+                    ls="--",
+                    label=neurite_type,
+                )
+                plt.legend(loc="best")
+            else:
+                L.warning("No data to plot")
 
-    plt.savefig(fig_name + "." + ext, bbox_inches="tight")
+    plt.savefig(str(fig_name) + ext, bbox_inches="tight")
     plt.close()
 
 
@@ -494,12 +492,12 @@ def make_cumulative_figures(
         prefix1, basename1, basename2
     )
 
-    fig.savefig(os.path.join(out_dir, figure_name + ".svg"), bbox_inches="tight")
+    fig.savefig(Path(out_dir) / (figure_name + ".svg"), bbox_inches="tight")
     plt.close(fig)
 
     if individual:
-        if not os.path.isdir(os.path.join(out_dir, figure_name + "_individual")):
-            os.mkdir(os.path.join(out_dir, figure_name + "_individual"))
+        if not (Path(out_dir) / (figure_name + "_individual")).exists():
+            os.mkdir(Path(out_dir) / (figure_name + "_individual"))
 
         for i, (original_cell, diametrized_cell) in enumerate(
             zip(original_cells, diametrized_cells)
@@ -514,46 +512,22 @@ def make_cumulative_figures(
             )
             fname = "{}_{}.svg".format(figure_name, original_cell.name)
             f.savefig(
-                os.path.join(
-                    out_dir, figure_name + "_individual/", str(i) + "_" + fname
-                ),
+                Path(out_dir) / (figure_name + "_individual") / (str(i) + "_" + fname),
                 bbox_inches="tight",
             )
             plt.close(f)
 
 
-def _load_cells(config):
-    filenames_original = sorted(list(iter_morphology_filenames(config["morph_path"])))
-    filenames_diametrized = sorted(
-        list(iter_morphology_filenames(config["new_morph_path"]))
-    )
-
-    original_filepaths = (
-        os.path.join(config["morph_path"], filename) for filename in filenames_original
-    )
-    diametrized_filepaths = (
-        os.path.join(config["new_morph_path"], filename)
-        for filename in filenames_diametrized
-    )
-
-    original_cells = list(map(nm.load_neuron, original_filepaths))
-    diametrized_cells = list(map(nm.load_neuron, diametrized_filepaths))
-
-    return original_cells, diametrized_cells
-
-
 def _load_morphologies(
-    morph_path, mtypes_sort="all", mtypes_file="./neuronDB.xml", ext=".asc", prefix="",
+    morph_path, mtypes_file="./neuronDB.xml",
 ):
     """ Load the morphologies from a directory, by mtypes or all at once """
-    name_dict = utils.create_morphologies_dict(
-        morph_path,
-        mtypes_sort=mtypes_sort,
-        mtypes_file=mtypes_file,
-        ext=ext,
-        prefix=prefix,
+    morphologies_dict = utils.create_morphologies_dict(
+        morph_path, mtypes_file=mtypes_file
     )
-    return io.load_morphologies_from_dict(morph_path, name_dict)
+    return {
+        mtype: nm.load_neurons(morphologies_dict[mtype]) for mtype in morphologies_dict
+    }
 
 
 def cumulative_analysis(config, out_dir, individual):
@@ -561,8 +535,7 @@ def cumulative_analysis(config, out_dir, individual):
     with open(config, "r") as filename:
         config = json.load(filename)
 
-    # out_dir += "_" + config["mtypes_sort"]
-    if not os.path.isdir(out_dir):
+    if not Path(out_dir).exists():
         os.mkdir(out_dir)
 
     if len(config) > 1:
@@ -571,13 +544,9 @@ def cumulative_analysis(config, out_dir, individual):
         )
     config = config[list(config.keys())[0]]
 
-    all_original_cells = _load_morphologies(
-        config["morph_path"], mtypes_sort=config["mtypes_sort"]
-    )
+    all_original_cells = _load_morphologies(config["morph_path"])
 
-    all_diametrized_cells = _load_morphologies(
-        config["new_morph_path"], mtypes_sort=config["mtypes_sort"]
-    )
+    all_diametrized_cells = _load_morphologies(config["new_morph_path"])
 
     for mtype in tqdm(all_original_cells):
         original_cells = all_original_cells[mtype]
@@ -667,21 +636,18 @@ def violin_analysis(config, out_dir):
     with open(config, "r") as filename:
         config = json.load(filename)
 
-    if not os.path.isdir(out_dir):
+    if not Path(out_dir).exists():
         os.mkdir(out_dir)
 
     if len(config) > 1:
         L.warning(
             "multiple models provided, will only use the first in the list for analysis"
         )
-    config = config[list(config.keys())[0]]
-    all_original_cells = _load_morphologies(
-        config["morph_path"], mtypes_sort=config["mtypes_sort"]
-    )
 
-    all_diametrized_cells = _load_morphologies(
-        config["new_morph_path"], mtypes_sort=config["mtypes_sort"]
-    )
+    config = config[list(config.keys())[0]]
+    all_original_cells = _load_morphologies(config["morph_path"])
+
+    all_diametrized_cells = _load_morphologies(config["new_morph_path"])
 
     for mtype in tqdm(all_original_cells):
         original_cells = all_original_cells[mtype]
@@ -701,7 +667,7 @@ def violin_analysis(config, out_dir):
             )
             ax = plot_violins(data_frame)
             ax.set_ylim(-3, 5)
-            plt.savefig(os.path.join(out_dir, "violin_basal_" + mtype + "png"))
+            plt.savefig(Path(out_dir) / ("violin_basal_" + mtype + "png"))
             plt.close()
         except BaseException:  # pylint: disable=broad-except
             pass
@@ -718,7 +684,7 @@ def violin_analysis(config, out_dir):
             )
             ax = plot_violins(data_frame)
             ax.set_ylim(-3, 5)
-            plt.savefig(os.path.join(out_dir, "violin_apical_" + mtype + "png"))
+            plt.savefig(Path(out_dir) / ("violin_apical_" + mtype + "png"))
             plt.close()
         except BaseException:  # pylint: disable=broad-except
             pass

@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 import json
 import pytest
@@ -9,7 +10,7 @@ import neurom as nm
 from diameter_synthesis import build_diameters
 from diameter_synthesis.exception import DiameterSynthesisError
 
-_path = os.path.dirname(os.path.abspath(__file__))
+_path = Path(__file__).absolute().parent
 
 
 def _copy_diameters(neuron_a, neuron_b):
@@ -27,20 +28,22 @@ def test_build():
     mtype = "L5_TPC:A"
     model = "generic"
 
-    with open(os.path.join(_path, "data/config.json"), "r") as filename:
+    with open(_path / "data" / "config.json", "r") as filename:
         config = json.load(filename)
 
-    with open(os.path.join(_path, "data/model_params.json"), "r") as filename:
+    with open(_path / "data" / "model_params.json", "r") as filename:
         model_params = json.load(filename)
 
-    neuron = morphio.mut.Morphology(os.path.join(_path, "data/C030796A-P3.h5"))
-    model = 'generic'
-    build_diameters.build(neuron, model, model_params[model][mtype], neurite_types, config[model])
+    neuron = morphio.mut.Morphology(_path / "data" / "C030796A-P3.h5")
+    model = "generic"
+    build_diameters.build(
+        neuron, model, model_params[model][mtype], neurite_types, config[model]
+    )
 
-    #neuron.write(os.path.join(_path, 'data/C030796A-P3_diametrized.h5'))
+    # neuron.write(_path / "data" / "C030796A-P3_diametrized.h5")
 
     neuron_diametrized = morphio.Morphology(
-        os.path.join(_path, "data/C030796A-P3_diametrized.h5")
+        _path / "data" / "C030796A-P3_diametrized.h5"
     )
 
     _compare_diameters(neuron_diametrized, neuron)

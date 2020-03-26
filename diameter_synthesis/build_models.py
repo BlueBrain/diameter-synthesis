@@ -2,12 +2,18 @@
 import logging
 from functools import partial
 
+from neurom import NeuriteType
+
 import diameter_synthesis.morph_functions as morph_funcs
 from diameter_synthesis.distribution_fitting import fit_distribution
 from diameter_synthesis.exception import DiameterSynthesisError
-from diameter_synthesis.types import STR_TO_NEUROM_TYPES
 
 L = logging.getLogger(__name__)
+
+STR_TO_NEUROM_TYPES = {
+    "apical": NeuriteType.apical_dendrite,
+    "basal": NeuriteType.basal_dendrite,
+}
 
 
 def _get_model_builder(config):
@@ -23,7 +29,6 @@ def _get_model_builder(config):
             ]
             distribution_types["terminal_diameters"] = ["exponnorm", None]
             distribution_types["trunk_diameters"] = ["exponnorm", None]
-            # distribution_types["tapers"] = ["exponnorm", None]
             distribution_types["tapers"] = ["expon_rev", None]
         else:
             raise DiameterSynthesisError("model not understood {}".format(model))
@@ -158,6 +163,8 @@ def fit_all_models(all_data, sampling_model, extra_params, neurite_types):
 def fit_model(sampling_model, data, extra_params):
     """ fit a single parameter """
     output = {}
+    if len(data) == 0:
+        return output
     output["distribution"] = sampling_model[0]
     output["sequential"] = sampling_model[1]
     output["params"] = fit_distribution(

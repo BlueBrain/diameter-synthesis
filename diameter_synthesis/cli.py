@@ -1,12 +1,12 @@
 """click module"""
 import logging
 import os
+from pathlib import Path
 
 import click
 import morphio
 from tqdm import tqdm
 
-from .io import load_neuron
 from .utils import create_morphologies_dict
 
 morphio.set_maximum_warnings(0)
@@ -25,8 +25,8 @@ def cli():
 @cli.command("run_models")
 @click.argument("config_file", type=click.Path(exists=True))
 @click.option("--plot", is_flag=True)
-@click.option("--ext", default="png")
-def run_models(config_file, plot=False, ext="png"):
+@click.option("--ext", default=".png")
+def run_models(config_file, plot=False, ext=".png"):
     """ Run the model extraction from config file"""
     from .main import run_models
 
@@ -58,29 +58,25 @@ def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=None):
         ncells = -1
 
     neurite_types = ["basal", "apical"]
+    import neurom as nm
 
-    morphologies_dict = create_morphologies_dict(original_folder, mtypes_sort="mtype")
+    morphologies_dict = create_morphologies_dict(original_folder)
 
-    if not os.path.exists(plot_folder):
+    if not Path(plot_folder).exists():
         os.mkdir(plot_folder)
 
     for mtype in morphologies_dict:
-        plot_folder_mtype = os.path.join(plot_folder, mtype)
         L.info("Plot mtype %s", mtype)
-        if not os.path.exists(plot_folder_mtype):
+
+        plot_folder_mtype = Path(plot_folder) / mtype
+        if not Path(plot_folder_mtype).exists:
             os.mkdir(plot_folder_mtype)
 
         for neuron in tqdm(morphologies_dict[mtype][:ncells]):
-            neuron_name = os.path.splitext(neuron)[0]
-            neuron_new = load_neuron(neuron_name, diametrized_folder)
+            neuron_new = nm.load_neuron(Path(diametrized_folder) / neuron.name)
 
             plot_diameter_diff(
-                neuron_name,
-                original_folder,
-                neuron_new,
-                neurite_types,
-                plot_folder_mtype,
-                ext="png",
+                neuron, neuron_new, neurite_types, plot_folder_mtype, ext=".png",
             )
 
 

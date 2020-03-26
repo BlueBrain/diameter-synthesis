@@ -35,9 +35,14 @@ def _partition_asymetry_length(section):
     asymetry_length = sum(
         [_sec_length(section) for section in section.children[0].iter()]
     )
-    asymetry_length -= sum(
-        [_sec_length(section) for section in section.children[1].iter()]
-    )
+    try:
+        asymetry_length -= sum(
+            [_sec_length(section) for section in section.children[1].iter()]
+        )
+    except IndexError:
+        raise DiameterSynthesisError(
+            "Bifurcation point with single child, consider using neuror sanitize"
+        )
     return abs(asymetry_length)
 
 

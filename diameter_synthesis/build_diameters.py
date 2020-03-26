@@ -7,15 +7,21 @@ from functools import partial
 import numpy as np
 from numpy.polynomial import polynomial
 
+from morphio import SectionType
+
 import diameter_synthesis.morph_functions as morph_funcs
 import diameter_synthesis.utils as utils
 from diameter_synthesis.distribution_fitting import sample_distribution
 from diameter_synthesis.exception import DiameterSynthesisError
-from diameter_synthesis.types import STR_TO_TYPES
 
 TRUNK_FRAC_DECREASE = 0.1
 N_TRIES_BEFORE_REDUC = 5
 L = logging.getLogger(__name__)
+
+STR_TO_TYPES = {
+    "basal": SectionType.basal_dendrite,
+    "apical": SectionType.apical_dendrite,
+}
 
 
 def _set_seed(params):
