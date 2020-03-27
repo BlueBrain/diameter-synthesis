@@ -1,5 +1,6 @@
 {
 "generic": {
+    "models": ["generic"],
     "taper": {
 	"max": 0.005,
 	"max_residual": 100,

@@ -37,7 +37,7 @@ def test_build():
     neuron = morphio.mut.Morphology(_path / "data" / "C030796A-P3.h5")
     model = "generic"
     build_diameters.build(
-        neuron, model, model_params[model][mtype], neurite_types, config[model]
+        neuron, model_params[model][mtype], neurite_types, config[model]
     )
 
     # neuron.write(_path / "data" / "C030796A-P3_diametrized.h5")

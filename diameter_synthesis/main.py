@@ -108,7 +108,7 @@ class DiameterWorker:
     def __init__(self, model, models_params, config):
         self.model = model
         self.models_params = models_params[model]
-        self.config = config[model]
+        self.config = config
 
     def __call__(self, neuron_input):
         fname = neuron_input[0]
@@ -118,7 +118,6 @@ class DiameterWorker:
 
         build_diameters(
             neuron,
-            self.model,
             self.models_params[mtype],
             self.config["neurite_types"],
             self.config,
@@ -142,15 +141,15 @@ def run_diameters(config_file, models_params_file):
     with open(models_params_file, "r") as filename:
         models_params = json.load(filename)
 
-    for model in config:
+    for model in config["models"]:
         L.info("Generating diameter with model %s", model)
 
         morphologies_dict = utils.create_morphologies_dict(
-            config[model]["morph_path"], mtypes_file=config[model]["mtypes_file"],
+            config["morph_path"], mtypes_file=config["mtypes_file"],
         )
 
         worker = DiameterWorker(model, models_params, config)
-        pool = multiprocessing.Pool(config[model]["n_cpu"])
+        pool = multiprocessing.Pool(config["n_cpu"])
 
         all_neurons = [
             [neuron, mtype]

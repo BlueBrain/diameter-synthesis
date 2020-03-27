@@ -42,24 +42,23 @@ def build(morphologies, config, with_data=False):
     all_models = _get_model_builder(config)
     models_params, models_data = all_models[config["models"][0]](
         morphologies,
-        config["neurite_types"],
-        config["extra_params"][config["models"][0]],
+        config,
+        # config["neurite_types"],
+        # config["extra_params"][config["models"][0]],
     )
     if with_data:
         return models_params, models_data
     return models_params
 
 
-def build_single_model(sampling_model, morphologies, neurite_types, extra_params):
+def build_single_model(sampling_model, morphologies, config):
     """get diameter model from a set of dendrites"""
-    all_data = extract_parameters(
-        sampling_model, morphologies, neurite_types, extra_params
-    )
-    all_models = fit_all_models(all_data, sampling_model, extra_params, neurite_types)
+    all_data = extract_parameters(sampling_model, morphologies, config,)
+    all_models = fit_all_models(all_data, sampling_model, config)
     return all_models, all_data
 
 
-def extract_parameters(sampling_model, morphologies, neurite_types, extra_params):
+def extract_parameters(sampling_model, morphologies, config):
     """extract parameters from neurites"""
 
     all_data = {
@@ -70,7 +69,7 @@ def extract_parameters(sampling_model, morphologies, neurite_types, extra_params
         "tapers": {},
     }
 
-    for neurite_type in neurite_types:
+    for neurite_type in config["neurite_types"]:
         all_data["sibling_ratios"][neurite_type] = []
         all_data["diameter_power_relation"][neurite_type] = []
         all_data["terminal_diameters"][neurite_type] = []
@@ -95,7 +94,7 @@ def extract_parameters(sampling_model, morphologies, neurite_types, extra_params
                         neurite_type
                     ] += morph_funcs.terminal_diameters(
                         neurite,
-                        threshold=extra_params["terminal_threshold"],
+                        threshold=config["terminal_threshold"],
                         attribute_name=sampling_model["terminal_diameters"][1],
                     )
                     all_data["trunk_diameters"][
@@ -105,13 +104,13 @@ def extract_parameters(sampling_model, morphologies, neurite_types, extra_params
                     )
                     all_data["tapers"][neurite_type] += morph_funcs.taper(
                         neurite,
-                        params=extra_params["taper"],
+                        params=config["taper"],
                         attribute_name=sampling_model["tapers"][1],
                     )
     return all_data
 
 
-def fit_all_models(all_data, sampling_model, extra_params, neurite_types):
+def fit_all_models(all_data, sampling_model, config):
     """fit the model parameters"""
     all_models = {
         "sibling_ratios": {},
@@ -121,7 +120,8 @@ def fit_all_models(all_data, sampling_model, extra_params, neurite_types):
         "tapers": {},
     }
 
-    for neurite_type in neurite_types:
+    extra_params = config.copy()
+    for neurite_type in config["neurite_types"]:
 
         extra_params["neurite_type"] = neurite_type
         extra_params["name"] = "sibling_ratios"

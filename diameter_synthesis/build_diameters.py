@@ -250,11 +250,14 @@ def _select_model(model):
     return partial(_diametrize_neuron, params_tree)
 
 
-def build(neuron, model, model_params, neurite_types, config):
+def build(neuron, model_params, neurite_types, config):
     """Main function for building the diameters from the generated diameter models of a neuron"""
     _set_seed(config)
     _reset_caches()
-    diameter_generator = _select_model(model)
+
+    if len(config["models"]) > 1:
+        L.warning("Several models provided, we will only use the first")
+    diameter_generator = _select_model(config["models"][0])
 
     diameter_generator(neuron, model_params, neurite_types, config)
     if config["n_samples"] > 1:
