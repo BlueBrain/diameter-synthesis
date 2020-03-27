@@ -1,4 +1,4 @@
-"""Construct diameter models from cells"""
+"""Construct diameter models from cells."""
 import logging
 from functools import partial
 
@@ -17,7 +17,14 @@ STR_TO_NEUROM_TYPES = {
 
 
 def _get_model_builder(config):
-    """get the diameter model builder"""
+    """Get the diameter model builder.
+
+    Args:
+        config (dict): configuration dictionary
+
+    Returns:
+        dict: dictionary of models
+    """
     all_models = {}
     for model in config["models"]:
         if model == "generic":
@@ -38,29 +45,49 @@ def _get_model_builder(config):
 
 
 def build(morphologies, config, with_data=False):
-    """ Building a model from a set of morphologies and a config file"""
+    """Build a model from a set of morphologies and a config file.
+
+    Args:
+        morphologies (dict): dictionary of morphologies
+        config (dict): configuration dictionary
+
+    Returns:
+        dict: parameter of the models (possibly the data extracted)
+    """
     all_models = _get_model_builder(config)
-    models_params, models_data = all_models[config["models"][0]](
-        morphologies,
-        config,
-        # config["neurite_types"],
-        # config["extra_params"][config["models"][0]],
-    )
+    models_params, models_data = all_models[config["models"][0]](morphologies, config)
     if with_data:
         return models_params, models_data
     return models_params
 
 
 def build_single_model(sampling_model, morphologies, config):
-    """get diameter model from a set of dendrites"""
+    """Build a single model.
+
+    Args:
+        sampling_model (dict): parameters for model building
+        morphologies (dict): dictionary of morphologies
+        config (dict): configuration dictionary
+
+    Returns:
+        dict: parameter of the models data extracted)
+    """
     all_data = extract_parameters(sampling_model, morphologies, config,)
     all_models = fit_all_models(all_data, sampling_model, config)
     return all_models, all_data
 
 
 def extract_parameters(sampling_model, morphologies, config):
-    """extract parameters from neurites"""
+    """Extract parameters from neurites to then use for model building..
 
+    Args:
+        sampling_model (dict): parameters for model building
+        morphologies (dict): dictionary of morphologies
+        config (dict): configuration dictionary
+
+    Returns:
+        dict: data extracted
+    """
     all_data = {
         "sibling_ratios": {},
         "diameter_power_relation": {},
@@ -111,7 +138,16 @@ def extract_parameters(sampling_model, morphologies, config):
 
 
 def fit_all_models(all_data, sampling_model, config):
-    """fit the model parameters"""
+    """Fit the parmaeters to get models.
+
+    Args:
+        all_data (dict): parameters to fit
+        sampling_model (dict): parameters for model building
+        config (dict): configuration dictionary
+
+    Returns:
+        dict: models
+    """
     all_models = {
         "sibling_ratios": {},
         "diameter_power_relation": {},
@@ -161,17 +197,25 @@ def fit_all_models(all_data, sampling_model, config):
 
 
 def fit_model(sampling_model, data, extra_params):
-    """ fit a single parameter """
-    output = {}
-    if len(data) == 0:
-        return output
-    output["distribution"] = sampling_model[0]
-    output["sequential"] = sampling_model[1]
-    output["params"] = fit_distribution(
-        data,
-        sampling_model[0],
-        attribute_name=sampling_model[1],
-        extra_params=extra_params,
-    )
+    """Fit a single parameter.
 
-    return output
+    Args:
+        sampling_model (dict): model parameters
+        data (array): parameter to fit
+        extra_aprams (dict): additional parameters
+
+    Returns:
+        dict: fit parameters
+    """
+    if len(data) == 0:
+        return {}
+    return {
+        "distribution": sampling_model[0],
+        "sequential": sampling_model[1],
+        "params": fit_distribution(
+            data,
+            sampling_model[0],
+            attribute_name=sampling_model[1],
+            extra_params=extra_params,
+        ),
+    }

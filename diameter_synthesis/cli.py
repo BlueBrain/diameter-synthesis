@@ -1,4 +1,4 @@
-"""click module"""
+"""Click app."""
 import logging
 import os
 from pathlib import Path
@@ -19,7 +19,7 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
 @click.group()
 def cli():
-    """ A tool to learn and generate diameters of neurons """
+    """Cli to learn and generate diameters of neurons."""
 
 
 @cli.command("run_models")
@@ -27,7 +27,7 @@ def cli():
 @click.option("--plot", is_flag=True)
 @click.option("--ext", default=".png")
 def run_models(config_file, plot=False, ext=".png"):
-    """ Run the model extraction from config file"""
+    """Run the model extraction from config file."""
     from .main import run_models
 
     run_models(config_file, plot=plot, ext=ext)
@@ -37,7 +37,7 @@ def run_models(config_file, plot=False, ext=".png"):
 @click.argument("config_file", type=click.Path(exists=True))
 @click.argument("models_params_file", type=click.Path(exists=True))
 def run_diameters(config_file, models_params_file):
-    """ Build new diameters from config file and diameter model"""
+    """Build new diameters from config file and diameter model."""
     from .main import run_diameters
 
     run_diameters(config_file, models_params_file)
@@ -49,7 +49,7 @@ def run_diameters(config_file, models_params_file):
 @click.argument("plot_folder", type=click.Path())
 @click.option("-n", "--ncells", help="max number of cells to plot")
 def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=None):
-    """plot original and new neurons as well as their differences"""
+    """Plot original and new neurons as well as their differences."""
     from .plotting import plot_diameter_diff
 
     if ncells is not None:
@@ -89,7 +89,7 @@ def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=None):
 @click.option("--individual", help="Output a plot for each neuron", is_flag=True)
 @click.option("--violin", help="Violin distribution plots", is_flag=True)
 def run_analysis(config, out_dir, cumulative, individual, violin):
-    """produce figures for validation/analysis"""
+    """Produce figures for validation/analysis."""
     if cumulative:
         from .plotting import cumulative_analysis
 

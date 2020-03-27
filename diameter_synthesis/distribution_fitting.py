@@ -1,4 +1,4 @@
-"""Functions to fit distributions to parameters of diameter models"""
+"""Functions to fit distributions to parameters of diameter models."""
 import logging
 
 import numpy as np
@@ -20,7 +20,7 @@ np.seterr(invalid="ignore", divide="ignore")
 
 
 def _truncate(sample_func, min_value, max_value):
-    """ensure sample is within bounds"""
+    """Ensure sample is within bounds."""
     sample = sample_func()
     while sample > max_value or sample < min_value:
         sample = sample_func()
@@ -28,7 +28,7 @@ def _truncate(sample_func, min_value, max_value):
 
 
 def fit_distribution(data, distribution, attribute_name=None, extra_params=None):
-    """fit a distribution from data"""
+    """Fit a distribution from data."""
     if attribute_name == "asymmetry_threshold":
         tpes = np.asarray(data, dtype=np.float32)[:, 1]
         data = np.asarray(data, dtype=np.float32)[:, 0]
@@ -105,7 +105,7 @@ def fit_distribution(data, distribution, attribute_name=None, extra_params=None)
 
 
 def sample_distribution(model):
-    """sample from a distribution"""
+    """Sample from a distribution."""
     if "a" in model["params"]:
         a_clip = np.clip(model["params"]["a"], A_MIN, A_MAX)
 
@@ -142,7 +142,7 @@ def sample_distribution(model):
 
 
 def evaluate_distribution(value, distribution, params):
-    """evaluate the fit of a distribution"""
+    """Evaluate the fit of a distribution."""
     if distribution == "expon_rev":
         from scipy.stats import expon
 

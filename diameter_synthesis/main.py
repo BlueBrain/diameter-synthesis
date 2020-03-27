@@ -1,4 +1,4 @@
-""" main functions to learn and generate diameters """
+"""Main functions to learn and generate diameters."""
 import json
 import logging
 import multiprocessing
@@ -21,10 +21,10 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
 
 class NumpyEncoder(json.JSONEncoder):
-    """To encode numpy arrays"""
+    """Class to encode numpy arrays."""
 
     def default(self, o):  # pylint: disable=method-hidden
-        """encoder"""
+        """Numpy encoder."""
         if isinstance(o, np.ndarray):
             return o.tolist()
         if isinstance(o, np.floating):
@@ -35,8 +35,7 @@ class NumpyEncoder(json.JSONEncoder):
 
 
 def plot_models(morphologies, config, models_params, models_data, ext="png"):
-    """plot the models"""
-
+    """Plot the models."""
     L.info("Plot the fits...")
 
     if not Path(config["fig_folder"]).exists():
@@ -62,7 +61,7 @@ def plot_models(morphologies, config, models_params, models_data, ext="png"):
 
 
 def _build_all_models(morphologies, config, plot=False, ext="png"):
-    """Building all the models in the list of models"""
+    """Build all the models in the list of models."""
     models_params = {}
     models_data = {}
     for model in config["models"]:
@@ -82,7 +81,7 @@ def _build_all_models(morphologies, config, plot=False, ext="png"):
 
 
 def run_models(config_file, plot, ext="png"):
-    """ Run the model extraction from config file"""
+    """Run the model extraction from config file."""
     with open(config_file, "r") as filename:
         config = json.load(filename)
 
@@ -103,14 +102,16 @@ def run_models(config_file, plot, ext="png"):
 
 
 class DiameterWorker:
-    """worker for building diameters"""
+    """Worker for building diameters."""
 
     def __init__(self, model, models_params, config):
+        """Init function."""
         self.model = model
         self.models_params = models_params[model]
         self.config = config
 
     def __call__(self, neuron_input):
+        """Call function."""
         fname = neuron_input[0]
         mtype = neuron_input[1]
 
@@ -134,7 +135,7 @@ class DiameterWorker:
 
 
 def run_diameters(config_file, models_params_file):
-    """Build new diameters from config file and diameter model"""
+    """Build new diameters from config file and diameter model."""
     with open(config_file, "r") as filename:
         config = json.load(filename)
 

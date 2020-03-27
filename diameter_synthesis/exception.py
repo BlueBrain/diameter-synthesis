@@ -1,4 +1,4 @@
-"""diameter-synthesis expception"""
+"""Diameter-synthesis expceptions."""
 
 
 class DiameterSynthesisError(Exception):

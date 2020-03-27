@@ -1,4 +1,4 @@
-"""morphology extraction functions"""
+"""Morphology extraction functions."""
 import logging
 from functools import lru_cache
 
@@ -14,13 +14,13 @@ L = logging.getLogger(__name__)
 
 @lru_cache(maxsize=None)
 def _sec_length(section):
-    """length of a section (morphio)"""
+    """Length of a section (morphio only)."""
     return np.linalg.norm(np.diff(np.asarray(section.points), axis=0), axis=1).sum()
 
 
 @lru_cache(maxsize=None)
 def _lengths_from_origin(section):
-    """path lengths from first point of section (morphio)"""
+    """Path lengths from first point of section (morphio only)."""
     return np.insert(
         np.cumsum(np.linalg.norm(np.diff(np.asarray(section.points), axis=0), axis=1)),
         0,
@@ -30,8 +30,10 @@ def _lengths_from_origin(section):
 
 @lru_cache(maxsize=None)
 def _partition_asymetry_length(section):
-    """compute partition asymetry with lengths (morphio).
-    WARNING: Requires to divide by total length of dendrite"""
+    """Compute partition asymetry with lengths (morphio).
+
+    WARNING: Requires to divide by total length of dendrite
+    """
     asymetry_length = sum(
         [_sec_length(section) for section in section.children[0].iter()]
     )
@@ -48,12 +50,12 @@ def _partition_asymetry_length(section):
 
 @lru_cache(maxsize=None)
 def _child_length(section):
-    """number of children of a section (morphio)"""
+    """Get the number of children of a section (morphio only)."""
     return sum(1 for _ in section.iter())
 
 
 def _get_total_length(neurite):
-    """get total length or a neurite (morphio)"""
+    """Get total length or a neurite (morphio only)."""
     return np.sum(
         [
             np.linalg.norm(np.diff(np.asarray(section.points), axis=0), axis=1).sum()
@@ -63,7 +65,7 @@ def _get_total_length(neurite):
 
 
 def compute_sibling_ratios(neurite, method="mean", attribute_name=None, bounds=None):
-    """compute the sibling ratios of a neurite (neurom)"""
+    """Compute the sibling ratios of a neurite (neurom only)."""
     sibling_ratios_values = nm.get("sibling_ratio", neurite, method=method)
 
     if not bounds:
@@ -76,7 +78,7 @@ def compute_sibling_ratios(neurite, method="mean", attribute_name=None, bounds=N
 def compute_diameter_power_relation(
     neurite, method="mean", attribute_name=None, bounds=None
 ):
-    """Returns the Rall deviation the diameter of the segments of a tree (neurom)"""
+    """Compute the Rall deviation the diameter of the segments of a tree (neurom only)."""
     diameter_power_relation_values = nm.get(
         "diameter_power_relation", neurite, method=method
     )
@@ -92,7 +94,7 @@ def compute_diameter_power_relation(
 
 
 def diameter_power_relation_factor(diameter_power_relation, sibling_ratio):
-    """Returns the reduction factor for bifurcation diameter"""
+    """Compute the reduction factor for bifurcation diameter."""
     if sibling_ratio > 0:
         return ((1.0 + sibling_ratio ** -1.5) / diameter_power_relation) ** (2.0 / 3.0)
     return 1.0
@@ -101,7 +103,7 @@ def diameter_power_relation_factor(diameter_power_relation, sibling_ratio):
 def terminal_diameters(
     neurite, method="mean", threshold=1.0, attribute_name=None, bounds=None
 ):
-    """Returns the terminal diameters of a neurite (neurom)"""
+    """Compute the terminal diameters of a neurite (neurom only)."""
     diameters = []
     for section in iter_sections(neurite):
         diameters += list(_get_diameters(section))
@@ -132,7 +134,7 @@ def terminal_diameters(
 
 
 def min_diameter(neurite, attribute_name=None, bounds=None):
-    """get the min diameter of a neurite (neurom)"""
+    """Get the min diameter of a neurite (neurom only)."""
     min_diam = 1e5
     for section in iter_sections(neurite):
         min_diam = min(min_diam, _get_mean_diameter(section))
@@ -145,7 +147,7 @@ def min_diameter(neurite, attribute_name=None, bounds=None):
 
 
 def max_diameter(neurite, attribute_name=None, bounds=None):
-    """get the max diameter of a neurite (neurom) """
+    """Get the max diameter of a neurite (neurom only)."""
     max_diam = 0
     for section in iter_sections(neurite):
         max_diam = max(max_diam, _get_mean_diameter(section))
@@ -158,7 +160,7 @@ def max_diameter(neurite, attribute_name=None, bounds=None):
 
 
 def trunk_diameter(neurite, attribute_name=None, bounds=None, method="last"):
-    """get the trunc diameters (neurom)"""
+    """Get the trunc diameters (neurom only)."""
     if method == "mean":
         trunk_diam = _get_mean_diameter(neurite.root_node)
     if method == "first":
@@ -174,7 +176,7 @@ def trunk_diameter(neurite, attribute_name=None, bounds=None, method="last"):
 
 
 def taper(neurite, params=None, attribute_name=None):
-    """get the taper rates (neurom)"""
+    """Get the taper rates (neurom only)."""
     if params is None:
         raise DiameterSynthesisError(
             "Please provide parameters for taper rate computations"
@@ -191,7 +193,7 @@ def taper(neurite, params=None, attribute_name=None):
 def get_additional_attribute(
     attribute_name, neurite=None, section=None
 ):  # noqa, pylint: disable=too-many-return-statements,too-many-branches
-    """return the value of an additional attribute of a parameter, gien a neurite or a section"""
+    """Return the value of an additional attribute of a parameter, given a neurite or a section."""
     if attribute_name in ["asymmetry", "asymmetry_threshold"]:
         if neurite is not None and section is None:
             out = nm.get("partition_asymmetry_length", [neurite])
@@ -236,7 +238,7 @@ def get_additional_attribute(
 
 
 def add_additional_attributes(data, neurite, attribute_name=None, bounds=None):
-    """from a data and a type of additional, return both within some bounds"""
+    """From a data and a type of additional, return both within some bounds."""
     if not bounds:
         bounds = [-1000, 1000]
 

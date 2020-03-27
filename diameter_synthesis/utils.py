@@ -1,4 +1,4 @@
-""" utils functions """
+"""Utils functions."""
 import json
 import logging
 import os
@@ -16,7 +16,15 @@ L = logging.getLogger(__name__)
 
 
 def _create_morphologies_dict_dat(morph_path, mtypes_file="neurondb.dat"):
-    """Create dict to load the morphologies from a directory, with dat file"""
+    """Create dict to load the morphologies from a directory, with dat file.
+
+    Args:
+        morph_path (str): path to morphologies
+        mtype_file (str): path to dat file
+
+    Returns:
+        dict: dictionary of morphologies keyed by mtypes
+    """
     morph_name = pd.read_csv(mtypes_file, sep=" ")
     name_dict = defaultdict(list)
     ext = next(Path(morph_path).iterdir()).suffix
@@ -26,7 +34,14 @@ def _create_morphologies_dict_dat(morph_path, mtypes_file="neurondb.dat"):
 
 
 def _create_morphologies_dict_folder(morph_path):
-    """Create dict to load the morphologies from a directory, from folders"""
+    """Create dict to load the morphologies from a directory, from folders.
+
+    Args:
+        morph_path (str): path to morphologies
+
+    Returns:
+        dict: dictionary of morphologies keyed by mtypes
+    """
     name_dict = defaultdict(list)
     for mtype in Path(morph_path).iterdir():
         for fname in mtype.iterdir():
@@ -36,7 +51,14 @@ def _create_morphologies_dict_folder(morph_path):
 
 
 def _create_morphologies_dict_all(morph_path):
-    """Create dict to load the morphologies from a directory, all together"""
+    """Create dict to load the morphologies from a directory, all together.
+
+    Args:
+        morph_path (str): path to morphologies
+
+    Returns:
+        dict: dictionary of morphologies with single key
+    """
     name_dict = {"generic_type": []}
     for fname in Path(morph_path).iterdir():
         if fname.suffix in [".h5", ".asc", ".swc"] and fname.exists():
@@ -46,7 +68,15 @@ def _create_morphologies_dict_all(morph_path):
 
 
 def create_morphologies_dict(morph_path, mtypes_file=None):
-    """ Create dict to load the morphologies from a directory, by mtypes or all at once """
+    """Create dict to load the morphologies from a directory, by mtype.
+
+     Args:
+        morph_path (str): path to morphologies
+        mtype_file (str): path to dat file
+
+    Returns:
+        dict: dictionary of morphologies with single key
+    """
     if mtypes_file is None and next(Path(morph_path).iterdir()).is_dir():
         L.info("found folder structure per mtype")
         return _create_morphologies_dict_folder(morph_path)
@@ -67,49 +97,87 @@ def create_morphologies_dict(morph_path, mtypes_file=None):
 
 
 def _set_diameters(section, diameters):
-    """set diameters (neurom v2 only)"""
+    """Set diameters (neurom 2.0.0 only).
+
+    Args:
+        section (neurom 2.0.0 section): section to diametrize
+        diameters (list/ndarray): diameters
+    """
     section.morphio_section.diameters = diameters
 
 
 def _get_mean_diameter(section):
-    """Section mean diameter by averaging the segment truncated cone
-    diameters and weighting them by their length. (morphio)"""
+    """Section mean diameter.
+
+    It is obtained by averaging the segment truncated cone
+    diameters and weighting them by their length. (morphio only)
+
+    Args:
+        section (morphio section): section to consider
+
+    Returns:
+        float: mean diameter of the section
+    """
     segment_lengths = np.linalg.norm(section.points[1:] - section.points[:-1], axis=1)
     segment_mean_diams = (section.diameters[1:] + section.diameters[:-1]) / 2.0
     return np.sum(segment_mean_diams * segment_lengths) / segment_lengths.sum()
 
 
 def _get_all_diameters(neuron):
-    """get all neuron diameters (morphio)"""
+    """Get all neuron diameters (morphio only).
+
+    Args:
+        neuron (morphio.mut.Morophology): neuron to consider
+
+    Returns:
+        list: all diameters
+    """
     return [section.diameters for section in neuron.iter()]
 
 
 def _set_all_diameters(neuron, diameters):
-    """set all neuron diameters (morphio)"""
+    """Set all neuron diameters (morphio only).
+
+    Args:
+        neuron (morphio.mut.Morophology): neuron to consider
+        diameters (list/ndarray): diameters
+    """
     for diameter, section in zip(diameters, neuron.iter()):
         section.diameters = diameter
 
 
 def _get_diameters(section):
-    """get diameters (neurom)"""
+    """Get diameters (neurom only).
+
+    Args:
+        section (neurom section): section to consider
+
+    Return:
+        list: diameters of section
+    """
     return section.points[:, COLS.R] * 2.0
 
 
 def _redefine_diameter_section(section, diam_ind, diam_new):
-    """Hack to replace one diameter at index diam_ind with value diam_new (morphio)"""
+    """Replace given diameters at indices diam_ind with values diam_new (morphio only).
+
+    Args:
+        section (neurom section): section to consider
+        diam_ind (list): indices of diameters, or points on the section
+        diam_new (list): corresponding diameters
+    """
     diameters = section.diameters
     diameters[diam_ind] = diam_new
     section.diameters = diameters
 
 
-#########################
-# old parser functions
-#########################
+#######################################################################
+# old parser functions (will be removed or integrated at some points) #
+#######################################################################
 def _create_morphologies_dict_json(
     morph_path, mtypes_file="neuronDB.xml", prefix="",
 ):
-    """ Create dict to load the morphologies from a directory, with json """
-
+    """Create dict to load the morphologies from a directory, with json."""
     with open(mtypes_file, "r") as filename:
         morph_name = json.load(filename)
 
@@ -129,9 +197,7 @@ def _create_morphologies_dict_json(
 def _create_morphologies_dict_xml(
     morph_path, mtypes_file="neuronDB.xml", ext=".asc", prefix="",
 ):
-    """ Create dict to load the morphologies from a directory, from xml """
-    # first load the neuronDB.xml file
-
+    """Create dict to load the morphologies from a directory, from xml."""
     filedb = ET.parse(morph_path + mtypes_file)
     root = filedb.findall("listing")[0]
     morphs = root.findall("morphology")

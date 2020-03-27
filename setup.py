@@ -19,12 +19,12 @@ setup(
     license="BBP-internal-confidential",
     install_requires=[
         "click>=7.0",
-        'numpy>=1.15.0',
-        'scipy>=0.13.3',
+        "numpy>=1.15.0",
+        "scipy>=0.13.3",
         "h5py>=2.9.0",
         "morphio>=2.3.4",
-        'matplotlib>=2.2.0',
-        'pandas>=0.24.0',
+        "matplotlib>=2.2.0",
+        "pandas>=0.24.0",
         "neurom>=1.4.2",
     ],
     entry_points={

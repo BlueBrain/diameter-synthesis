@@ -1,4 +1,4 @@
-"""plotting functions"""
+"""Plotting functions."""
 import json
 import os
 import logging
@@ -82,7 +82,7 @@ VIOLIN_FEATURES_NAME += [
 def _compute_neurite_diff(
     neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_neg, neurite_types
 ):
-    """compute the differences between neurite diameters"""
+    """Compute the differences between neurite diameters."""
     for neurite_type in neurite_types:
         neurites_orig = [
             neurite
@@ -130,7 +130,7 @@ def _compute_neurite_diff(
 
 
 def plot_diameter_diff(neuron_name, neuron_new, neurite_types, folder, ext=".png"):
-    """plot original morphology, new one and differences"""
+    """Plot original morphology, new one and differences."""
     if not Path(folder).exists():
         os.mkdir(folder)
 
@@ -174,7 +174,7 @@ def plot_diameter_diff(neuron_name, neuron_new, neurite_types, folder, ext=".png
 
 
 def _plot_attribute_scatter(data, model, neurite_types, fig_name, figsize, ext):
-    """plot scatter of parameters with attribute if any attributes"""
+    """Plot scatter of parameters with attribute if any attributes."""
     plt.figure(figsize=figsize)
     save_plot = False
     max_val = -1e10
@@ -205,8 +205,7 @@ def _plot_attribute_scatter(data, model, neurite_types, fig_name, figsize, ext):
 def plot_distribution_fit(
     data, model, neurite_types, fig_name="test", ext=".png", figsize=(5, 4)
 ):
-    """ Plot the data distribution and its fit """
-
+    """Plot the data distribution and its fit."""
     _plot_attribute_scatter(data, model, neurite_types, fig_name, figsize, ext)
 
     plt.figure()
@@ -330,7 +329,9 @@ def plot_cumulative_distribution(
     auto_limit=True,
 ):
     """
-    Plot the cumulative distribution of feature2 with respect to
+    Plot the cumulative distribution of features.
+
+    It plots feature2 with respect to
     the metric values determined via feature1
 
     Args:
@@ -350,7 +351,6 @@ def plot_cumulative_distribution(
         - segment_volumes
         - segment_surface_areas (not implemented yet)
     """
-
     assert len(original_cells) == len(diametrized_cells)
 
     data_generator = _create_data(
@@ -458,7 +458,7 @@ def plot_cumulative_distribution(
 
 
 def _split_prefix(neurom_feature_name):
-
+    """Split prefix."""
     name_list = neurom_feature_name.split("_")
 
     prefix = name_list[0]
@@ -477,8 +477,7 @@ def make_cumulative_figures(
     individual=False,
     figname_prefix="",
 ):
-
-    """make plots for cumulative distributions for a pair of features"""
+    """Make plots for cumulative distributions for a pair of features."""
     prefix1, basename1 = _split_prefix(feature1)
     prefix2, basename2 = _split_prefix(feature2)
 
@@ -521,7 +520,7 @@ def make_cumulative_figures(
 def _load_morphologies(
     morph_path, mtypes_file="./neuronDB.xml",
 ):
-    """ Load the morphologies from a directory, by mtypes or all at once """
+    """Load the morphologies from a directory, by mtypes or all at once."""
     morphologies_dict = utils.create_morphologies_dict(
         morph_path, mtypes_file=mtypes_file
     )
@@ -531,7 +530,7 @@ def _load_morphologies(
 
 
 def cumulative_analysis(config, out_dir, individual):
-    """make plots for cumulative distributions"""
+    """Make plots for cumulative distributions."""
     with open(config, "r") as filename:
         config = json.load(filename)
 
@@ -568,7 +567,7 @@ def cumulative_analysis(config, out_dir, individual):
 
 
 def get_features_all(object1, object2, flist, neurite_type):
-    """Computes features from module mod"""
+    """Compute features from module mod."""
     collect_all = []
 
     for feat in flist:
@@ -589,8 +588,7 @@ def get_features_all(object1, object2, flist, neurite_type):
 
 
 def transform2DataFrame(data, pop_names, flist):
-    """Returns a DataFrame in the appropriate
-    format from a set of features"""
+    """Return a DataFrame in the appropriate format from a set of features."""
     values = []
     names = []
     feat = []
@@ -612,7 +610,7 @@ def transform2DataFrame(data, pop_names, flist):
 
 
 def plot_violins(data, x="Morphological features", y="Values", hues="Data", **kwargs):
-    """Plots the split violins of all features"""
+    """Plot the split violins of all features."""
     import seaborn  # pylint: disable=import-outside-toplevel
 
     plt.figure(figsize=(12, 6))
@@ -632,7 +630,7 @@ def plot_violins(data, x="Morphological features", y="Values", hues="Data", **kw
 
 
 def violin_analysis(config, out_dir):
-    """plot violin distributions"""
+    """Plot violin distributions."""
     with open(config, "r") as filename:
         config = json.load(filename)
 

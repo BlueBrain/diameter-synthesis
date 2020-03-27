@@ -1,4 +1,4 @@
-"""Build neurite diameters from a pre-generated model"""
+"""Build neurite diameters from a pre-generated model."""
 import logging
 import random
 from collections import deque
@@ -25,13 +25,13 @@ STR_TO_TYPES = {
 
 
 def _set_seed(params):
-    """set numpy seed"""
+    """Set numpy seed from param dict."""
     if "seed" in params:
         np.random.seed(params["seed"])
 
 
 def _reset_caches():
-    """reset the cached functions"""
+    """Reset the cached functions."""
     morph_funcs._sec_length.cache_clear()
     morph_funcs._partition_asymetry_length.cache_clear()
     morph_funcs._lengths_from_origin.cache_clear()
@@ -39,7 +39,15 @@ def _reset_caches():
 
 
 def _get_neurites(neuron, neurite_type):
-    """get iterator over neurites to diametrize"""
+    """Get a list of neurites to diametrize.
+
+    Args:
+        neuron (morphio.mu.Morphology): a neuron
+        neurite_type (str): the neurite type to consider
+
+    Returns:
+        list: list of neurites to consider
+    """
     return [
         list(neurite.iter())
         for neurite in neuron.iter()
@@ -51,7 +59,18 @@ def _get_neurites(neuron, neurite_type):
 def _get_sibling_ratio(
     params, neurite_type, asymetry_value=0.0, mode="generic", asymetry_threshold=0.3
 ):
-    """return a sampled sibling ratio"""
+    """Sample a sibling ratio from distribution.
+
+    Args:
+        params (dict): model parameters
+        neurite_type (str): the neurite type to consider
+        asymetry_value (float): asymetry of current branching point
+        mode (str): to use or not the asymetry_threshold
+        asymetry_threshold (float): asymetry threshold
+
+    Returns:
+        float: sibling ratio
+    """
     if mode == "generic":
         return sample_distribution(params["sibling_ratios"][neurite_type])
     if mode == "threshold":
@@ -64,7 +83,18 @@ def _get_sibling_ratio(
 def _get_diameter_power_relation(
     params, neurite_type, asymetry_value=0.0, mode="generic", asymetry_threshold=0.3
 ):
-    """return a sampled diameter power relation"""
+    """Sample a diameter power relation from distribution.
+
+    Args:
+        params (dict): model parameters
+        neurite_type (str): the neurite type to consider
+        asymetry_value (float): asymetry of current branching point
+        mode (str): to use or not the asymetry_threshold
+        asymetry_threshold (float): asymetry threshold
+
+    Returns:
+        float: diameter power relation
+    """
     if mode == "generic":
         return sample_distribution(params["diameter_power_relation"][neurite_type])
     if mode == "threshold":
@@ -77,25 +107,58 @@ def _get_diameter_power_relation(
 
 
 def _get_trunk_diameter(params, neurite_type):
-    """sample a trunk diameter"""
+    """Sample a trunk diameter from distribution.
+
+    Args:
+        params (dict): model parameters
+        neurite_type (str): the neurite type to consider
+
+    Returns:
+        float: trunk diameter
+    """
     return sample_distribution(params["trunk_diameters"][neurite_type])
 
 
 def _get_terminal_diameter(params, neurite_type):
-    """sample a terminal diameter"""
+    """Sample a terminal diameter.
+
+    Args:
+        params (dict): model parameters
+        neurite_type (str): the neurite type to consider
+
+    Returns:
+        float: terminal diameter
+    """
     return sample_distribution(params["terminal_diameters"][neurite_type])
 
 
 def _get_taper(params, neurite_type, no_taper=False):
-    """sample a taper rate"""
+    """Sample a taper rate from distributions.
+
+    Args:
+        params (dict): model parameters
+        neurite_type (str): the neurite type to consider
+        no_taper (bool): set to True to disable tappering
+
+    Returns:
+        float: taper rate
+    """
     if no_taper:
         return 0.0
     return sample_distribution(params["tapers"][neurite_type])
 
 
 def _get_daughter_diameters(section, params, params_tree):
-    """return daughter diameters from parent diameter"""
+    """Compute the daughter diameters of the current section.
 
+    Args:
+        section (morphio  section): section to consider
+        params (dict): model parameters
+        params_tree (dict): specific parameters of the current tree
+
+    Returns:
+       list: list of daughter diameters
+    """
     reduction_factor = params_tree["reduction_factor_max"] + 1.0
     # try until we get a reduction of diameter in the branching
     while reduction_factor > params_tree["reduction_factor_max"]:
@@ -149,7 +212,15 @@ def _get_daughter_diameters(section, params, params_tree):
 
 
 def _diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=10.0):
-    """Set the diameters of a section"""
+    """Diameterize a section.
+
+    Args:
+        section (morphio section): current section
+        initial_diam (float): initial diameter
+        taper (float): taper rate
+        min_diam (flaot): minimum diameter
+        max_diam (float): maximum diameter
+    """
     diams = polynomial.polyval(
         morph_funcs._lengths_from_origin(section), [initial_diam, taper]
     )
@@ -157,7 +228,16 @@ def _diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=10
 
 
 def _diametrize_tree(neurite, params, params_tree):
-    """Diametrize a single tree"""
+    """Diametrize a tree, or neurite.
+
+    Args:
+        neurite (morphio neurite): current neurite
+        params (dict): model parameters
+        params_tree (dict): specific parameters of the current tree
+
+    Returns:
+        bool: True is all terminal diameters are small enough, False otherwise
+    """
     params_tree["tot_length"] = morph_funcs._get_total_length(neurite)
     max_diam = params["terminal_diameters"][params_tree["neurite_type"]]["params"][
         "max"
@@ -202,13 +282,19 @@ def _diametrize_tree(neurite, params, params_tree):
     return wrong_tips
 
 
-def _diametrize_neuron(params_tree, neuron, params, neurite_types, extra_params):
-    """Diametrize a morphio-neuron according to the model"""
+def _diametrize_neuron(params_tree, neuron, params, neurite_types, config):
+    """Diametrize a neuron.
+
+    Args:
+        params_tree (dict): specific parameters of the current tree
+        neuron (morphio.mut.Morphology): neuron to diametrize
+        params (dict): model parameters
+        neurite_type (str): the neurite type to consider
+        config (dict): general configuration parameters
+    """
     for neurite_type in neurite_types:
         params_tree["neurite_type"] = neurite_type
-        params_tree["asymetry_threshold"] = extra_params["asymetry_threshold"][
-            neurite_type
-        ]
+        params_tree["asymetry_threshold"] = config["asymetry_threshold"][neurite_type]
 
         for neurite in _get_neurites(neuron, neurite_type):
             wrong_tips = True
@@ -229,14 +315,21 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, extra_params)
                 if n_tries > N_TRIES_BEFORE_REDUC * n_tries_step:
                     trunk_diam_frac -= TRUNK_FRAC_DECREASE
                     n_tries_step += 1
-                if n_tries > extra_params["trunk_max_tries"]:
+                if n_tries > config["trunk_max_tries"]:
                     L.warning("max tries attained with %s", neurite_type)
                     wrong_tips = False
                 n_tries += 1
 
 
 def _select_model(model):
-    """select a model to use from available ones"""
+    """Select a diametrized model to use.
+
+    Args:
+        model (str): model name
+
+    Returns:
+        function: diamtrizer with specific params_tree
+    """
     if model == "generic":
         params_tree = {}
         params_tree["mode_sibling"] = "threshold"
@@ -251,7 +344,14 @@ def _select_model(model):
 
 
 def build(neuron, model_params, neurite_types, config):
-    """Main function for building the diameters from the generated diameter models of a neuron"""
+    """Builder function for generating diameters of a neuron from the a diameter models.
+
+    Args:
+        neuron (morphio.mut.Morphology): neuron to diametrize
+        model_params (dict): model parameters
+        neurite_type (str): the neurite type to consider
+        config (dict): general configuration parameters
+    """
     _set_seed(config)
     _reset_caches()
 
