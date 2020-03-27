@@ -81,21 +81,27 @@ def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=None):
 
 
 @cli.command("run_analysis")
-@click.option("--config", help="Configuration JSON file", required=True)
+@click.option("--orig-path", help="Path to original cells", required=True)
+@click.option("--diam-path", help="Path to diametrized cells", required=True)
+@click.option("--mtypes-file", help="Path to mtypes file", required=False)
 @click.option(
     "-o", "--out-dir", help="Directory to output the analysis results", required=True
 )
 @click.option("--cumulative", help="Cumulative distribution plots", is_flag=True)
 @click.option("--individual", help="Output a plot for each neuron", is_flag=True)
 @click.option("--violin", help="Violin distribution plots", is_flag=True)
-def run_analysis(config, out_dir, cumulative, individual, violin):
+def run_analysis(
+    orig_path, diam_path, out_dir, cumulative, individual, violin, mtypes_file=None
+):
     """Produce figures for validation/analysis."""
     if cumulative:
         from .plotting import cumulative_analysis
 
-        cumulative_analysis(config, out_dir, individual)
+        cumulative_analysis(
+            orig_path, diam_path, out_dir, individual, mtypes_file=mtypes_file
+        )
 
     if violin:
         from .plotting import violin_analysis
 
-        violin_analysis(config, out_dir)
+        violin_analysis(orig_path, diam_path, out_dir, mtypes_file=mtypes_file)

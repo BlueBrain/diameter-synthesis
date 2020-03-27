@@ -1,5 +1,4 @@
 """Plotting functions."""
-import json
 import os
 import logging
 from pathlib import Path
@@ -472,7 +471,7 @@ def make_cumulative_figures(
     diametrized_cells,
     feature1,
     feature2,
-    config,
+    neurite_types,
     out_dir,
     individual=False,
     figname_prefix="",
@@ -484,7 +483,7 @@ def make_cumulative_figures(
     assert prefix1 == prefix2
 
     fig, _ = plot_cumulative_distribution(
-        original_cells, diametrized_cells, feature1, feature2, config["neurite_types"]
+        original_cells, diametrized_cells, feature1, feature2, neurite_types
     )
 
     figure_name = figname_prefix + "cumulative_{}_{}_{}".format(
@@ -506,7 +505,7 @@ def make_cumulative_figures(
                 [diametrized_cell],
                 feature1,
                 feature2,
-                config["neurite_types"],
+                neurite_types,
                 auto_limit=False,
             )
             fname = "{}_{}.svg".format(figure_name, original_cell.name)
@@ -517,9 +516,7 @@ def make_cumulative_figures(
             plt.close(f)
 
 
-def _load_morphologies(
-    morph_path, mtypes_file="./neuronDB.xml",
-):
+def _load_morphologies(morph_path, mtypes_file="./neuronDB.xml"):
     """Load the morphologies from a directory, by mtypes or all at once."""
     morphologies_dict = utils.create_morphologies_dict(
         morph_path, mtypes_file=mtypes_file
@@ -529,24 +526,22 @@ def _load_morphologies(
     }
 
 
-def cumulative_analysis(config, out_dir, individual):
+def cumulative_analysis(
+    original_path,
+    diametrized_path,
+    out_dir,
+    individual,
+    mtypes_file=None,
+    neurite_types=None,
+):
     """Make plots for cumulative distributions."""
-    with open(config, "r") as filename:
-        config = json.load(filename)
-
     if not Path(out_dir).exists():
         os.mkdir(out_dir)
 
-    if len(config) > 1:
-        L.warning(
-            "multiple models provided, will only use the first in the list for analysis"
-        )
-    config = config[list(config.keys())[0]]
-
-    all_original_cells = _load_morphologies(config["morph_path"])
-
-    all_diametrized_cells = _load_morphologies(config["new_morph_path"])
-
+    all_original_cells = _load_morphologies(original_path, mtypes_file=mtypes_file)
+    all_diametrized_cells = _load_morphologies(
+        diametrized_path, mtypes_file=mtypes_file
+    )
     for mtype in tqdm(all_original_cells):
         original_cells = all_original_cells[mtype]
         diametrized_cells = all_diametrized_cells[mtype]
@@ -557,13 +552,13 @@ def cumulative_analysis(config, out_dir, individual):
                     diametrized_cells,
                     feature1,
                     feature2,
-                    config,
+                    neurite_types,
                     out_dir,
                     individual=individual,
                     figname_prefix=mtype,
                 )
-        except BaseException:  # pylint: disable=broad-except
-            pass
+        except Exception as exc:  # pylint: disable=broad-except
+            L.warning("Cumulative plot failed because of %s", exc)
 
 
 def get_features_all(object1, object2, flist, neurite_type):
@@ -629,23 +624,15 @@ def plot_violins(data, x="Morphological features", y="Values", hues="Data", **kw
     return axs
 
 
-def violin_analysis(config, out_dir):
+def violin_analysis(original_path, diametrized_path, out_dir, mtypes_file=None):
     """Plot violin distributions."""
-    with open(config, "r") as filename:
-        config = json.load(filename)
-
     if not Path(out_dir).exists():
         os.mkdir(out_dir)
 
-    if len(config) > 1:
-        L.warning(
-            "multiple models provided, will only use the first in the list for analysis"
-        )
-
-    config = config[list(config.keys())[0]]
-    all_original_cells = _load_morphologies(config["morph_path"])
-
-    all_diametrized_cells = _load_morphologies(config["new_morph_path"])
+    all_original_cells = _load_morphologies(original_path, mtypes_file=mtypes_file)
+    all_diametrized_cells = _load_morphologies(
+        diametrized_path, mtypes_file=mtypes_file
+    )
 
     for mtype in tqdm(all_original_cells):
         original_cells = all_original_cells[mtype]

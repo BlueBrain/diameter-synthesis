@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 """Functions to fit distributions to parameters of diameter models."""
+=======
+"""Functions to fit distributions to parameters of diameter models. TO REVIEW."""
+>>>>>>> 5d3daa1... updated docstring
 import logging
 
 import numpy as np

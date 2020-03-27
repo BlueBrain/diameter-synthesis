@@ -1,4 +1,4 @@
-"""Build neurite diameters from a pre-generated model."""
+"""Build neurite diameters from a pre-generated model. TO REVIEW."""
 import logging
 import random
 from collections import deque

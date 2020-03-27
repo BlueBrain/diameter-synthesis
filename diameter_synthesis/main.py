@@ -128,6 +128,8 @@ class DiameterWorker:
             os.mkdir(self.config["new_morph_path"])
 
         if fname.parts[-2] == mtype:
+            if not (Path(self.config["new_morph_path"]) / fname.parts[-2]).exists():
+                os.mkdir(Path(self.config["new_morph_path"]) / fname.parts[-2])
             neuron.write(
                 Path(self.config["new_morph_path"]) / fname.parts[-2] / fname.name
             )
