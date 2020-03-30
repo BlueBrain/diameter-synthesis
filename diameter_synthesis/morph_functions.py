@@ -1,4 +1,4 @@
-"""Morphology extraction functions. TO REVIEW."""
+"""Morphology extraction functions. TO REVIEW!."""
 import logging
 from functools import lru_cache
 
@@ -12,34 +12,38 @@ from diameter_synthesis.utils import _get_diameters, _get_mean_diameter
 L = logging.getLogger(__name__)
 
 
+def _segment_lengths(section):
+    """Lengths of segments of a section (morphio only)."""
+    points = section.points
+    vectors = np.diff(points, axis=0)
+    return np.linalg.norm(vectors, axis=1)
+
+
 @lru_cache(maxsize=None)
-def _sec_length(section):
+def sec_length(section):
     """Length of a section (morphio only)."""
-    return np.linalg.norm(np.diff(np.asarray(section.points), axis=0), axis=1).sum()
+    return _segment_lengths(section).sum()
 
 
 @lru_cache(maxsize=None)
-def _lengths_from_origin(section):
+def lengths_from_origin(section):
     """Path lengths from first point of section (morphio only)."""
-    return np.insert(
-        np.cumsum(np.linalg.norm(np.diff(np.asarray(section.points), axis=0), axis=1)),
-        0,
-        0,
-    )
+    return np.insert(np.cumsum(_segment_lengths(section)), 0, 0)
 
 
 @lru_cache(maxsize=None)
-def _partition_asymetry_length(section):
+def partition_asymetry_length(section):
     """Compute partition asymetry with lengths (morphio).
 
-    WARNING: Requires to divide by total length of dendrite
+    WARNING: This function is not complete, and requires to divide by total length of dendrite,
+    which is done later in the code as we don't have access to whole dendrite here.
     """
     asymetry_length = sum(
-        [_sec_length(section) for section in section.children[0].iter()]
+        [sec_length(section) for section in section.children[0].iter()]
     )
     try:
         asymetry_length -= sum(
-            [_sec_length(section) for section in section.children[1].iter()]
+            [sec_length(section) for section in section.children[1].iter()]
         )
     except IndexError:
         raise DiameterSynthesisError(
@@ -49,19 +53,14 @@ def _partition_asymetry_length(section):
 
 
 @lru_cache(maxsize=None)
-def _child_length(section):
+def n_children_downstream(section):
     """Get the number of children of a section (morphio only)."""
     return sum(1 for _ in section.iter())
 
 
-def _get_total_length(neurite):
+def get_total_length(neurite):
     """Get total length or a neurite (morphio only)."""
-    return np.sum(
-        [
-            np.linalg.norm(np.diff(np.asarray(section.points), axis=0), axis=1).sum()
-            for section in neurite
-        ]
-    )
+    return sum(map(sec_length, neurite))
 
 
 def compute_sibling_ratios(neurite, method="mean", attribute_name=None, bounds=None):
@@ -135,9 +134,7 @@ def terminal_diameters(
 
 def min_diameter(neurite, attribute_name=None, bounds=None):
     """Get the min diameter of a neurite (neurom only)."""
-    min_diam = 1e5
-    for section in iter_sections(neurite):
-        min_diam = min(min_diam, _get_mean_diameter(section))
+    min_diam = min(map(_get_mean_diameter, iter_sections(neurite)))
 
     if not bounds:
         bounds = [0, 100]
@@ -148,9 +145,7 @@ def min_diameter(neurite, attribute_name=None, bounds=None):
 
 def max_diameter(neurite, attribute_name=None, bounds=None):
     """Get the max diameter of a neurite (neurom only)."""
-    max_diam = 0
-    for section in iter_sections(neurite):
-        max_diam = max(max_diam, _get_mean_diameter(section))
+    max_diam = max(map(_get_mean_diameter, iter_sections(neurite)))
 
     if not bounds:
         bounds = [0, 100]
@@ -199,7 +194,7 @@ def get_additional_attribute(
             out = nm.get("partition_asymmetry_length", [neurite])
             return np.array(out)
         if section is not None and neurite is None:
-            return _partition_asymetry_length(section)
+            return partition_asymetry_length(section)
 
     if attribute_name == "asymmetry_pair":
         if section is not None and neurite is None:

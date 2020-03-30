@@ -1,4 +1,4 @@
-"""Build neurite diameters from a pre-generated model. TO REVIEW."""
+"""Build neurite diameters from a pre-generated model. TO REVIEW!."""
 import logging
 import random
 from collections import deque
@@ -24,18 +24,12 @@ STR_TO_TYPES = {
 }
 
 
-def _set_seed(params):
-    """Set numpy seed from param dict."""
-    if "seed" in params:
-        np.random.seed(params["seed"])
-
-
 def _reset_caches():
     """Reset the cached functions."""
-    morph_funcs._sec_length.cache_clear()
-    morph_funcs._partition_asymetry_length.cache_clear()
-    morph_funcs._lengths_from_origin.cache_clear()
-    morph_funcs._child_length.cache_clear()
+    morph_funcs.sec_length.cache_clear()
+    morph_funcs.partition_asymetry_length.cache_clear()
+    morph_funcs.lengths_from_origin.cache_clear()
+    morph_funcs.n_children_downstream.cache_clear()
 
 
 def _get_neurites(neuron, neurite_type):
@@ -50,13 +44,12 @@ def _get_neurites(neuron, neurite_type):
     """
     return [
         list(neurite.iter())
-        for neurite in neuron.iter()
-        if neurite.is_root
+        for neurite in neuron.root_sections
         if neurite.type == STR_TO_TYPES[neurite_type]
     ]
 
 
-def _get_sibling_ratio(
+def _sample_sibling_ratio(
     params, neurite_type, asymetry_value=0.0, mode="generic", asymetry_threshold=0.3
 ):
     """Sample a sibling ratio from distribution.
@@ -80,7 +73,7 @@ def _get_sibling_ratio(
     raise DiameterSynthesisError("mode not understood {}".format(mode))
 
 
-def _get_diameter_power_relation(
+def _sample_diameter_power_relation(
     params, neurite_type, asymetry_value=0.0, mode="generic", asymetry_threshold=0.3
 ):
     """Sample a diameter power relation from distribution.
@@ -106,7 +99,7 @@ def _get_diameter_power_relation(
     raise DiameterSynthesisError("mode not understood {}".format(mode))
 
 
-def _get_trunk_diameter(params, neurite_type):
+def _sample_trunk_diameter(params, neurite_type):
     """Sample a trunk diameter from distribution.
 
     Args:
@@ -119,7 +112,7 @@ def _get_trunk_diameter(params, neurite_type):
     return sample_distribution(params["trunk_diameters"][neurite_type])
 
 
-def _get_terminal_diameter(params, neurite_type):
+def _sample_terminal_diameter(params, neurite_type):
     """Sample a terminal diameter.
 
     Args:
@@ -132,23 +125,20 @@ def _get_terminal_diameter(params, neurite_type):
     return sample_distribution(params["terminal_diameters"][neurite_type])
 
 
-def _get_taper(params, neurite_type, no_taper=False):
+def _sample_taper(params, neurite_type):
     """Sample a taper rate from distributions.
 
     Args:
         params (dict): model parameters
         neurite_type (str): the neurite type to consider
-        no_taper (bool): set to True to disable tappering
 
     Returns:
         float: taper rate
     """
-    if no_taper:
-        return 0.0
     return sample_distribution(params["tapers"][neurite_type])
 
 
-def _get_daughter_diameters(section, params, params_tree):
+def _sample_daughter_diameters(section, params, params_tree):
     """Compute the daughter diameters of the current section.
 
     Args:
@@ -173,7 +163,7 @@ def _get_daughter_diameters(section, params, params_tree):
         ):
             asymetry_value /= params_tree["tot_length"]
 
-        sibling_ratio = _get_sibling_ratio(
+        sibling_ratio = _sample_sibling_ratio(
             params,
             params_tree["neurite_type"],
             asymetry_value=asymetry_value,
@@ -181,7 +171,7 @@ def _get_daughter_diameters(section, params, params_tree):
             asymetry_threshold=params_tree["asymetry_threshold"],
         )
 
-        diameter_power_relation = _get_diameter_power_relation(
+        diameter_power_relation = _sample_diameter_power_relation(
             params,
             params_tree["neurite_type"],
             asymetry_value=asymetry_value,
@@ -204,11 +194,13 @@ def _get_daughter_diameters(section, params, params_tree):
 
     diams = [diam_1] + (len(section.children) - 1) * [diam_2]
     if params_tree["with_asymmetry"]:
+        # returns child diameters sorted by child length (major/secondary for apical tree)
         child_sort = np.argsort(
-            [morph_funcs._child_length(child) for child in section.children]
+            [morph_funcs.n_children_downstream(child) for child in section.children]
         )[::-1]
         return list(np.array(diams)[child_sort])
-    return random.shuffle(diams)
+    random.shuffle(diams)
+    return diams
 
 
 def _diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=10.0):
@@ -222,9 +214,9 @@ def _diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=10
         max_diam (float): maximum diameter
     """
     diams = polynomial.polyval(
-        morph_funcs._lengths_from_origin(section), [initial_diam, taper]
+        morph_funcs.lengths_from_origin(section), [initial_diam, taper]
     )
-    section.diameters = np.clip(diams, min_diam, max_diam, out=diams)
+    section.diameters = np.clip(diams, min_diam, max_diam)
 
 
 def _diametrize_tree(neurite, params, params_tree):
@@ -238,7 +230,7 @@ def _diametrize_tree(neurite, params, params_tree):
     Returns:
         bool: True is all terminal diameters are small enough, False otherwise
     """
-    params_tree["tot_length"] = morph_funcs._get_total_length(neurite)
+    params_tree["tot_length"] = morph_funcs.get_total_length(neurite)
     max_diam = params["terminal_diameters"][params_tree["neurite_type"]]["params"][
         "max"
     ]
@@ -252,12 +244,10 @@ def _diametrize_tree(neurite, params, params_tree):
         else:
             init_diam = section.diameters[0]
 
-        taper = _get_taper(
-            params, params_tree["neurite_type"], no_taper=params_tree["no_taper"],
-        )
+        taper = _sample_taper(params, params_tree["neurite_type"])
 
         params_tree["terminal_diam"] = min(
-            init_diam, _get_terminal_diameter(params, params_tree["neurite_type"])
+            init_diam, _sample_terminal_diameter(params, params_tree["neurite_type"])
         )
 
         _diametrize_section(
@@ -269,10 +259,10 @@ def _diametrize_tree(neurite, params, params_tree):
         )
 
         if len(section.children) > 0:
-            diams = _get_daughter_diameters(section, params, params_tree)
+            diams = _sample_daughter_diameters(section, params, params_tree)
 
             for i, child in enumerate(section.children):
-                utils._redefine_diameter_section(child, 0, diams[i])
+                utils.redefine_diameter_section(child, 0, diams[i])
                 active.append(child)
 
         # if we are at a tip, check if tip diameters are small enough
@@ -302,7 +292,9 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config):
             trunk_diam_frac = 1.0
             n_tries_step = 1
             while wrong_tips:
-                trunk_diam = trunk_diam_frac * _get_trunk_diameter(params, neurite_type)
+                trunk_diam = trunk_diam_frac * _sample_trunk_diameter(
+                    params, neurite_type
+                )
 
                 if trunk_diam < 0.01:
                     trunk_diam = 1.0
@@ -335,7 +327,6 @@ def _select_model(model):
         params_tree["mode_sibling"] = "threshold"
         params_tree["mode_diameter_power_relation"] = "threshold"
         params_tree["with_asymmetry"] = True
-        params_tree["no_taper"] = False
         params_tree["reduction_factor_max"] = 1.0
     else:
         raise DiameterSynthesisError("Unknown diameter model")
@@ -352,7 +343,8 @@ def build(neuron, model_params, neurite_types, config):
         neurite_type (str): the neurite type to consider
         config (dict): general configuration parameters
     """
-    _set_seed(config)
+    if "seed" in config:
+        np.random.seed(config["seed"])
     _reset_caches()
 
     if len(config["models"]) > 1:
@@ -361,8 +353,8 @@ def build(neuron, model_params, neurite_types, config):
 
     diameter_generator(neuron, model_params, neurite_types, config)
     if config["n_samples"] > 1:
-        diameters = np.array(utils._get_all_diameters(neuron))
+        diameters = np.array(utils.get_all_diameters(neuron))
         for _ in range(config["n_samples"] - 1):
             diameter_generator(neuron, model_params, neurite_types, config)
-            diameters += np.array(utils._get_all_diameters(neuron))
-        utils._set_all_diameters(neuron, diameters / config["n_samples"])
+            diameters += np.array(utils.get_all_diameters(neuron))
+        utils.set_all_diameters(neuron, diameters / config["n_samples"])

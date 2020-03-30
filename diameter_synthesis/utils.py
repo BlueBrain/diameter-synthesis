@@ -1,4 +1,4 @@
-"""Utils functions. TO REVIEW."""
+"""Utils functions. TO REVIEW!."""
 import json
 import logging
 import os
@@ -123,7 +123,7 @@ def _get_mean_diameter(section):
     return np.sum(segment_mean_diams * segment_lengths) / segment_lengths.sum()
 
 
-def _get_all_diameters(neuron):
+def get_all_diameters(neuron):
     """Get all neuron diameters (morphio only).
 
     Args:
@@ -135,7 +135,7 @@ def _get_all_diameters(neuron):
     return [section.diameters for section in neuron.iter()]
 
 
-def _set_all_diameters(neuron, diameters):
+def set_all_diameters(neuron, diameters):
     """Set all neuron diameters (morphio only).
 
     Args:
@@ -158,7 +158,7 @@ def _get_diameters(section):
     return section.points[:, COLS.R] * 2.0
 
 
-def _redefine_diameter_section(section, diam_ind, diam_new):
+def redefine_diameter_section(section, diam_ind, diam_new):
     """Replace given diameters at indices diam_ind with values diam_new (morphio only).
 
     Args:

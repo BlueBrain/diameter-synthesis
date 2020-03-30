@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-"""Functions to fit distributions to parameters of diameter models."""
-=======
-"""Functions to fit distributions to parameters of diameter models. TO REVIEW."""
->>>>>>> 5d3daa1... updated docstring
+"""Functions to fit distributions to parameters of diameter models. TO REVIEW!."""
 import logging
 
 import numpy as np
@@ -31,18 +27,30 @@ def _truncate(sample_func, min_value, max_value):
     return sample
 
 
-def fit_distribution(data, distribution, attribute_name=None, extra_params=None):
-    """Fit a distribution from data."""
+def fit_distribution(all_data, distribution, attribute_name=None, extra_params=None):
+    """Fit a distribution from data.
+
+    Args:
+        data (list/array): list of data points to fit a distribution to
+        distribution (str): Distribution name
+        attribute_name (str): Name of additional attribute to fit
+        extra_params (dict): Possible additional parameters for the fit
+
+    Returns:
+        dict: parameters of the fit
+    """
     if attribute_name == "asymmetry_threshold":
-        tpes = np.asarray(data, dtype=np.float32)[:, 1]
-        data = np.asarray(data, dtype=np.float32)[:, 0]
+        attribute = np.asarray(all_data, dtype=np.float32)[:, 1]
+        data = np.asarray(all_data, dtype=np.float32)[:, 0]
         data = data[
-            tpes < extra_params["asymetry_threshold"][extra_params["neurite_type"]]
+            attribute < extra_params["asymetry_threshold"][extra_params["neurite_type"]]
         ]
     elif attribute_name is not None:
         raise DiameterSynthesisError(
             "attribute_name {} not implemented".format(attribute_name)
         )
+    else:
+        data = all_data
 
     if len(data) < MIN_DATA_POINTS:
         L.warning(

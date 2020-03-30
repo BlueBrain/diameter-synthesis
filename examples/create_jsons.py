@@ -19,7 +19,7 @@ extract_models_params = {
     'n_samples': 2,
     'seed': 0,
     'trunk_max_tries': 100,
-    'n_cpu': 1,
+    'n_cpu': 10,
 }
 
 with open("diametrizer_params.json", "w") as json_file:

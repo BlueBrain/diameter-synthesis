@@ -159,4 +159,5 @@ def run_diameters(config_file, models_params_file):
             for mtype in morphologies_dict
             for neuron in morphologies_dict[mtype]
         ]
+
         list(tqdm(pool.imap(worker, all_neurons), total=len(all_neurons)))
