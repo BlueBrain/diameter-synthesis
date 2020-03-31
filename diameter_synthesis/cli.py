@@ -52,12 +52,7 @@ def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=None):
     """Plot original and new neurons as well as their differences."""
     from .plotting import plot_diameter_diff
 
-    if ncells is not None:
-        ncells = int(ncells)
-    else:
-        ncells = -1
-
-    neurite_types = ["basal", "apical"]
+    neurite_types = ["basal", "apical", "axon"]
     import neurom as nm
 
     morphologies_dict = create_morphologies_dict(original_folder)
@@ -72,7 +67,12 @@ def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=None):
         if not Path(plot_folder_mtype).exists:
             os.mkdir(plot_folder_mtype)
 
-        for neuron in tqdm(morphologies_dict[mtype][:ncells]):
+        if ncells is not None:
+            neurons = morphologies_dict[mtype][: int(ncells)]
+        else:
+            neurons = morphologies_dict[mtype]
+
+        for neuron in tqdm(neurons):
             neuron_new = nm.load_neuron(Path(diametrized_folder) / neuron.name)
 
             plot_diameter_diff(
@@ -98,7 +98,12 @@ def run_analysis(
         from .plotting import cumulative_analysis
 
         cumulative_analysis(
-            orig_path, diam_path, out_dir, individual, mtypes_file=mtypes_file
+            orig_path,
+            diam_path,
+            out_dir,
+            individual,
+            mtypes_file=mtypes_file,
+            neurite_types=["basal", "axon", "apical"],
         )
 
     if violin:

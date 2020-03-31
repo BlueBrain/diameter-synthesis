@@ -110,16 +110,18 @@ def _get_mean_diameter(section):
     """Section mean diameter.
 
     It is obtained by averaging the segment truncated cone
-    diameters and weighting them by their length. (morphio only)
+    diameters and weighting them by their length. (neurom only)
 
     Args:
-        section (morphio section): section to consider
+        section (neurom section): section to consider
 
     Returns:
         float: mean diameter of the section
     """
-    segment_lengths = np.linalg.norm(section.points[1:] - section.points[:-1], axis=1)
-    segment_mean_diams = (section.diameters[1:] + section.diameters[:-1]) / 2.0
+    segment_lengths = np.linalg.norm(
+        section.points[1:, COLS.XYZ] - section.points[:-1, COLS.XYZ], axis=1
+    )
+    segment_mean_diams = section.points[1:, COLS.R] + section.points[:-1, COLS.R]
     return np.sum(segment_mean_diams * segment_lengths) / segment_lengths.sum()
 
 

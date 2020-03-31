@@ -21,6 +21,7 @@ L = logging.getLogger(__name__)
 STR_TO_TYPES = {
     "basal": SectionType.basal_dendrite,
     "apical": SectionType.apical_dendrite,
+    "axon": SectionType.axon,
 }
 
 
@@ -152,16 +153,19 @@ def _sample_daughter_diameters(section, params, params_tree):
     reduction_factor = params_tree["reduction_factor_max"] + 1.0
     # try until we get a reduction of diameter in the branching
     while reduction_factor > params_tree["reduction_factor_max"]:
-        asymetry_value = morph_funcs.get_additional_attribute(
-            params["sibling_ratios"][params_tree["neurite_type"]]["sequential"],
-            section=section,
-        )
 
         if (
             params["sibling_ratios"][params_tree["neurite_type"]]["sequential"]
             == "asymmetry_threshold"
         ):
+            asymetry_value = morph_funcs.get_additional_attribute(
+                params["sibling_ratios"][params_tree["neurite_type"]]["sequential"],
+                section=section,
+            )
             asymetry_value /= params_tree["tot_length"]
+        else:
+            asymetry_value = None
+            params_tree["asymetry_threshold"] = 1.0
 
         sibling_ratio = _sample_sibling_ratio(
             params,
@@ -284,7 +288,10 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config):
     """
     for neurite_type in neurite_types:
         params_tree["neurite_type"] = neurite_type
-        params_tree["asymetry_threshold"] = config["asymetry_threshold"][neurite_type]
+        if "asymetry_threshold" in config:
+            params_tree["asymetry_threshold"] = config["asymetry_threshold"][
+                neurite_type
+            ]
 
         for neurite in _get_neurites(neuron, neurite_type):
             wrong_tips = True
@@ -328,8 +335,14 @@ def _select_model(model):
         params_tree["mode_diameter_power_relation"] = "threshold"
         params_tree["with_asymmetry"] = True
         params_tree["reduction_factor_max"] = 1.0
+    elif model == "astrocyte":
+        params_tree = {}
+        params_tree["mode_sibling"] = "generic"
+        params_tree["mode_diameter_power_relation"] = "generic"
+        params_tree["with_asymmetry"] = True
+        params_tree["reduction_factor_max"] = 3.0
     else:
-        raise DiameterSynthesisError("Unknown diameter model")
+        raise DiameterSynthesisError("Unknown diameter model: {}".format(model))
 
     return partial(_diametrize_neuron, params_tree)
 

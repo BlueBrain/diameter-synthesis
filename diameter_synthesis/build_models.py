@@ -13,6 +13,7 @@ L = logging.getLogger(__name__)
 STR_TO_NEUROM_TYPES = {
     "apical": NeuriteType.apical_dendrite,
     "basal": NeuriteType.basal_dendrite,
+    "axon": NeuriteType.axon,
 }
 
 
@@ -36,7 +37,22 @@ def _get_model_builder(config):
             ]
             distribution_types["terminal_diameters"] = ["exponnorm", None]
             distribution_types["trunk_diameters"] = ["exponnorm", None]
+            distribution_types["trunk_diameters_method"] = "last"
             distribution_types["tapers"] = ["expon_rev", None]
+        elif model == "astrocyte":
+            distribution_types = {}
+            # distribution_types["sibling_ratios"] = ["expon_rev", None]
+            # distribution_types["diameter_power_relation"] = ["exponnorm", None]
+            distribution_types["sibling_ratios"] = ["expon_rev", "asymmetry_threshold"]
+            distribution_types["diameter_power_relation"] = [
+                "exponnorm",
+                "asymmetry_threshold",
+            ]
+
+            distribution_types["terminal_diameters"] = ["exponnorm", None]
+            distribution_types["trunk_diameters_method"] = "mean"
+            distribution_types["trunk_diameters"] = ["exponnorm", None]
+            distribution_types["tapers"] = ["exponnorm", None]
         else:
             raise DiameterSynthesisError("model not understood {}".format(model))
 
@@ -127,7 +143,9 @@ def extract_parameters(sampling_model, morphologies, config):
                     all_data["trunk_diameters"][
                         neurite_type
                     ] += morph_funcs.trunk_diameter(
-                        neurite, attribute_name=sampling_model["trunk_diameters"][1]
+                        neurite,
+                        attribute_name=sampling_model["trunk_diameters"][1],
+                        method=sampling_model["trunk_diameters_method"],
                     )
                     all_data["tapers"][neurite_type] += morph_funcs.taper(
                         neurite,

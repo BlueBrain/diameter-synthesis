@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import neurom as nm
 import numpy as np
 
-from neurom import APICAL_DENDRITE, BASAL_DENDRITE, get, iter_sections, viewer
+from neurom import APICAL_DENDRITE, BASAL_DENDRITE, AXON, get, iter_sections, viewer
 from neurom.geom import bounding_box
 from scipy import stats
 from tqdm import tqdm
@@ -280,9 +280,11 @@ def _create_data(
 
     def per_neurite_data(original_cells, diametrized_cells, neurite_types):
         for _, neurite_type in enumerate(neurite_types):
-            yield list(
+            data = list(
                 create_paired_features(original_cells, diametrized_cells, neurite_type)
             )
+            if len(data[0][0][0]) > 0:
+                yield data
 
     assert len(original_cells) == len(diametrized_cells)
 
@@ -545,20 +547,17 @@ def cumulative_analysis(
     for mtype in tqdm(all_original_cells):
         original_cells = all_original_cells[mtype]
         diametrized_cells = all_diametrized_cells[mtype]
-        try:
-            for feature1, feature2 in CUMULATIVE_FEATURE_PAIRS:
-                make_cumulative_figures(
-                    original_cells,
-                    diametrized_cells,
-                    feature1,
-                    feature2,
-                    neurite_types,
-                    out_dir,
-                    individual=individual,
-                    figname_prefix=mtype,
-                )
-        except Exception as exc:  # pylint: disable=broad-except
-            L.warning("Cumulative plot failed because of %s", exc)
+        for feature1, feature2 in CUMULATIVE_FEATURE_PAIRS:
+            make_cumulative_figures(
+                original_cells,
+                diametrized_cells,
+                feature1,
+                feature2,
+                neurite_types,
+                out_dir,
+                individual=individual,
+                figname_prefix=mtype,
+            )
 
 
 def get_features_all(object1, object2, flist, neurite_type):
@@ -652,7 +651,7 @@ def violin_analysis(original_path, diametrized_path, out_dir, mtypes_file=None):
             )
             ax = plot_violins(data_frame)
             ax.set_ylim(-3, 5)
-            plt.savefig(Path(out_dir) / ("violin_basal_" + mtype + "png"))
+            plt.savefig(Path(out_dir) / ("violin_basal_" + mtype + ".png"))
             plt.close()
         except BaseException:  # pylint: disable=broad-except
             pass
@@ -669,7 +668,24 @@ def violin_analysis(original_path, diametrized_path, out_dir, mtypes_file=None):
             )
             ax = plot_violins(data_frame)
             ax.set_ylim(-3, 5)
-            plt.savefig(Path(out_dir) / ("violin_apical_" + mtype + "png"))
+            plt.savefig(Path(out_dir) / ("violin_apical_" + mtype + ".png"))
+            plt.close()
+        except BaseException:  # pylint: disable=broad-except
+            pass
+
+        try:
+            data = get_features_all(
+                original_cells,
+                diametrized_cells,
+                flist=VIOLIN_FEATURES_LIST,
+                neurite_type=AXON,
+            )
+            data_frame = transform2DataFrame(
+                data, pop_names, flist=VIOLIN_FEATURES_NAME
+            )
+            ax = plot_violins(data_frame)
+            ax.set_ylim(-3, 5)
+            plt.savefig(Path(out_dir) / ("violin_axon_" + mtype + ".png"))
             plt.close()
         except BaseException:  # pylint: disable=broad-except
             pass
