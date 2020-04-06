@@ -8,7 +8,7 @@
 	"zeros": 1e-08
     },
     "terminal_threshold": 2.0,
-    "asymetry_threshold": {
+    "asymmetry_threshold": {
 	"apical": 0.2,
 	"basal": 1.0
     },

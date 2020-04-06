@@ -28,7 +28,7 @@ STR_TO_TYPES = {
 def _reset_caches():
     """Reset the cached functions."""
     morph_funcs.sec_length.cache_clear()
-    morph_funcs.partition_asymetry_length.cache_clear()
+    morph_funcs.partition_asymmetry_length.cache_clear()
     morph_funcs.lengths_from_origin.cache_clear()
     morph_funcs.n_children_downstream.cache_clear()
 
@@ -51,16 +51,16 @@ def _get_neurites(neuron, neurite_type):
 
 
 def _sample_sibling_ratio(
-    params, neurite_type, asymetry_value=0.0, mode="generic", asymetry_threshold=0.3
+    params, neurite_type, asymmetry_value=0.0, mode="generic", asymmetry_threshold=0.3
 ):
     """Sample a sibling ratio from distribution.
 
     Args:
         params (dict): model parameters
         neurite_type (str): the neurite type to consider
-        asymetry_value (float): asymetry of current branching point
-        mode (str): to use or not the asymetry_threshold
-        asymetry_threshold (float): asymetry threshold
+        asymmetry_value (float): asymmetry of current branching point
+        mode (str): to use or not the asymmetry_threshold
+        asymmetry_threshold (float): asymmetry threshold
 
     Returns:
         float: sibling ratio
@@ -68,23 +68,23 @@ def _sample_sibling_ratio(
     if mode == "generic":
         return sample_distribution(params["sibling_ratios"][neurite_type])
     if mode == "threshold":
-        if asymetry_value > asymetry_threshold:
+        if asymmetry_value > asymmetry_threshold:
             return 0.0
         return sample_distribution(params["sibling_ratios"][neurite_type])
     raise DiameterSynthesisError("mode not understood {}".format(mode))
 
 
 def _sample_diameter_power_relation(
-    params, neurite_type, asymetry_value=0.0, mode="generic", asymetry_threshold=0.3
+    params, neurite_type, asymmetry_value=0.0, mode="generic", asymmetry_threshold=0.3
 ):
     """Sample a diameter power relation from distribution.
 
     Args:
         params (dict): model parameters
         neurite_type (str): the neurite type to consider
-        asymetry_value (float): asymetry of current branching point
-        mode (str): to use or not the asymetry_threshold
-        asymetry_threshold (float): asymetry threshold
+        asymmetry_value (float): asymmetry of current branching point
+        mode (str): to use or not the asymmetry_threshold
+        asymmetry_threshold (float): asymmetry threshold
 
     Returns:
         float: diameter power relation
@@ -92,7 +92,7 @@ def _sample_diameter_power_relation(
     if mode == "generic":
         return sample_distribution(params["diameter_power_relation"][neurite_type])
     if mode == "threshold":
-        if asymetry_value > asymetry_threshold:
+        if asymmetry_value > asymmetry_threshold:
             return 1.0
         return sample_distribution(params["diameter_power_relation"][neurite_type])
     if mode == "exact":
@@ -158,29 +158,29 @@ def _sample_daughter_diameters(section, params, params_tree):
             params["sibling_ratios"][params_tree["neurite_type"]]["sequential"]
             == "asymmetry_threshold"
         ):
-            asymetry_value = morph_funcs.get_additional_attribute(
+            asymmetry_value = morph_funcs.get_additional_attribute(
                 params["sibling_ratios"][params_tree["neurite_type"]]["sequential"],
                 section=section,
             )
-            asymetry_value /= params_tree["tot_length"]
+            asymmetry_value /= params_tree["tot_length"]
         else:
-            asymetry_value = None
-            params_tree["asymetry_threshold"] = 1.0
+            asymmetry_value = None
+            params_tree["asymmetry_threshold"] = 1.0
 
         sibling_ratio = _sample_sibling_ratio(
             params,
             params_tree["neurite_type"],
-            asymetry_value=asymetry_value,
+            asymmetry_value=asymmetry_value,
             mode=params_tree["mode_sibling"],
-            asymetry_threshold=params_tree["asymetry_threshold"],
+            asymmetry_threshold=params_tree["asymmetry_threshold"],
         )
 
         diameter_power_relation = _sample_diameter_power_relation(
             params,
             params_tree["neurite_type"],
-            asymetry_value=asymetry_value,
+            asymmetry_value=asymmetry_value,
             mode=params_tree["mode_diameter_power_relation"],
-            asymetry_threshold=params_tree["asymetry_threshold"],
+            asymmetry_threshold=params_tree["asymmetry_threshold"],
         )
 
         reduction_factor = morph_funcs.diameter_power_relation_factor(
@@ -288,8 +288,8 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config):
     """
     for neurite_type in neurite_types:
         params_tree["neurite_type"] = neurite_type
-        if "asymetry_threshold" in config:
-            params_tree["asymetry_threshold"] = config["asymetry_threshold"][
+        if "asymmetry_threshold" in config:
+            params_tree["asymmetry_threshold"] = config["asymmetry_threshold"][
                 neurite_type
             ]
 

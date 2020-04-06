@@ -43,7 +43,8 @@ def fit_distribution(all_data, distribution, attribute_name=None, extra_params=N
         attribute = np.asarray(all_data, dtype=np.float32)[:, 1]
         data = np.asarray(all_data, dtype=np.float32)[:, 0]
         data = data[
-            attribute < extra_params["asymetry_threshold"][extra_params["neurite_type"]]
+            attribute
+            < extra_params["asymmetry_threshold"][extra_params["neurite_type"]]
         ]
     elif attribute_name is not None:
         raise DiameterSynthesisError(

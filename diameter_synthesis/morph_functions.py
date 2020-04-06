@@ -32,24 +32,24 @@ def lengths_from_origin(section):
 
 
 @lru_cache(maxsize=None)
-def partition_asymetry_length(section):
-    """Compute partition asymetry with lengths (morphio).
+def partition_asymmetry_length(section):
+    """Compute partition asymmetry with lengths (morphio).
 
     WARNING: This function is not complete, and requires to divide by total length of dendrite,
     which is done later in the code as we don't have access to whole dendrite here.
     """
-    asymetry_length = sum(
+    asymmetry_length = sum(
         [sec_length(section) for section in section.children[0].iter()]
     )
     try:
-        asymetry_length -= sum(
+        asymmetry_length -= sum(
             [sec_length(section) for section in section.children[1].iter()]
         )
     except IndexError:
         raise DiameterSynthesisError(
             "Bifurcation point with single child, consider using neuror sanitize"
         )
-    return abs(asymetry_length)
+    return abs(asymmetry_length)
 
 
 @lru_cache(maxsize=None)
@@ -194,7 +194,7 @@ def get_additional_attribute(
             out = nm.get("partition_asymmetry_length", [neurite])
             return np.array(out)
         if section is not None and neurite is None:
-            return partition_asymetry_length(section)
+            return partition_asymmetry_length(section)
 
     if attribute_name == "asymmetry_pair":
         if section is not None and neurite is None:
