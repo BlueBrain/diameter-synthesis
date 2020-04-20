@@ -2,10 +2,13 @@
 import os
 import logging
 from pathlib import Path
+from functools import partial
+import multiprocessing
 
 import pandas
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import neurom as nm
 import numpy as np
 
@@ -37,8 +40,8 @@ VIOLIN_FEATURES_LIST = [
     "segment_radii",
     "section_areas",
     "section_volumes",
-    "sibling_ratio",
-    "diameter_power_relation",
+    #    "sibling_ratio",
+    #    "diameter_power_relation",
 ]
 
 # to include morphologies only features
@@ -59,8 +62,8 @@ VIOLIN_FEATURES_NAME = [
     "Segment radii",
     "Section areas",
     "Section volumes",
-    "Sibling ratios",
-    "Diameter power relation",
+    #    "Sibling ratios",
+    #    "Diameter power relation",
 ]
 
 # to include morphologies only features
@@ -563,7 +566,6 @@ def cumulative_analysis(
 def get_features_all(object1, object2, flist, neurite_type):
     """Compute features from module mod."""
     collect_all = []
-
     for feat in flist:
         feature_pop = []
         for obj in object1:
@@ -577,7 +579,7 @@ def get_features_all(object1, object2, flist, neurite_type):
             )
 
         collect_all.append([feature_pop, feature_neu])
-
+        print(feat, len(feature_pop), len(feature_neu))
     return collect_all
 
 
@@ -603,12 +605,17 @@ def transform2DataFrame(data, pop_names, flist):
     return frame
 
 
-def plot_violins(data, x="Morphological features", y="Values", hues="Data", **kwargs):
+def plot_violins(data, x="Morphological features", y="Values", hues="Data", ax=None):
     """Plot the split violins of all features."""
     import seaborn  # pylint: disable=import-outside-toplevel
 
-    plt.figure(figsize=(12, 6))
-    axs = seaborn.violinplot(
+    if ax is None:
+        fig = plt.figure(figsize=(12, 6))
+        ax = plt.gca()
+    else:
+        fig = None
+
+    seaborn.violinplot(
         x=x,
         y=y,
         hue=hues,
@@ -616,76 +623,100 @@ def plot_violins(data, x="Morphological features", y="Values", hues="Data", **kw
         palette="muted",
         split=True,
         inner="quartile",
-        **kwargs
+        ax=ax,
     )
-    plt.xticks(rotation=20)
-    plt.tight_layout(True)
-    return axs
+    ax.tick_params(axis="x", rotation=20)
+    return fig, ax
 
 
-def violin_analysis(original_path, diametrized_path, out_dir, mtypes_file=None):
+def violin_analysis(
+    original_path, diametrized_path, out_dir, mtypes_file=None, max_cells=200
+):
     """Plot violin distributions."""
     if not Path(out_dir).exists():
         os.mkdir(out_dir)
 
-    all_original_cells = _load_morphologies(original_path, mtypes_file=mtypes_file)
-    all_diametrized_cells = _load_morphologies(
+    orig_morphologies_dict = utils.create_morphologies_dict(
+        original_path, mtypes_file=mtypes_file
+    )
+    diametrized_morphologies_dict = utils.create_morphologies_dict(
         diametrized_path, mtypes_file=mtypes_file
     )
 
-    for mtype in tqdm(all_original_cells):
-        original_cells = all_original_cells[mtype]
-        diametrized_cells = all_diametrized_cells[mtype]
+    cells_data = [
+        [orig_morphologies_dict[mtype], diametrized_morphologies_dict[mtype], mtype]
+        for mtype in orig_morphologies_dict
+    ]
+    analyze_from_dict = partial(_analyze_from_dict, out_dir, max_cells)
+    with multiprocessing.Pool() as pool:
+        figs = list(
+            tqdm(
+                pool.imap_unordered(analyze_from_dict, cells_data),
+                total=len(cells_data),
+            )
+        )
 
-        pop_names = ["Original cells of " + mtype, "Diametrized cells of " + mtype]
+    with PdfPages("morphometrics.pdf") as pdf:
+        for mtype, fig in figs:
+            if mtype is not None:
+                # fig.suptitle(mtype)
+                pdf.savefig(fig)
+
+
+def _analyze_from_dict(out_dir, max_cells, cells, with_axon=False):
+    cell_orig, cell_diametrized, mtype = cells
+    print(mtype)
+    if mtype != "L6_TPC:C":
+        return None, None
+    cell_diametrized = cell_diametrized[:max_cells]
+    cell_orig = cell_orig[:max_cells]
+    original_cells = nm.load_neurons(cell_orig)
+    diametrized_cells = nm.load_neurons(cell_diametrized)
+
+    pop_names = ["Original cells of " + mtype, "Synthetised cells of " + mtype]
+    data = get_features_all(
+        original_cells,
+        diametrized_cells,
+        flist=VIOLIN_FEATURES_LIST,
+        neurite_type=BASAL_DENDRITE,
+    )
+
+    data_frame = transform2DataFrame(data, pop_names, flist=VIOLIN_FEATURES_NAME)
+
+    if with_axon:
+        fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(15, 10))
+    else:
+        fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(15, 10))
+    fig.subplots_adjust(hspace=0.5)
+    plot_violins(data_frame.replace([np.inf, -np.inf], np.nan).dropna(), ax=axes[0])
+    axes[0].set_ylim(-3, 5)
+    axes[0].title.set_text("basal dendrites")
+
+    if nm.check.neuron_checks.has_apical_dendrite(
+        original_cells[0]
+    ) and nm.check.neuron_checks.has_apical_dendrite(diametrized_cells[0]):
         data = get_features_all(
             original_cells,
             diametrized_cells,
             flist=VIOLIN_FEATURES_LIST,
-            neurite_type=BASAL_DENDRITE,
+            neurite_type=APICAL_DENDRITE,
         )
 
-        try:
-            data_frame = transform2DataFrame(
-                data, pop_names, flist=VIOLIN_FEATURES_NAME
-            )
-            ax = plot_violins(data_frame)
-            ax.set_ylim(-3, 5)
-            plt.savefig(Path(out_dir) / ("violin_basal_" + mtype + ".png"))
-            plt.close()
-        except BaseException:  # pylint: disable=broad-except
-            pass
+        data_frame = transform2DataFrame(data, pop_names, flist=VIOLIN_FEATURES_NAME)
+        plot_violins(data_frame.replace([np.inf, -np.inf], np.nan).dropna(), ax=axes[1])
+        axes[1].set_ylim(-3, 5)
+        axes[1].title.set_text("apical dendrites")
 
-        try:
-            data = get_features_all(
-                original_cells,
-                diametrized_cells,
-                flist=VIOLIN_FEATURES_LIST,
-                neurite_type=APICAL_DENDRITE,
-            )
-            data_frame = transform2DataFrame(
-                data, pop_names, flist=VIOLIN_FEATURES_NAME
-            )
-            ax = plot_violins(data_frame)
-            ax.set_ylim(-3, 5)
-            plt.savefig(Path(out_dir) / ("violin_apical_" + mtype + ".png"))
-            plt.close()
-        except BaseException:  # pylint: disable=broad-except
-            pass
-
-        try:
-            data = get_features_all(
-                original_cells,
-                diametrized_cells,
-                flist=VIOLIN_FEATURES_LIST,
-                neurite_type=AXON,
-            )
-            data_frame = transform2DataFrame(
-                data, pop_names, flist=VIOLIN_FEATURES_NAME
-            )
-            ax = plot_violins(data_frame)
-            ax.set_ylim(-3, 5)
-            plt.savefig(Path(out_dir) / ("violin_axon_" + mtype + ".png"))
-            plt.close()
-        except BaseException:  # pylint: disable=broad-except
-            pass
+    fig.tight_layout()
+    fig.savefig(Path(out_dir) / ("violin_" + mtype + ".png"))
+    if with_axon:
+        data = get_features_all(
+            original_cells,
+            diametrized_cells,
+            flist=VIOLIN_FEATURES_LIST,
+            neurite_type=AXON,
+        )
+        data_frame = transform2DataFrame(data, pop_names, flist=VIOLIN_FEATURES_NAME)
+        plot_violins(data_frame.replace([np.inf, -np.inf], np.nan).dropna(), ax=axes[2])
+        axes[2].set_ylim(-3, 5)
+    return mtype, fig
