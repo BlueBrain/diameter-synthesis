@@ -100,12 +100,27 @@ def run_analysis(
         cumulative_analysis(
             orig_path,
             diam_path,
-            out_dir,
+            Path(out_dir) / "basal",
             individual,
             mtypes_file=mtypes_file,
-            neurite_types=["basal", "axon", "apical"],
+            neurite_types=["basal",],
         )
-
+        cumulative_analysis(
+            orig_path,
+            diam_path,
+            Path(out_dir) / "axon",
+            individual,
+            mtypes_file=mtypes_file,
+            neurite_types=["axon",],
+        )
+        cumulative_analysis(
+            orig_path,
+            diam_path,
+            Path(out_dir) / "apical",
+            individual,
+            mtypes_file=mtypes_file,
+            neurite_types=["apical"],
+        )
     if violin:
         from .plotting import violin_analysis
 

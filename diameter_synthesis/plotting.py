@@ -28,12 +28,12 @@ L = logging.getLogger(__name__)
 COLORS = {"basal": "r", "apical": "m", "axon": "b"}
 
 CUMULATIVE_FEATURE_PAIRS = [
-    ("section_radial_distances", "section_volumes"),
-    ("section_radial_distances", "section_areas"),
+    #    ("section_radial_distances", "section_volumes"),
+    #    ("section_radial_distances", "section_areas"),
     ("section_path_distances", "section_volumes"),
     ("section_path_distances", "section_areas"),
-    ("section_branch_orders", "section_volumes"),
-    ("section_branch_orders", "section_areas"),
+    #    ("section_branch_orders", "section_volumes"),
+    #    ("section_branch_orders", "section_areas"),
 ]
 
 VIOLIN_FEATURES_LIST = [
@@ -495,7 +495,7 @@ def make_cumulative_figures(
         prefix1, basename1, basename2
     )
 
-    fig.savefig(Path(out_dir) / (figure_name + ".svg"), bbox_inches="tight")
+    fig.savefig(Path(out_dir) / (figure_name + ".png"), bbox_inches="tight")
     plt.close(fig)
 
     if individual:
@@ -513,7 +513,7 @@ def make_cumulative_figures(
                 neurite_types,
                 auto_limit=False,
             )
-            fname = "{}_{}.svg".format(figure_name, original_cell.name)
+            fname = "{}_{}.png".format(figure_name, original_cell.name)
             f.savefig(
                 Path(out_dir) / (figure_name + "_individual") / (str(i) + "_" + fname),
                 bbox_inches="tight",
