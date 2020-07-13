@@ -73,11 +73,11 @@ def fit_distribution(all_data, distribution, attribute_name=None, extra_params=N
 
         loc, scale = expon.fit(-np.array(data))
         return {
-            "loc": loc,
-            "scale": scale,
-            "min": np.percentile(data, PERCENTILE),
-            "max": max(data),
-            "num_value": len(data),
+            "loc": float(loc),
+            "scale": float(scale),
+            "min": float(np.percentile(data, PERCENTILE)),
+            "max": float(max(data)),
+            "num_value": float(len(data)),
         }
 
     if distribution == "exponnorm":
@@ -89,12 +89,12 @@ def fit_distribution(all_data, distribution, attribute_name=None, extra_params=N
         if var_a < A_MIN:
             var_a, loc, scale = exponnorm.fit(data, f0=A_MIN)
         return {
-            "a": var_a,
-            "loc": loc,
-            "scale": scale,
-            "min": np.percentile(data, PERCENTILE),
-            "max": np.percentile(data, 100 - PERCENTILE),
-            "num_value": len(data),
+            "a": float(var_a),
+            "loc": float(loc),
+            "scale": float(scale),
+            "min": float(np.percentile(data, PERCENTILE)),
+            "max": float(np.percentile(data, 100 - PERCENTILE)),
+            "num_value": int(len(data)),
         }
 
     if distribution == "gamma":
@@ -106,12 +106,12 @@ def fit_distribution(all_data, distribution, attribute_name=None, extra_params=N
         if var_a < A_MIN:
             var_a, loc, scale = gamma.fit(data, f0=A_MIN, floc=-1e-9)
         return {
-            "a": var_a,
-            "loc": loc,
-            "scale": scale,
-            "min": np.percentile(data, PERCENTILE),
-            "max": np.percentile(data, 100 - PERCENTILE),
-            "num_value": len(data),
+            "a": float(var_a),
+            "loc": float(loc),
+            "scale": float(scale),
+            "min": float(np.percentile(data, PERCENTILE)),
+            "max": float(np.percentile(data, 100 - PERCENTILE)),
+            "num_value": int(len(data)),
         }
 
     raise DiameterSynthesisError("Distribution not understood")

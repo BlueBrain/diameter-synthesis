@@ -103,7 +103,7 @@ def run_analysis(
             Path(out_dir) / "basal",
             individual,
             mtypes_file=mtypes_file,
-            neurite_types=["basal",],
+            neurite_types=["basal"],
         )
         cumulative_analysis(
             orig_path,
@@ -111,7 +111,7 @@ def run_analysis(
             Path(out_dir) / "axon",
             individual,
             mtypes_file=mtypes_file,
-            neurite_types=["axon",],
+            neurite_types=["axon"],
         )
         cumulative_analysis(
             orig_path,

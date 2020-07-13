@@ -25,7 +25,7 @@ def _create_morphologies_dict_dat(morph_path, mtypes_file="neurondb.dat"):
     Returns:
         dict: dictionary of morphologies keyed by mtypes
     """
-    morph_name = pd.read_csv(mtypes_file, sep=" ")
+    morph_name = pd.read_csv(mtypes_file)  # , sep=" ")
     name_dict = defaultdict(list)
     ext = next(Path(morph_path).iterdir()).suffix
     for morph in morph_name.values:
@@ -81,7 +81,8 @@ def create_morphologies_dict(morph_path, mtypes_file=None):
         L.info("found folder structure per mtype")
         return _create_morphologies_dict_folder(morph_path)
     if mtypes_file is not None:
-        mtype_path = Path(morph_path) / mtypes_file
+        # mtype_path = Path(morph_path) / mtypes_file
+        mtype_path = Path(mtypes_file)
         if mtype_path.exists():
             if mtype_path.suffix == ".dat":
                 L.info("found dat file")
