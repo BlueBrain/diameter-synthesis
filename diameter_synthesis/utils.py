@@ -130,23 +130,23 @@ def get_all_diameters(neuron):
     """Get all neuron diameters (morphio only).
 
     Args:
-        neuron (morphio.mut.Morophology): neuron to consider
+        neuron (morphio.mut.Morphology): neuron to consider
 
     Returns:
         list: all diameters
     """
-    return [section.diameters for section in neuron.iter()]
+    return [np.array(section.diameters) for section in neuron.iter()]
 
 
-def set_all_diameters(neuron, diameters):
+def set_all_diameters(neuron, all_diameters):
     """Set all neuron diameters (morphio only).
 
     Args:
         neuron (morphio.mut.Morophology): neuron to consider
-        diameters (list/ndarray): diameters
+        all_diameters (list): list of section diameters
     """
-    for diameter, section in zip(diameters, neuron.iter()):
-        section.diameters = diameter
+    for diameters, section in zip(all_diameters, neuron.iter()):
+        section.diameters = diameters
 
 
 def _get_diameters(section):

@@ -366,8 +366,11 @@ def build(neuron, model_params, neurite_types, config):
 
     diameter_generator(neuron, model_params, neurite_types, config)
     if config["n_samples"] > 1:
-        diameters = np.array(utils.get_all_diameters(neuron))
+        diameters = utils.get_all_diameters(neuron)
         for _ in range(config["n_samples"] - 1):
             diameter_generator(neuron, model_params, neurite_types, config)
-            diameters += np.array(utils.get_all_diameters(neuron))
-        utils.set_all_diameters(neuron, diameters / config["n_samples"])
+            for i, new_diams in enumerate(utils.get_all_diameters(neuron)):
+                diameters[i] += new_diams
+        for i, _ in enumerate(diameters):
+            diameters[i] /= config["n_samples"]
+        utils.set_all_diameters(neuron, diameters)
