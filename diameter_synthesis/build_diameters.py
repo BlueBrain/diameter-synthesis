@@ -1,6 +1,5 @@
 """Build neurite diameters from a pre-generated model. TO REVIEW!."""
 import logging
-import random
 from collections import deque
 from functools import partial
 
@@ -71,6 +70,7 @@ def _sample_sibling_ratio(
         if asymmetry_value > asymmetry_threshold:
             return 0.0
         return sample_distribution(params["sibling_ratios"][neurite_type])
+    # This case should never happen since the mode is already checked in `_select_model`
     raise DiameterSynthesisError("mode not understood {}".format(mode))
 
 
@@ -96,7 +96,9 @@ def _sample_diameter_power_relation(
             return 1.0
         return sample_distribution(params["diameter_power_relation"][neurite_type])
     if mode == "exact":
+        # This case should never happen since this mode is not known by `_select_model`
         return 1.0
+    # This case should never happen since the mode is already checked in `_select_model`
     raise DiameterSynthesisError("mode not understood {}".format(mode))
 
 
@@ -198,12 +200,15 @@ def _sample_daughter_diameters(section, params, params_tree):
 
     diams = [diam_1] + (len(section.children) - 1) * [diam_2]
     if params_tree["with_asymmetry"]:
+        # This case should always happen since the `with_asymmetry` attribute is always set to True
+        # in `_select_model`
+
         # returns child diameters sorted by child length (major/secondary for apical tree)
         child_sort = np.argsort(
             [morph_funcs.n_children_downstream(child) for child in section.children]
         )[::-1]
         return list(np.array(diams)[child_sort])
-    random.shuffle(diams)
+    np.random.shuffle(diams)
     return diams
 
 

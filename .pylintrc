@@ -67,5 +67,6 @@ ignore-docstrings=yes
 # (useful for modules/projects where namespaces are manipulated during runtime
 # and thus existing member attributes cannot be deduced by static analysis. It
 # supports qualified module names, as well as Unix pattern matching.
-ignored-modules=numpy,numpy.*,scipy.stats,scipy.spatial,morphio,neurom,seaborn
+ignored-modules=numpy,numpy.*,scipy.stats,scipy.spatial,morphio,neurom,seaborn,morphio,morphio.mut
+
 extension-pkg-whitelist=morphio

@@ -170,7 +170,7 @@ def trunk_diameter(neurite, attribute_name=None, bounds=None, method="last"):
     )
 
 
-def taper(neurite, params=None, attribute_name=None):
+def taper(neurite, params, attribute_name=None):
     """Get the taper rates (neurom only)."""
     if params is None:
         raise DiameterSynthesisError(
@@ -228,7 +228,7 @@ def get_additional_attribute(
             return nm.features.bifurcationfunc.sibling_ratio(section, method="mean")
 
     raise DiameterSynthesisError(
-        "Please provide either a neurite or a section, not both"
+        "Please provide a valid attribute_name and provide either a neurite or a section, not both"
     )
 
 

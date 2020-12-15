@@ -15,6 +15,8 @@ N_BINS = 10
 PERCENTILE = 5
 MIN_SAMPLE_NUM = 10
 
+MAX_TRUNCATE_TRIES = 100
+
 L = logging.getLogger(__name__)
 np.seterr(invalid="ignore", divide="ignore")
 
@@ -22,8 +24,15 @@ np.seterr(invalid="ignore", divide="ignore")
 def _truncate(sample_func, min_value, max_value):
     """Ensure sample is within bounds."""
     sample = sample_func()
+    n_tries = 0
     while sample > max_value or sample < min_value:
         sample = sample_func()
+        n_tries += 1
+        if n_tries >= MAX_TRUNCATE_TRIES:
+            raise DiameterSynthesisError(
+                f"Could not truncate the sample between {min_value} and {max_value} "
+                f"(the last value was {sample})"
+            )
     return sample
 
 

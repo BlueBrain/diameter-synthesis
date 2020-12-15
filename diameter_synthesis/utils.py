@@ -25,9 +25,17 @@ def _create_morphologies_dict_dat(morph_path, mtypes_file="neurondb.dat"):
     Returns:
         dict: dictionary of morphologies keyed by mtypes
     """
-    morph_name = pd.read_csv(mtypes_file)  # , sep=" ")
+    morph_name = pd.read_csv(mtypes_file, sep=r"\s+", header=None)
     name_dict = defaultdict(list)
-    ext = next(Path(morph_path).iterdir()).suffix
+    if not morph_name.empty:
+        first_name = morph_name.loc[0, 0]
+        file_list = Path(morph_path).glob(first_name + "*")
+        try:
+            ext = next(file_list).suffix
+        except StopIteration as e:
+            raise DiameterSynthesisError(
+                f"Could not find a file starting with {first_name}"
+            ) from e
     for morph in morph_name.values:
         name_dict[morph[2]] += [Path(morph_path) / (morph[0] + ext)]
     return name_dict

@@ -1,160 +1,160 @@
 {
-	"generic": {
-		"L5_TPC:A": {
-			"diameter_power_relation": {
-			"apical": {
-				"distribution": "exponnorm",
-				"params": {
-				"a": 4,
-				"loc": 1.8127,
-				"max": 8.0337,
-				"min": 1.8849,
-				"num_value": 3527,
-				"scale": 0.5158
-				},
-				"sequential": "asymmetry_threshold"
-			},
-			"basal": {
-				"distribution": "exponnorm",
-				"params": {
-				"a": 4,
-				"loc": 2.1549,
-				"max": 9.7824,
-				"min": 2.0,
-				"num_value": 2151,
-				"scale": 0.7102
-				},
-				"sequential": "asymmetry_threshold"
-			}
-			},
-			"sibling_ratios": {
-			"apical": {
-				"distribution": "expon_rev",
-				"params": {
-				"loc": -1.0,
-				"max": 1.0,
-				"min": 0.4292,
-				"num_value": 3528,
-				"scale": 0.1903
-				},
-				"sequential": "asymmetry_threshold"
-			},
-			"basal": {
-				"distribution": "expon_rev",
-				"params": {
-				"loc": -1.0,
-				"max": 1.0,
-				"min": 0.3977,
-				"num_value": 2152,
-				"scale": 0.2194
-				},
-				"sequential": "asymmetry_threshold"
-			}
-			},
-			"tapers": {
-			"apical": {
-				"distribution": "exponnorm",
-				"params": {
-				"a": 0.3,
-				"loc": -0.0045,
-				"max": 0.004,
-				"min": -0.0093,
-				"num_value": 1270,
-				"scale": 0.004
-				},
-				"sequential": null
-			},
-			"basal": {
-				"distribution": "exponnorm",
-				"params": {
-				"a": 0.3835,
-				"loc": -0.0051,
-				"max": 0.0037,
-				"min": -0.0095,
-				"num_value": 651,
-				"scale": 0.0039
-				},
-				"sequential": null
-			}
-			},
-			"terminal_diameters": {
-			"apical": {
-				"distribution": "exponnorm",
-				"params": {
-				"a": 2.891,
-				"loc": 0.2531,
-				"max": 0.9834,
-				"min": 0.22,
-				"num_value": 4525,
-				"scale": 0.0927
-				},
-				"sequential": null
-			},
-			"basal": {
-				"distribution": "exponnorm",
-				"params": {
-				"a": 0.9409,
-				"loc": 0.4201,
-				"max": 1.05,
-				"min": 0.2308,
-				"num_value": 2717,
-				"scale": 0.1976
-				},
-				"sequential": null
-			}
-			},
-			"trunk_diameters": {
-			"apical": {
-				"distribution": "exponnorm",
-				"params": {
-				"a": 1.3373,
-				"loc": 3.1955,
-				"max": 8.8355,
-				"min": 1.7995,
-				"num_value": 72,
-				"scale": 1.2579
-				},
-				"sequential": null
-			},
-			"basal": {
-				"distribution": "exponnorm",
-				"params": {
-				"a": 1.4124,
-				"loc": 1.0764,
-				"max": 3.6015,
-				"min": 0.52,
-				"num_value": 498,
-				"scale": 0.5655
-				},
-				"sequential": null
-			}
-			},
-			"trunk_tapers": {
-			"apical": {
-				"distribution": "skewnorm",
-				"params": {
-				"a": 0.7162,
-				"loc": 0.0299,
-				"max": 0.0834,
-				"min": 0.0004,
-				"num_value": 44,
-				"scale": 0.0275
-				},
-				"sequential": null
-			},
-			"basal": {
-				"distribution": "skewnorm",
-				"params": {
-				"a": 4,
-				"loc": -0.0031,
-				"max": 0.0637,
-				"min": 0.0,
-				"num_value": 294,
-				"scale": 0.0285
-				},
-				"sequential": null
-			}
-			}
-		}
-	}
+    "generic": {
+        "L5_TPC:A": {
+            "diameter_power_relation": {
+                "apical": {
+                    "distribution": "exponnorm",
+                    "params": {
+                        "a": 4,
+                        "loc": 1.8127,
+                        "max": 8.0337,
+                        "min": 1.8849,
+                        "num_value": 3527,
+                        "scale": 0.5158
+                    },
+                    "sequential": "asymmetry_threshold"
+                },
+                "basal": {
+                    "distribution": "exponnorm",
+                    "params": {
+                        "a": 4,
+                        "loc": 2.1549,
+                        "max": 9.7824,
+                        "min": 2.0,
+                        "num_value": 2151,
+                        "scale": 0.7102
+                    },
+                    "sequential": "asymmetry_threshold"
+                }
+            },
+            "sibling_ratios": {
+                "apical": {
+                    "distribution": "expon_rev",
+                    "params": {
+                        "loc": -1.0,
+                        "max": 1.0,
+                        "min": 0.4292,
+                        "num_value": 3528,
+                        "scale": 0.1903
+                    },
+                    "sequential": "asymmetry_threshold"
+                },
+                "basal": {
+                    "distribution": "expon_rev",
+                    "params": {
+                        "loc": -1.0,
+                        "max": 1.0,
+                        "min": 0.3977,
+                        "num_value": 2152,
+                        "scale": 0.2194
+                    },
+                    "sequential": "asymmetry_threshold"
+                }
+            },
+            "tapers": {
+                "apical": {
+                    "distribution": "exponnorm",
+                    "params": {
+                        "a": 0.3,
+                        "loc": -0.0045,
+                        "max": 0.004,
+                        "min": -0.0093,
+                        "num_value": 1270,
+                        "scale": 0.004
+                    },
+                    "sequential": null
+                },
+                "basal": {
+                    "distribution": "exponnorm",
+                    "params": {
+                        "a": 0.3835,
+                        "loc": -0.0051,
+                        "max": 0.0037,
+                        "min": -0.0095,
+                        "num_value": 651,
+                        "scale": 0.0039
+                    },
+                    "sequential": null
+                }
+            },
+            "terminal_diameters": {
+                "apical": {
+                    "distribution": "exponnorm",
+                    "params": {
+                        "a": 2.891,
+                        "loc": 0.2531,
+                        "max": 0.9834,
+                        "min": 0.22,
+                        "num_value": 4525,
+                        "scale": 0.0927
+                    },
+                    "sequential": null
+                },
+                "basal": {
+                    "distribution": "exponnorm",
+                    "params": {
+                        "a": 0.9409,
+                        "loc": 0.4201,
+                        "max": 1.05,
+                        "min": 0.2308,
+                        "num_value": 2717,
+                        "scale": 0.1976
+                    },
+                    "sequential": null
+                }
+            },
+            "trunk_diameters": {
+                "apical": {
+                    "distribution": "exponnorm",
+                    "params": {
+                        "a": 1.3373,
+                        "loc": 3.1955,
+                        "max": 8.8355,
+                        "min": 1.7995,
+                        "num_value": 72,
+                        "scale": 1.2579
+                    },
+                    "sequential": null
+                },
+                "basal": {
+                    "distribution": "exponnorm",
+                    "params": {
+                        "a": 1.4124,
+                        "loc": 1.0764,
+                        "max": 3.6015,
+                        "min": 0.52,
+                        "num_value": 498,
+                        "scale": 0.5655
+                    },
+                    "sequential": null
+                }
+            },
+            "trunk_tapers": {
+                "apical": {
+                    "distribution": "skewnorm",
+                    "params": {
+                        "a": 0.7162,
+                        "loc": 0.0299,
+                        "max": 0.0834,
+                        "min": 0.0004,
+                        "num_value": 44,
+                        "scale": 0.0275
+                    },
+                    "sequential": null
+                },
+                "basal": {
+                    "distribution": "skewnorm",
+                    "params": {
+                        "a": 4,
+                        "loc": -0.0031,
+                        "max": 0.0637,
+                        "min": 0.0,
+                        "num_value": 294,
+                        "scale": 0.0285
+                    },
+                    "sequential": null
+                }
+            }
+        }
+    }
 }

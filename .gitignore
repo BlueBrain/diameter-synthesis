@@ -80,6 +80,7 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
+reports/
 
 # Translations
 *.mo
