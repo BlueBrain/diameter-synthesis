@@ -11,7 +11,7 @@ def _copy_diameters(neuron_a, neuron_b):
         section_a.diameters = section_b.diameters
 
 
-def _compare_diameters(neuron_a, neuron_b):
+def _compare_diameters(neuron_a, neuron_b, **kwargs):
     """Test if all diameters are the same."""
     errs = []
     for section_a, section_b in zip(neuron_a.sections, neuron_b.sections):
@@ -20,6 +20,7 @@ def _compare_diameters(neuron_a, neuron_b):
                 neuron_a.sections[section_a].diameters,
                 neuron_b.sections[section_b].diameters,
                 err_msg=f"Error for section {section_a}",
+                **kwargs,
             )
         except AssertionError as e:
             errs.append(e)

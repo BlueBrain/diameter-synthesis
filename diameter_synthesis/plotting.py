@@ -86,9 +86,7 @@ NEURITE_STR_TO_TYPES = {
 }
 
 
-def _compute_neurite_diff(
-    neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_neg, neurite_types
-):
+def _compute_neurite_diff(neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_neg, neurite_types):
     """Compute the differences between neurite diameters."""
     for neurite_type in neurite_types:
         neurites_orig = [
@@ -144,9 +142,7 @@ def plot_diameter_diff(neuron_name, neuron_new, neurite_types, folder, ext=".png
     neuron_orig = nm.load_neuron(neuron_name)
     neuron_diff_pos = nm.load_neuron(neuron_name)
     neuron_diff_neg = nm.load_neuron(neuron_name)
-    _compute_neurite_diff(
-        neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_neg, neurite_types
-    )
+    _compute_neurite_diff(neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_neg, neurite_types)
 
     bbox = bounding_box(neuron_orig)
 
@@ -209,9 +205,7 @@ def _plot_attribute_scatter(data, model, neurite_types, fig_name, figsize, ext):
     plt.close()
 
 
-def plot_distribution_fit(
-    data, model, neurite_types, fig_name="test", ext=".png", figsize=(5, 4)
-):
+def plot_distribution_fit(data, model, neurite_types, fig_name="test", ext=".png", figsize=(5, 4)):
     """Plot the data distribution and its fit."""
     _plot_attribute_scatter(data, model, neurite_types, fig_name, figsize, ext)
 
@@ -220,10 +214,7 @@ def plot_distribution_fit(
         if len(model[neurite_type]) > 0:
             min_val = model[neurite_type]["params"]["min"]
             max_val = model[neurite_type]["params"]["max"]
-            if (
-                Path(fig_name).name == "sibling_ratios"
-                or Path(fig_name).name == "tapers"
-            ):
+            if Path(fig_name).name == "sibling_ratios" or Path(fig_name).name == "tapers":
                 hist_range = [min_val, max_val]
             else:
                 hist_range = [min_val * 0.5, max_val * 2.0]
@@ -269,10 +260,7 @@ def _create_data(
 ):  # noqa, pylint: disable=too-many-locals,too-many-arguments
     def feature_data(cell, neurite_type):
         nm_neurite_type = NEURITE_STR_TO_TYPES[neurite_type]
-        return [
-            get(feat, cell, neurite_type=nm_neurite_type)
-            for feat in (feature1, feature2)
-        ]
+        return [get(feat, cell, neurite_type=nm_neurite_type) for feat in (feature1, feature2)]
 
     def create_paired_features(cell_list1, cell_list2, neurite_type):
         for cell1, cell2 in zip(cell_list1, cell_list2):
@@ -288,18 +276,14 @@ def _create_data(
 
     def per_neurite_data(original_cells, diametrized_cells, neurite_types):
         for _, neurite_type in enumerate(neurite_types):
-            data = list(
-                create_paired_features(original_cells, diametrized_cells, neurite_type)
-            )
+            data = list(create_paired_features(original_cells, diametrized_cells, neurite_type))
             if len(data[0][0][0]) > 0:
                 yield data
 
     assert len(original_cells) == len(diametrized_cells)
 
     n_cells = len(original_cells)
-    iter_neurite_data = per_neurite_data(
-        original_cells, diametrized_cells, neurite_types
-    )
+    iter_neurite_data = per_neurite_data(original_cells, diametrized_cells, neurite_types)
     for _, data_pairs in enumerate(iter_neurite_data):
 
         try:
@@ -372,15 +356,11 @@ def plot_cumulative_distribution(
 
         means = stats1.mean(axis=0)
         color = "C0"
-        axes[0].plot(
-            bin_centers, means, c=color, linestyle="-", lw=3, label="original cells"
-        )
+        axes[0].plot(bin_centers, means, c=color, linestyle="-", lw=3, label="original cells")
 
         if len(stats1) > 1:
             for st1 in stats1:
-                axes[0].plot(
-                    bin_centers, st1, c=color, linestyle="-", lw=0.5, alpha=0.2
-                )
+                axes[0].plot(bin_centers, st1, c=color, linestyle="-", lw=0.5, alpha=0.2)
 
             sdevs = stats1.std(axis=0)
             axes[0].plot(bin_centers, means - sdevs, c=color, linestyle="--", lw=3)
@@ -400,9 +380,7 @@ def plot_cumulative_distribution(
         axes[0].legend(loc="best")
         if len(stats2) > 1:
             for st2 in stats2:
-                axes[0].plot(
-                    bin_centers, st2, c=color, linestyle="-", lw=0.3, alpha=0.5
-                )
+                axes[0].plot(bin_centers, st2, c=color, linestyle="-", lw=0.3, alpha=0.5)
 
             sdevs = stats2.std(axis=0)
             axes[0].plot(bin_centers, means - sdevs, c=color, linestyle="--", lw=3)
@@ -422,17 +400,11 @@ def plot_cumulative_distribution(
         color = "C2"
         if len(diffs) > 1:
             for dfs in diffs:
-                axes[1].plot(
-                    bin_centers, dfs, c=color, linestyle="-", lw=0.3, alpha=0.5
-                )
+                axes[1].plot(bin_centers, dfs, c=color, linestyle="-", lw=0.3, alpha=0.5)
 
             diff_sdevs = diffs.std(axis=0)
-            axes[1].plot(
-                bin_centers, diff_means - diff_sdevs, c=color, linestyle="--", lw=3
-            )
-            axes[1].plot(
-                bin_centers, diff_means + diff_sdevs, c=color, linestyle="--", lw=3
-            )
+            axes[1].plot(bin_centers, diff_means - diff_sdevs, c=color, linestyle="--", lw=3)
+            axes[1].plot(bin_centers, diff_means + diff_sdevs, c=color, linestyle="--", lw=3)
 
         axes[1].plot(bin_centers, diff_means, c=color, linestyle="-", lw=3)
         axes[1].axhline(0, ls="--", c="k")
@@ -455,8 +427,7 @@ def plot_cumulative_distribution(
         axes[2].set_xlim(lim_min, lim_max)
         axes[2].set_ylim(lim_min, lim_max)
         axes[2].set_title(
-            "L2 error = "
-            + str(np.around(np.linalg.norm(stats2[:, -1] - stats1[:, -1]), 1)),
+            "L2 error = " + str(np.around(np.linalg.norm(stats2[:, -1] - stats1[:, -1]), 1)),
             loc="left",
         )
 
@@ -500,9 +471,7 @@ def make_cumulative_figures(
         original_cells, diametrized_cells, feature1, feature2, neurite_types
     )
 
-    figure_name = figname_prefix + "cumulative_{}_{}_{}".format(
-        prefix1, basename1, basename2
-    )
+    figure_name = figname_prefix + "cumulative_{}_{}_{}".format(prefix1, basename1, basename2)
 
     fig.savefig(out_dir / (figure_name + ext), bbox_inches="tight")
     plt.close(fig)
@@ -532,12 +501,8 @@ def make_cumulative_figures(
 
 def _load_morphologies(morph_path, mtypes_file="./neuronDB.xml"):
     """Load the morphologies from a directory, by mtypes or all at once."""
-    morphologies_dict = utils.create_morphologies_dict(
-        morph_path, mtypes_file=mtypes_file
-    )
-    return {
-        mtype: nm.load_neurons(morphologies_dict[mtype]) for mtype in morphologies_dict
-    }
+    morphologies_dict = utils.create_morphologies_dict(morph_path, mtypes_file=mtypes_file)
+    return {mtype: nm.load_neurons(morphologies_dict[mtype]) for mtype in morphologies_dict}
 
 
 def cumulative_analysis(
@@ -554,9 +519,7 @@ def cumulative_analysis(
     out_dir.mkdir(parents=True, exist_ok=True)
 
     all_original_cells = _load_morphologies(original_path, mtypes_file=mtypes_file)
-    all_diametrized_cells = _load_morphologies(
-        diametrized_path, mtypes_file=mtypes_file
-    )
+    all_diametrized_cells = _load_morphologies(diametrized_path, mtypes_file=mtypes_file)
     for mtype in tqdm(all_original_cells):
         original_cells = all_original_cells[mtype]
         diametrized_cells = all_diametrized_cells[mtype]
@@ -580,14 +543,10 @@ def get_features_all(object1, object2, flist, neurite_type):
     for feat in flist:
         feature_pop = []
         for obj in object1:
-            feature_pop = (
-                feature_pop + get(feat, obj, neurite_type=neurite_type).tolist()
-            )
+            feature_pop = feature_pop + get(feat, obj, neurite_type=neurite_type).tolist()
         feature_neu = []
         for obj in object2:
-            feature_neu = (
-                feature_neu + get(feat, obj, neurite_type=neurite_type).tolist()
-            )
+            feature_neu = feature_neu + get(feat, obj, neurite_type=neurite_type).tolist()
 
         collect_all.append([feature_pop, feature_neu])
         print(feat, len(feature_pop), len(feature_neu))
@@ -609,9 +568,7 @@ def transform2DataFrame(data, pop_names, flist):
             names = names + len(d2) * [pop_names[j]]
             feat = feat + len(d2) * [flist[i]]
 
-    frame = pandas.DataFrame(
-        {"Data": names, "Values": values, "Morphological features": feat}
-    )
+    frame = pandas.DataFrame({"Data": names, "Values": values, "Morphological features": feat})
 
     return frame
 
@@ -652,9 +609,7 @@ def violin_analysis(
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    orig_morphologies_dict = utils.create_morphologies_dict(
-        original_path, mtypes_file=mtypes_file
-    )
+    orig_morphologies_dict = utils.create_morphologies_dict(original_path, mtypes_file=mtypes_file)
     diametrized_morphologies_dict = utils.create_morphologies_dict(
         diametrized_path, mtypes_file=mtypes_file
     )
@@ -709,9 +664,7 @@ def _analyze_from_dict(max_cells, cells, with_axon=False):
     axes[0].set_ylim(-3, 5)
     axes[0].title.set_text("basal dendrites")
 
-    if any(
-        [i.type == nm.NeuriteType.apical_dendrite for i in original_cells[0].neurites]
-    ) and any(
+    if any([i.type == nm.NeuriteType.apical_dendrite for i in original_cells[0].neurites]) and any(
         [i.type == nm.NeuriteType.apical_dendrite for i in diametrized_cells[0].neurites]
     ):
         data = get_features_all(

@@ -33,9 +33,7 @@ def _create_morphologies_dict_dat(morph_path, mtypes_file="neurondb.dat"):
         try:
             ext = next(file_list).suffix
         except StopIteration as e:
-            raise DiameterSynthesisError(
-                f"Could not find a file starting with {first_name}"
-            ) from e
+            raise DiameterSynthesisError(f"Could not find a file starting with {first_name}") from e
     for morph in morph_name.values:
         name_dict[morph[2]] += [Path(morph_path) / (morph[0] + ext)]
     return name_dict
@@ -94,9 +92,7 @@ def create_morphologies_dict(morph_path, mtypes_file=None):
         if mtype_path.exists():
             if mtype_path.suffix == ".dat":
                 L.info("found dat file")
-                return _create_morphologies_dict_dat(
-                    morph_path, mtypes_file=mtypes_file
-                )
+                return _create_morphologies_dict_dat(morph_path, mtypes_file=mtypes_file)
             raise DiameterSynthesisError(
                 "neurondb file format {} not implemented".format(mtype_path.suffix)
             )
@@ -186,7 +182,9 @@ def redefine_diameter_section(section, diam_ind, diam_new):
 # old parser functions (will be removed or integrated at some points) #
 #######################################################################
 def _create_morphologies_dict_json(
-    morph_path, mtypes_file="neuronDB.xml", prefix="",
+    morph_path,
+    mtypes_file="neuronDB.xml",
+    prefix="",
 ):
     """Create dict to load the morphologies from a directory, with json."""
     with open(mtypes_file, "r") as filename:
@@ -206,7 +204,10 @@ def _create_morphologies_dict_json(
 
 
 def _create_morphologies_dict_xml(
-    morph_path, mtypes_file="neuronDB.xml", ext=".asc", prefix="",
+    morph_path,
+    mtypes_file="neuronDB.xml",
+    ext=".asc",
+    prefix="",
 ):
     """Create dict to load the morphologies from a directory, from xml."""
     filedb = ET.parse(morph_path + mtypes_file)

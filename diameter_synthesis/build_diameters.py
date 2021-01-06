@@ -6,7 +6,7 @@ from functools import partial
 import numpy as np
 from numpy.polynomial import polynomial
 
-from morphio import SectionType
+from morphio import SectionType, IterType
 
 import diameter_synthesis.morph_functions as morph_funcs
 import diameter_synthesis.utils as utils
@@ -49,17 +49,14 @@ def _get_neurites(neuron, neurite_type):
     ]
 
 
-def _sample_sibling_ratio(
-    params, neurite_type, asymmetry_value=0.0, mode="generic", asymmetry_threshold=0.3
-):
+def _sample_sibling_ratio(params, neurite_type, apply_asymmetry=False, mode="generic"):
     """Sample a sibling ratio from distribution.
 
     Args:
         params (dict): model parameters
         neurite_type (str): the neurite type to consider
-        asymmetry_value (float): asymmetry of current branching point
+        apply_asymmetry (bool): asymmetry of current branching point
         mode (str): to use or not the asymmetry_threshold
-        asymmetry_threshold (float): asymmetry threshold
 
     Returns:
         float: sibling ratio
@@ -67,24 +64,21 @@ def _sample_sibling_ratio(
     if mode == "generic":
         return sample_distribution(params["sibling_ratios"][neurite_type])
     if mode == "threshold":
-        if asymmetry_value > asymmetry_threshold:
+        if apply_asymmetry:
             return 0.0
         return sample_distribution(params["sibling_ratios"][neurite_type])
     # This case should never happen since the mode is already checked in `_select_model`
     raise DiameterSynthesisError("mode not understood {}".format(mode))
 
 
-def _sample_diameter_power_relation(
-    params, neurite_type, asymmetry_value=0.0, mode="generic", asymmetry_threshold=0.3
-):
+def _sample_diameter_power_relation(params, neurite_type, apply_asymmetry=False, mode="generic"):
     """Sample a diameter power relation from distribution.
 
     Args:
         params (dict): model parameters
         neurite_type (str): the neurite type to consider
-        asymmetry_value (float): asymmetry of current branching point
+        apply_asymmetry (bool): asymmetry of current branching point
         mode (str): to use or not the asymmetry_threshold
-        asymmetry_threshold (float): asymmetry threshold
 
     Returns:
         float: diameter power relation
@@ -92,7 +86,7 @@ def _sample_diameter_power_relation(
     if mode == "generic":
         return sample_distribution(params["diameter_power_relation"][neurite_type])
     if mode == "threshold":
-        if asymmetry_value > asymmetry_threshold:
+        if apply_asymmetry:
             return 1.0
         return sample_distribution(params["diameter_power_relation"][neurite_type])
     if mode == "exact":
@@ -152,37 +146,26 @@ def _sample_daughter_diameters(section, params, params_tree):
     Returns:
        list: list of daughter diameters
     """
+    major_sections = params_tree["major_sections"]
+
+    apply_asymmetry = section.id in major_sections
+
     reduction_factor = params_tree["reduction_factor_max"] + 1.0
     # try until we get a reduction of diameter in the branching
     while reduction_factor > params_tree["reduction_factor_max"]:
 
-        if (
-            params["sibling_ratios"][params_tree["neurite_type"]]["sequential"]
-            == "asymmetry_threshold"
-        ):
-            asymmetry_value = morph_funcs.get_additional_attribute(
-                params["sibling_ratios"][params_tree["neurite_type"]]["sequential"],
-                section=section,
-            )
-            asymmetry_value /= params_tree["tot_length"]
-        else:
-            asymmetry_value = None
-            params_tree["asymmetry_threshold"] = 1.0
-
         sibling_ratio = _sample_sibling_ratio(
             params,
             params_tree["neurite_type"],
-            asymmetry_value=asymmetry_value,
+            apply_asymmetry=apply_asymmetry,
             mode=params_tree["mode_sibling"],
-            asymmetry_threshold=params_tree["asymmetry_threshold"],
         )
 
         diameter_power_relation = _sample_diameter_power_relation(
             params,
             params_tree["neurite_type"],
-            asymmetry_value=asymmetry_value,
+            apply_asymmetry=apply_asymmetry,
             mode=params_tree["mode_diameter_power_relation"],
-            asymmetry_threshold=params_tree["asymmetry_threshold"],
         )
 
         reduction_factor = morph_funcs.diameter_power_relation_factor(
@@ -199,15 +182,18 @@ def _sample_daughter_diameters(section, params, params_tree):
     diam_2 = max(diam_2, terminal_diam)
 
     diams = [diam_1] + (len(section.children) - 1) * [diam_2]
-    if params_tree["with_asymmetry"]:
+
+    if params_tree.get("with_asymmetry", False):
         # This case should always happen since the `with_asymmetry` attribute is always set to True
         # in `_select_model`
 
         # returns child diameters sorted by child length (major/secondary for apical tree)
-        child_sort = np.argsort(
-            [morph_funcs.n_children_downstream(child) for child in section.children]
-        )[::-1]
-        return list(np.array(diams)[child_sort])
+        child_not_in_major = [child.id not in major_sections for child in section.children]
+        if False in child_not_in_major:
+            child_sort = np.argsort(child_not_in_major)
+            return list(np.array(diams)[child_sort])
+
+    # At the moment we don't have enough information to do better than a random choice in this case
     np.random.shuffle(diams)
     return diams
 
@@ -222,9 +208,7 @@ def _diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=10
         min_diam (flaot): minimum diameter
         max_diam (float): maximum diameter
     """
-    diams = polynomial.polyval(
-        morph_funcs.lengths_from_origin(section), [initial_diam, taper]
-    )
+    diams = polynomial.polyval(morph_funcs.lengths_from_origin(section), [initial_diam, taper])
     section.diameters = np.clip(diams, min_diam, max_diam)
 
 
@@ -240,9 +224,7 @@ def _diametrize_tree(neurite, params, params_tree):
         bool: True is all terminal diameters are small enough, False otherwise
     """
     params_tree["tot_length"] = morph_funcs.get_total_length(neurite)
-    max_diam = params["terminal_diameters"][params_tree["neurite_type"]]["params"][
-        "max"
-    ]
+    max_diam = params["terminal_diameters"][params_tree["neurite_type"]]["params"]["max"]
     wrong_tips = False
     active = deque([neurite[0]])
     while active:
@@ -291,12 +273,16 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config):
         neurite_type (str): the neurite type to consider
         config (dict): general configuration parameters
     """
+    major_sections = set()
+    if params_tree["with_asymmetry"]:
+        # Get sections on the major branch
+        for apical_section in params.get("apical_point_sec_ids", []):
+            for sec in neuron.sections[apical_section].iter(IterType.upstream):
+                major_sections.add(sec.id)
+    params_tree["major_sections"] = major_sections
+
     for neurite_type in neurite_types:
         params_tree["neurite_type"] = neurite_type
-        if "asymmetry_threshold" in config:
-            params_tree["asymmetry_threshold"] = config["asymmetry_threshold"][
-                neurite_type
-            ]
 
         for neurite in _get_neurites(neuron, neurite_type):
             wrong_tips = True
@@ -304,9 +290,7 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config):
             trunk_diam_frac = 1.0
             n_tries_step = 1
             while wrong_tips:
-                trunk_diam = trunk_diam_frac * _sample_trunk_diameter(
-                    params, neurite_type
-                )
+                trunk_diam = trunk_diam_frac * _sample_trunk_diameter(params, neurite_type)
 
                 if trunk_diam < 0.01:
                     trunk_diam = 1.0

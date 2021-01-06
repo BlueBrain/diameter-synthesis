@@ -51,14 +51,9 @@ def fit_distribution(all_data, distribution, attribute_name=None, extra_params=N
     if attribute_name == "asymmetry_threshold":
         attribute = np.asarray(all_data, dtype=np.float32)[:, 1]
         data = np.asarray(all_data, dtype=np.float32)[:, 0]
-        data = data[
-            attribute
-            < extra_params["asymmetry_threshold"][extra_params["neurite_type"]]
-        ]
+        data = data[attribute < extra_params["asymmetry_threshold"][extra_params["neurite_type"]]]
     elif attribute_name is not None:
-        raise DiameterSynthesisError(
-            "attribute_name {} not implemented".format(attribute_name)
-        )
+        raise DiameterSynthesisError("attribute_name {} not implemented".format(attribute_name))
     else:
         data = all_data
 
@@ -144,9 +139,7 @@ def sample_distribution(model):
         from scipy.stats import exponnorm
 
         return _truncate(
-            lambda: exponnorm.rvs(
-                a_clip, model["params"]["loc"], model["params"]["scale"]
-            ),
+            lambda: exponnorm.rvs(a_clip, model["params"]["loc"], model["params"]["scale"]),
             model["params"]["min"],
             model["params"]["max"],
         )

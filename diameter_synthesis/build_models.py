@@ -88,7 +88,7 @@ def build_single_model(sampling_model, morphologies, config):
     Returns:
         dict: parameter of the models data extracted)
     """
-    all_data = extract_parameters(sampling_model, morphologies, config,)
+    all_data = extract_parameters(sampling_model, morphologies, config)
     all_models = fit_all_models(all_data, sampling_model, config)
     return all_models, all_data
 
@@ -122,9 +122,7 @@ def extract_parameters(sampling_model, morphologies, config):
         for neuron in morphologies:
             for neurite in neuron.neurites:
                 if neurite.type == STR_TO_NEUROM_TYPES[neurite_type]:
-                    all_data["sibling_ratios"][
-                        neurite_type
-                    ] += morph_funcs.compute_sibling_ratios(
+                    all_data["sibling_ratios"][neurite_type] += morph_funcs.compute_sibling_ratios(
                         neurite, attribute_name=sampling_model["sibling_ratios"][1]
                     )
                     all_data["diameter_power_relation"][
@@ -133,16 +131,12 @@ def extract_parameters(sampling_model, morphologies, config):
                         neurite,
                         attribute_name=sampling_model["diameter_power_relation"][1],
                     )
-                    all_data["terminal_diameters"][
-                        neurite_type
-                    ] += morph_funcs.terminal_diameters(
+                    all_data["terminal_diameters"][neurite_type] += morph_funcs.terminal_diameters(
                         neurite,
                         threshold=config["terminal_threshold"],
                         attribute_name=sampling_model["terminal_diameters"][1],
                     )
-                    all_data["trunk_diameters"][
-                        neurite_type
-                    ] += morph_funcs.trunk_diameter(
+                    all_data["trunk_diameters"][neurite_type] += morph_funcs.trunk_diameter(
                         neurite,
                         attribute_name=sampling_model["trunk_diameters"][1],
                         method=sampling_model["trunk_diameters_method"],
@@ -208,7 +202,7 @@ def fit_all_models(all_data, sampling_model, config):
 
         extra_params["name"] = "tapers"
         all_models["tapers"][neurite_type] = fit_model(
-            sampling_model["tapers"], all_data["tapers"][neurite_type], extra_params,
+            sampling_model["tapers"], all_data["tapers"][neurite_type], extra_params
         )
 
     return all_models

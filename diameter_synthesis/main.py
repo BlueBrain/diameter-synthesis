@@ -87,12 +87,12 @@ def run_models(config_file, plot, ext="png"):
 
     L.info("Loading morphologies...")
     morphologies_dict = utils.create_morphologies_dict(
-        config["morph_path"], mtypes_file=config["mtypes_file"],
+        config["morph_path"],
+        mtypes_file=config["mtypes_file"],
     )
 
     morphologies = {
-        mtype: nm.load_neurons(morphologies_dict[mtype])
-        for mtype in tqdm(morphologies_dict)
+        mtype: nm.load_neurons(morphologies_dict[mtype]) for mtype in tqdm(morphologies_dict)
     }
 
     L.info("Extracting model parameters...")
@@ -131,9 +131,7 @@ class DiameterWorker:
         if fname.parts[-2] == mtype:
             if not (Path(self.config["new_morph_path"]) / fname.parts[-2]).exists():
                 os.mkdir(Path(self.config["new_morph_path"]) / fname.parts[-2])
-            neuron.write(
-                Path(self.config["new_morph_path"]) / fname.parts[-2] / fname.name
-            )
+            neuron.write(Path(self.config["new_morph_path"]) / fname.parts[-2] / fname.name)
         neuron.write(Path(self.config["new_morph_path"]) / fname.name)
 
 
@@ -149,16 +147,15 @@ def run_diameters(config_file, models_params_file):
         L.info("Generating diameter with model %s", model)
 
         morphologies_dict = utils.create_morphologies_dict(
-            config["morph_path"], mtypes_file=config["mtypes_file"],
+            config["morph_path"],
+            mtypes_file=config["mtypes_file"],
         )
 
         worker = DiameterWorker(model, models_params, config)
         pool = multiprocessing.Pool(config["n_cpu"])
 
         all_neurons = [
-            [neuron, mtype]
-            for mtype in morphologies_dict
-            for neuron in morphologies_dict[mtype]
+            [neuron, mtype] for mtype in morphologies_dict for neuron in morphologies_dict[mtype]
         ]
 
         list(tqdm(pool.imap(worker, all_neurons), total=len(all_neurons)))

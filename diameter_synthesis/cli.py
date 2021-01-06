@@ -76,18 +76,14 @@ def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=None, ext
         for neuron in tqdm(neurons):
             neuron_new = nm.load_neuron(Path(diametrized_folder) / neuron.name)
 
-            plot_diameter_diff(
-                neuron, neuron_new, neurite_types, plot_folder_mtype, ext=ext,
-            )
+            plot_diameter_diff(neuron, neuron_new, neurite_types, plot_folder_mtype, ext=ext)
 
 
 @cli.command("run_analysis")
 @click.option("--orig-path", help="Path to original cells", required=True)
 @click.option("--diam-path", help="Path to diametrized cells", required=True)
 @click.option("--mtypes-file", help="Path to mtypes file", required=False)
-@click.option(
-    "-o", "--out-dir", help="Directory to output the analysis results", required=True
-)
+@click.option("-o", "--out-dir", help="Directory to output the analysis results", required=True)
 @click.option("--cumulative", help="Cumulative distribution plots", is_flag=True)
 @click.option("--individual", help="Output a plot for each neuron", is_flag=True)
 @click.option("--violin", help="Violin distribution plots", is_flag=True)

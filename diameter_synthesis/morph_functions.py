@@ -38,13 +38,9 @@ def partition_asymmetry_length(section):
     WARNING: This function is not complete, and requires to divide by total length of dendrite,
     which is done later in the code as we don't have access to whole dendrite here.
     """
-    asymmetry_length = sum(
-        [sec_length(section) for section in section.children[0].iter()]
-    )
+    asymmetry_length = sum([sec_length(section) for section in section.children[0].iter()])
     try:
-        asymmetry_length -= sum(
-            [sec_length(section) for section in section.children[1].iter()]
-        )
+        asymmetry_length -= sum([sec_length(section) for section in section.children[1].iter()])
     except IndexError as exc:
         raise DiameterSynthesisError(
             "Bifurcation point with single child, consider using neuror sanitize"
@@ -74,13 +70,9 @@ def compute_sibling_ratios(neurite, method="mean", attribute_name=None, bounds=N
     )
 
 
-def compute_diameter_power_relation(
-    neurite, method="mean", attribute_name=None, bounds=None
-):
+def compute_diameter_power_relation(neurite, method="mean", attribute_name=None, bounds=None):
     """Compute the Rall deviation the diameter of the segments of a tree (neurom only)."""
-    diameter_power_relation_values = nm.get(
-        "diameter_power_relation", neurite, method=method
-    )
+    diameter_power_relation_values = nm.get("diameter_power_relation", neurite, method=method)
     if not bounds:
         bounds = [0.0, 100.0]
 
@@ -99,9 +91,7 @@ def diameter_power_relation_factor(diameter_power_relation, sibling_ratio):
     return 1.0
 
 
-def terminal_diameters(
-    neurite, method="mean", threshold=1.0, attribute_name=None, bounds=None
-):
+def terminal_diameters(neurite, method="mean", threshold=1.0, attribute_name=None, bounds=None):
     """Compute the terminal diameters of a neurite (neurom only)."""
     diameters = []
     for section in iter_sections(neurite):
@@ -173,9 +163,7 @@ def trunk_diameter(neurite, attribute_name=None, bounds=None, method="last"):
 def taper(neurite, params, attribute_name=None):
     """Get the taper rates (neurom only)."""
     if params is None:
-        raise DiameterSynthesisError(
-            "Please provide parameters for taper rate computations"
-        )
+        raise DiameterSynthesisError("Please provide parameters for taper rate computations")
     tapers = nm.get("section_taper_rates", neurite)
     return add_additional_attributes(
         np.array(tapers),

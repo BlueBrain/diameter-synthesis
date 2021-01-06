@@ -6,6 +6,8 @@ import neurom as nm
 import pandas as pd
 import pytest
 import shutil
+from morphio import PointLevel
+from morphio import SectionType
 
 
 @pytest.fixture
@@ -144,3 +146,103 @@ def empty_build_result():
             "trunk_diameters": {"apical": [], "basal": []},
         },
     )
+
+
+@pytest.fixture
+def small_morph():
+    N = 3
+    dx = 100
+    dy = 100
+    Ndx = (N - 1) * dx
+    Ndy = (N - 1) * dy
+
+    nrn = morphio.mut.Morphology()
+
+    # Define a basal with only one section
+    x0_b1 = 0
+    nrn.append_root_section(
+        PointLevel([[x0_b1, i * dy, 0] for i in range(N)], [0.2] * N), SectionType(3)
+    )
+
+    # Define a basal with several sections
+    x0_b2 = 0.1
+    root = nrn.append_root_section(
+        PointLevel([[x0_b2, i * dy, 0] for i in range(N)], [0.2] * N), SectionType(3)
+    )
+    root.append_section(
+        PointLevel([[x0_b2, Ndy + i * dy, 0] for i in range(N)], [0.2] * N), SectionType(3)
+    )
+    root.append_section(
+        PointLevel([[x0_b2 + i * -0.1, Ndy + i * dy, 0] for i in range(N)], [0.2] * N),
+        SectionType(3),
+    )
+
+    # Define the apical with several bifurcations
+    x0_ap = 0.2
+    apical_root = nrn.append_root_section(
+        PointLevel([[x0_ap, i * dy, 0] for i in range(N)], [0.2] * N), SectionType(4)
+    )
+    apical_root.append_section(
+        PointLevel([[x0_ap + i * dx, Ndy + i * dy, 0] for i in range(N)], [0.2] * N), SectionType(4)
+    )
+    major = apical_root.append_section(
+        PointLevel([[x0_ap, Ndy + i * dy, 0] for i in range(N)], [0.2] * N), SectionType(4)
+    )
+
+    major.append_section(
+        PointLevel([[x0_ap + i * dx, 2 * Ndy + i * dy, 0] for i in range(N)], [0.2] * N),
+        SectionType(4),
+    )
+    major = major.append_section(
+        PointLevel([[x0_ap, 2 * Ndy + i * dy, 0] for i in range(N)], [0.2] * N), SectionType(4)
+    )
+
+    major.append_section(
+        PointLevel([[x0_ap + i * dx, 3 * Ndy + i * dy, 0] for i in range(N)], [0.2] * N),
+        SectionType(4),
+    )
+    major = major.append_section(
+        PointLevel([[x0_ap, 3 * Ndy + i * dy, 0] for i in range(N)], [0.2] * N), SectionType(4)
+    )
+
+    major.append_section(
+        PointLevel([[x0_ap + i * dx, 4 * Ndy + i * dy, 0] for i in range(N)], [0.2] * N),
+        SectionType(4),
+    )
+    major = major.append_section(
+        PointLevel([[x0_ap, 4 * Ndy + i * dy, 0] for i in range(N)], [0.2] * N), SectionType(4)
+    )
+
+    # Define an axon with one section
+    x0_ax1 = 0
+    y0_ax1 = -0.1
+    nrn.append_root_section(
+        PointLevel([[x0_ax1, y0_ax1 - i * dy, 0] for i in range(N)], [0.2] * N), SectionType(2)
+    )
+
+    # Define an axon with one bifurcation
+    x0_ax2 = 0.1
+    y0_ax2 = -0.1
+    root = nrn.append_root_section(
+        PointLevel([[x0_ax2, y0_ax2 - i * dy, 0] for i in range(N)], [0.2] * N), SectionType(2)
+    )
+    root.append_section(
+        PointLevel([[x0_ax2, y0_ax2 - Ndy - i * dy, 0] for i in range(N)], [0.2] * N),
+        SectionType(3),
+    )
+    root.append_section(
+        PointLevel([[x0_ax2 + i * -0.1, y0_ax2 - Ndy - i * dy, 0] for i in range(N)], [0.2] * N),
+        SectionType(3),
+    )
+
+    # Define soma according to the root sections
+    nrn.soma.points = [
+        [x0_b1, 0, 0],
+        [x0_b2, 0, 0],
+        [x0_ap, 0, 0],
+        [x0_ax2, y0_ax2, 0],
+        [x0_ax1, y0_ax1, 0],
+    ]
+    nrn.soma.diameters = [0] * len(nrn.soma.points)
+
+    return nrn

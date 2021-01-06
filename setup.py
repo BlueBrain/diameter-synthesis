@@ -22,7 +22,7 @@ setup(
         "h5py>=2.9.0",
         "matplotlib>=2.2.0",
         "morphio>=2.3.4",
-        "neurom>=1.4.2",
+        "neurom>=1.4.2,<1.7",
         "numpy>=1.15.0",
         "pandas>=0.24.0",
         "scipy>=0.13.3",
