@@ -19,7 +19,6 @@ setup(
     license="BBP-internal-confidential",
     install_requires=[
         "click>=7.0",
-        "h5py>=2.9.0",
         "matplotlib>=2.2.0",
         "morphio>=2.3.4",
         "neurom>=1.4.2,<1.7",
