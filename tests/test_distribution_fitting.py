@@ -1,6 +1,8 @@
 import logging
 
 import pytest
+from pkg_resources import get_distribution
+from pkg_resources import parse_version
 
 from diameter_synthesis import distribution_fitting
 from diameter_synthesis.exception import DiameterSynthesisError
@@ -37,11 +39,21 @@ def test_fit_distribution(config, caplog):
     res_exponnorm = distribution_fitting.fit_distribution(
         all_data, "exponnorm", attribute_name="asymmetry_threshold", extra_params=config[model]
     )
+
+    # The function exponnorm was slightly change in scipy 1.6
+    scipy_version = get_distribution("scipy").version
+    if parse_version(scipy_version) < parse_version("1.6"):
+        res_exponnorm_loc = 0.550987
+        res_exponnorm_scale = 0.2245727
+    else:
+        res_exponnorm_loc = 0.5510847
+        res_exponnorm_scale = 0.2245789
+
     assert res_exponnorm == pytest.approx(
         {
             "a": 0.3,
-            "loc": 0.550987,
-            "scale": 0.2245727,
+            "loc": res_exponnorm_loc,
+            "scale": res_exponnorm_scale,
             "min": 0.28755,
             "max": 0.9081,
             "num_value": 10,
