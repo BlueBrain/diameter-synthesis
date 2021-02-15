@@ -61,7 +61,7 @@ def get_total_length(neurite):
 
 def compute_sibling_ratios(neurite, method="mean", attribute_name=None, bounds=None):
     """Compute the sibling ratios of a neurite (neurom only)."""
-    sibling_ratios_values = nm.get("sibling_ratio", neurite, method=method)
+    sibling_ratios_values = nm.get("sibling_ratios", neurite, method=method)
 
     if not bounds:
         bounds = [0, 1 + 1e-5]
@@ -72,7 +72,7 @@ def compute_sibling_ratios(neurite, method="mean", attribute_name=None, bounds=N
 
 def compute_diameter_power_relation(neurite, method="mean", attribute_name=None, bounds=None):
     """Compute the Rall deviation the diameter of the segments of a tree (neurom only)."""
-    diameter_power_relation_values = nm.get("diameter_power_relation", neurite, method=method)
+    diameter_power_relation_values = nm.get("diameter_power_relations", neurite, method=method)
     if not bounds:
         bounds = [0.0, 100.0]
 

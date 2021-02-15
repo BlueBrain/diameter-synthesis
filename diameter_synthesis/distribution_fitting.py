@@ -126,6 +126,9 @@ def sample_distribution(model):
     if "a" in model["params"]:
         a_clip = np.clip(model["params"]["a"], A_MIN, A_MAX)
 
+    if model["distribution"] == "constant":
+        return model["params"]["value"]
+
     if model["distribution"] == "expon_rev":
         from scipy.stats import expon
 

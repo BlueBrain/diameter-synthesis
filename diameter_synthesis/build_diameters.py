@@ -363,3 +363,61 @@ def build(neuron, model_params, neurite_types, config):
         for i, _ in enumerate(diameters):
             diameters[i] /= config["n_samples"]
         utils.set_all_diameters(neuron, diameters)
+
+
+def diametrize_axon(
+    morphology, main_diameter=1.0, colateral_diameter=0.1, main_taper=-0.0005, axon_point_isec=None
+):
+    """Diametrize axon in place without learning from reconstructed axons.
+
+    The main axon branch (from soma to axon point) will have a tapered diameter, and the
+    colaterals a constant diameter.
+
+    If an axon point is not provided, and main_diameter > colateral_diameter, the diameters will
+    decrease with taper and bifurcations, with hardcoded parameters sibling_ratio = 0.5 and
+    diameter_power_relation = 0.5.
+
+    Args:
+        morphology (morphio.mut.Morphology): morpholoty to diametrize
+        main_diameter (float): diameter of main axon branch (from soma to axon_point_isec)
+        colateral_diameter (float): diameter of colateral branches
+        main_taper (float): taper rate of main branch (set to 0 for no taper, should be negative)
+        axon_point_isec (int): morphio section id of axon point (see morph_tool.axon_point module)
+    """
+    model_params = {
+        "trunk_diameters": {
+            "axon": {
+                "distribution": "constant",
+                "params": {"value": main_diameter},
+            }
+        },
+        "terminal_diameters": {
+            "axon": {
+                "distribution": "constant",
+                "params": {"value": colateral_diameter, "max": main_diameter},
+            }
+        },
+        "tapers": {
+            "axon": {
+                "distribution": "constant",
+                "params": {"value": main_taper},
+            }
+        },
+        "sibling_ratios": {
+            "axon": {
+                "distribution": "constant",
+                "params": {"value": 0.5},
+            }
+        },
+        "diameter_power_relation": {
+            "axon": {
+                "distribution": "constant",
+                "params": {"value": 5.0},
+            }
+        },
+    }
+    if axon_point_isec:
+        model_params["apical_point_sec_ids"] = [axon_point_isec]
+
+    config = {"models": ["generic"], "trunk_max_tries": 1, "n_samples": 1}
+    build(morphology, model_params, neurite_types=["axon"], config=config)

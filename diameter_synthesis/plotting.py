@@ -664,8 +664,8 @@ def _analyze_from_dict(max_cells, cells, with_axon=False):
     axes[0].set_ylim(-3, 5)
     axes[0].title.set_text("basal dendrites")
 
-    if any([i.type == nm.NeuriteType.apical_dendrite for i in original_cells[0].neurites]) and any(
-        [i.type == nm.NeuriteType.apical_dendrite for i in diametrized_cells[0].neurites]
+    if any(i.type == nm.NeuriteType.apical_dendrite for i in original_cells[0].neurites) and any(
+        i.type == nm.NeuriteType.apical_dendrite for i in diametrized_cells[0].neurites
     ):
         data = get_features_all(
             original_cells,

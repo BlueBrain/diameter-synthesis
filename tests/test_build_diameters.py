@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 
 import numpy as np
 import morphio.mut
@@ -90,7 +89,6 @@ def test_build_simple_with_several_apical_sections(config, model_params, small_m
     model = "generic"
 
     # Duplicate the apical
-    new_apical_section = None
     for section in small_morph.sections[4].iter():
         if section.id != 4:
             append_fun = small_morph.sections[section.parent.id + 13].append_section
@@ -98,7 +96,7 @@ def test_build_simple_with_several_apical_sections(config, model_params, small_m
             append_fun = small_morph.append_root_section
         pts = section.points.copy()
         pts[:, 0] += 1000
-        new_apical_section = append_fun(PointLevel(pts, section.diameters.copy()), SectionType(3))
+        append_fun(PointLevel(pts, section.diameters.copy()), SectionType(3))
 
     model_params[model][mtype]["apical_point_sec_ids"] = [6, 19]
 
@@ -372,3 +370,34 @@ def test_sample_daughter_diameters(neuron, model_params):
         neuron.sections[0], model_params[model][mtype], param_tree
     )
     assert d_no_asymmetry == pytest.approx([1.120733059071045, 0.8804980886414063])
+
+
+def test_diametrize_axon(config, model_params, small_morph):
+    """Test the axon diametrizer"""
+
+    build_diameters.diametrize_axon(small_morph)
+
+    expected = morphio.mut.Morphology(small_morph)
+    diameters = {
+        0: [0.2, 0.2, 0.2],  # basal
+        1: [0.2, 0.2, 0.2],  # basal
+        2: [0.2, 0.2, 0.2],  # basal
+        3: [0.2, 0.2, 0.2],  # basal
+        4: [0.2, 0.2, 0.2],  # apical
+        5: [0.2, 0.2, 0.2],  # apical
+        6: [0.2, 0.2, 0.2],  # apical
+        7: [0.2, 0.2, 0.2],  # apical
+        8: [0.2, 0.2, 0.2],  # apical
+        9: [0.2, 0.2, 0.2],  # apical
+        10: [0.2, 0.2, 0.2],  # apical
+        11: [0.2, 0.2, 0.2],  # apical
+        12: [0.2, 0.2, 0.2],  # apical
+        13: [1.0, 0.95, 0.9],  # axon
+        14: [1.0, 0.95, 0.9],  # axon
+        15: [0.376628, 0.326628, 0.276628],  # basal
+        16: [0.753256, 0.703256, 0.653256],  # basal
+    }
+    for section_id, section in expected.sections.items():
+        section.diameters = diameters[section_id]
+
+    _compare_diameters(expected, small_morph, rtol=1e-6)
