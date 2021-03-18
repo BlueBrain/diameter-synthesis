@@ -25,8 +25,8 @@ setup(
         "numpy>=1.15.0",
         "pandas>=0.24.0",
         "scipy>=0.13.3",
-        "seaborn",
     ],
+    extras_require={'plot': 'seaborn>=0.11.1'},
     entry_points={
         "console_scripts": ["diameter-synthesis=diameter_synthesis.cli:cli"],
     },
