@@ -101,14 +101,14 @@ def terminal_diameters(neurite, method="mean", threshold=1.0, attribute_name=Non
     if method == "mean":
         term_diam = [
             np.mean(_get_diameters(t))
-            for t in nm.core.Tree.ileaf(next(iter_sections(neurite)))
+            for t in nm.core.Section.ileaf(next(iter_sections(neurite)))
             if np.mean(_get_diameters(t)) < threshold * mean_diameter
         ]
 
     elif method == "first":
         term_diam = [
             _get_diameters(t)[-1]
-            for t in nm.core.Tree.ileaf(next(iter_sections(neurite)))
+            for t in nm.core.Section.ileaf(next(iter_sections(neurite)))
             if _get_diameters(t)[-1] < threshold * mean_diameter
         ]
 

@@ -294,7 +294,7 @@ def _create_data(
 
         bin_centers, bins = create_bins(step_size, upper_bound)
 
-        stats1 = np.empty((n_cells, len(bin_centers)), dtype=np.float)
+        stats1 = np.empty((n_cells, len(bin_centers)), dtype=float)
         stats2 = np.empty_like(stats1)
 
         for i, ((metric1, data1), (metric2, data2)) in enumerate(data_pairs):

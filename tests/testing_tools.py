@@ -36,7 +36,7 @@ def nested_round(obj, precision=6):
     if isinstance(obj, np.ndarray):
         return [nested_round(i, precision) for i in obj.tolist()]
     if isinstance(obj, np.floating):
-        return round(obj, precision)
+        return round(float(obj), precision)
     if isinstance(obj, np.integer):
         return round(int(obj), precision)
     if isinstance(obj, float):

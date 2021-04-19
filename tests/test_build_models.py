@@ -1,7 +1,4 @@
-import json
 import pytest
-
-import numpy as np
 
 from diameter_synthesis import build_models
 from diameter_synthesis.exception import DiameterSynthesisError
@@ -22,6 +19,7 @@ def test_build(single_pop, model_params, model_data, empty_build_result):
         },
     }
     res = build_models.build(single_pop, config, with_data=True)
+    print(res)
     res_models_params = build_models.build(single_pop, config, with_data=False)
 
     assert len(res) == 2

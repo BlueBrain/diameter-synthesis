@@ -94,7 +94,7 @@ def test_taper(single_neurite):
     """Test the taper function"""
     params = {"min": 0, "max": 1}
     res = morph_functions.taper(single_neurite, params)
-    assert res == pytest.approx([0.0, 0.0])
+    assert res == pytest.approx([0.0, 0.0, 0.0, 0.0, 0.0])
 
     res_tot_length = morph_functions.taper(single_neurite, params, "tot_length")
     assert res_tot_length == []
@@ -108,7 +108,8 @@ def test_get_additional_attribute(single_neurite):
     """Test the get_additional_attribute function"""
     res_asymmetry = morph_functions.get_additional_attribute("asymmetry", single_neurite)
     assert res_asymmetry == pytest.approx(
-        [0.19022, 0.02628145, 0.1657842, 0.1607333, 0.000424503, 0.000938268, 0.02613346]
+        [0.19022014, 0.02628145, 0.16578421, 0.16073337, 0.00042449, 0.00093826, 0.02613346],
+        rel=1e-5,
     )
 
     res_asymmetry_threshold = morph_functions.get_additional_attribute(

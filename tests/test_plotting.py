@@ -1,15 +1,7 @@
-from pathlib import Path
-
-import logging
-import shutil
-
-import numpy as np
-import morphio.mut
 import neurom as nm
 import pytest
 from diff_pdf_visually import pdfdiff
 from matplotlib import pyplot as plt
-from numpy.testing import assert_allclose
 
 from diameter_synthesis import plotting
 from diameter_synthesis.exception import DiameterSynthesisError
@@ -111,17 +103,6 @@ def test_make_cumulative_figures(single_pop, single_pop_diametrized, tmpdir, exp
     """Test the make_cumulative_figures function"""
 
     # Plot the figures
-    plotting.make_cumulative_figures(
-        single_pop,
-        single_pop_diametrized,
-        "segment_radial_distances",
-        "segment_volumes",
-        ["basal", "apical"],
-        tmpdir,
-        individual=False,
-        figname_prefix="without_individual_",
-        ext=".pdf",
-    )
     plotting.make_cumulative_figures(
         single_pop,
         single_pop_diametrized,

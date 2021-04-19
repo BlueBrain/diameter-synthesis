@@ -2,6 +2,7 @@
 import logging
 from collections import deque
 from functools import partial
+from copy import copy
 
 import numpy as np
 from numpy.polynomial import polynomial
@@ -365,8 +366,54 @@ def build(neuron, model_params, neurite_types, config):
         utils.set_all_diameters(neuron, diameters)
 
 
+def _save_first_diams(morphology, length):
+    """Save diameters in a dict up to length."""
+    diams = {}
+    for root_section in morphology.root_sections:
+        if root_section.type == SectionType.axon:
+            dist = 0
+            prev_point = root_section.points[0]
+            for section in root_section.iter():
+                _diams = copy(section.diameters)
+                for point in section.points:
+                    dist += np.linalg.norm(point - prev_point)
+                    prev_point = copy(point)
+                    if dist >= length:
+                        break
+                diams[section.id] = _diams
+                if dist >= length:
+                    break
+
+    return diams
+
+
+def _set_first_diams(morphology, diams, length):
+    """Set diameters from a dict up to length."""
+    for root_section in morphology.root_sections:
+        if root_section.type == SectionType.axon:
+            dist = 0
+            prev_point = root_section.points[0]
+            for section in root_section.iter():
+                current_diams = copy(section.diameters)
+                old_diams = diams[section.id]
+                for i, point in enumerate(section.points):
+                    dist += np.linalg.norm(point - prev_point)
+                    prev_point = copy(point)
+                    current_diams[i] = old_diams[i]
+                    if dist >= length:
+                        break
+                section.diameters = current_diams
+                if dist >= length:
+                    break
+
+
 def diametrize_axon(
-    morphology, main_diameter=1.0, colateral_diameter=0.1, main_taper=-0.0005, axon_point_isec=None
+    morphology,
+    main_diameter=1.0,
+    colateral_diameter=0.1,
+    main_taper=-0.0005,
+    axon_point_isec=None,
+    ais_length=60,
 ):
     """Diametrize axon in place without learning from reconstructed axons.
 
@@ -383,6 +430,7 @@ def diametrize_axon(
         colateral_diameter (float): diameter of colateral branches
         main_taper (float): taper rate of main branch (set to 0 for no taper, should be negative)
         axon_point_isec (int): morphio section id of axon point (see morph_tool.axon_point module)
+        ais_length (float): length of ais for which we keep original diameters
     """
     model_params = {
         "trunk_diameters": {
@@ -420,4 +468,7 @@ def diametrize_axon(
         model_params["apical_point_sec_ids"] = [axon_point_isec]
 
     config = {"models": ["generic"], "trunk_max_tries": 1, "n_samples": 1}
+
+    diams = _save_first_diams(morphology, ais_length)
     build(morphology, model_params, neurite_types=["axon"], config=config)
+    _set_first_diams(morphology, diams, ais_length)

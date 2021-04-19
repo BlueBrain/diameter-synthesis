@@ -1,20 +1,10 @@
 from pathlib import Path
 
 import json
-import logging
-import shutil
-
-import numpy as np
-import morphio.mut
-import neurom as nm
 import pytest
 from click.testing import CliRunner
-from diff_pdf_visually import pdfdiff
-from matplotlib import pyplot as plt
-from numpy.testing import assert_allclose
 
 from diameter_synthesis import cli
-from diameter_synthesis.exception import DiameterSynthesisError
 
 from .testing_tools import compare_dicts
 
@@ -38,7 +28,7 @@ def test_run_models(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir
 
     # Run with CLI
     runner = CliRunner()
-    result = runner.invoke(cli.cli, ["run_models", config_file], catch_exceptions=False)
+    runner.invoke(cli.cli, ["run_models", config_file], catch_exceptions=False)
 
     # Check results
     with open(extract_models_params["models_params_file"], "r") as json_file:
@@ -100,7 +90,7 @@ def test_run_diameters(
 
     # Run with CLI
     runner = CliRunner()
-    result = runner.invoke(
+    runner.invoke(
         cli.cli, ["run_diameters", config_file, str(model_params_path)], catch_exceptions=False
     )
 
@@ -116,7 +106,7 @@ def test_plot_diff(
 
     # Run with CLI
     runner = CliRunner()
-    result = runner.invoke(
+    runner.invoke(
         cli.cli,
         [
             "plot_diff",
@@ -139,7 +129,7 @@ def test_run_analysis(tmpdir, single_pop_data_dir, single_pop_diametrized_data_d
 
     # Run with CLI
     runner = CliRunner()
-    result = runner.invoke(
+    runner.invoke(
         cli.cli,
         [
             "run_analysis",
@@ -177,7 +167,7 @@ def test_run_analysis(tmpdir, single_pop_data_dir, single_pop_diametrized_data_d
 
     # Test with neither cumukative nor violin
     with pytest.raises(ValueError):
-        result = runner.invoke(
+        runner.invoke(
             cli.cli,
             [
                 "run_analysis",
