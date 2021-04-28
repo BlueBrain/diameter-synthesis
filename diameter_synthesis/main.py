@@ -152,10 +152,12 @@ def run_diameters(config_file, models_params_file):
         )
 
         worker = DiameterWorker(model, models_params, config)
-        pool = multiprocessing.Pool(config["n_cpu"])
 
         all_neurons = [
             [neuron, mtype] for mtype in morphologies_dict for neuron in morphologies_dict[mtype]
         ]
 
+        pool = multiprocessing.Pool(config["n_cpu"])  # pylint: disable=consider-using-with
         list(tqdm(pool.imap(worker, all_neurons), total=len(all_neurons)))
+        pool.close()
+        pool.join()

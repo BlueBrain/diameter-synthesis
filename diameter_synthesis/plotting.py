@@ -620,7 +620,7 @@ def violin_analysis(
     ]
     analyze_from_dict = partial(_analyze_from_dict, max_cells, with_axon=with_axon)
 
-    pool = multiprocessing.Pool()
+    pool = multiprocessing.Pool()  # pylint: disable=consider-using-with
     try:
         figs = list(
             tqdm(

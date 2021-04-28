@@ -1,19 +1,21 @@
 {
-"generic": {
-    "models": ["generic"],
-    "taper": {
-	"max": 0.005,
-	"max_residual": 100,
-	"min": -0.01,
-	"zeros": 1e-08
-    },
-    "terminal_threshold": 2.0,
-    "asymmetry_threshold": {
-	"apical": 0.2,
-	"basal": 1.0
-    },
-    "trunk_max_tries": 100,
-    "seed": 0,
-    "n_samples": 10
+    "generic": {
+        "asymmetry_threshold": {
+            "apical": 0.2,
+            "basal": 1.0
+        },
+        "models": [
+            "generic"
+        ],
+        "n_samples": 10,
+        "seed": 0,
+        "taper": {
+            "max": 0.005,
+            "max_residual": 100,
+            "min": -0.01,
+            "zeros": 1E-8
+        },
+        "terminal_threshold": 2.0,
+        "trunk_max_tries": 100
     }
 }

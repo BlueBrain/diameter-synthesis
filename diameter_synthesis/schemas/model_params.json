@@ -1,0 +1,82 @@
+{
+    "additionalProperties": false,
+    "definitions": {
+        "diameter_model": {
+            "additionalProperties": false,
+            "properties": {
+                "distribution": {
+                    "type": "string",
+                    "enum": ["exponnorm", "expon_rev", "gamma", "skewnorm"]
+                },
+                "params": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "properties": {
+                        "a": {
+                            "type": "number"
+                        },
+                        "loc": {
+                            "type": "number"
+                        },
+                        "scale": {
+                            "type": "number"
+                        },
+                        "min": {
+                            "type": "number"
+                        },
+                        "max": {
+                            "type": "number"
+                        },
+                        "num_value": {
+                            "type": "number"
+                        }
+                    }
+                },
+                "sequential": {
+                    "oneOf": [
+                        {"type": "string", "enum": ["asymmetry_threshold"]},
+                        {"type": "null"}
+                    ]
+                }
+            }
+        },
+        "neurite_models": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+                "apical": {"$ref": "#/definitions/diameter_model"},
+                "basal": {"$ref": "#/definitions/diameter_model"},
+                "axon": {"$ref": "#/definitions/diameter_model"}
+            }
+        }
+    },
+    "properties": {
+        "diameter_power_relation": {
+            "description": "",
+            "$ref": "#/definitions/neurite_models"
+        },
+        "sibling_ratios": {
+            "description": "",
+            "$ref": "#/definitions/neurite_models"
+        },
+        "tapers": {
+            "description": "",
+            "$ref": "#/definitions/neurite_models"
+        },
+        "terminal_diameters": {
+            "description": "",
+            "$ref": "#/definitions/neurite_models"
+        },
+        "trunk_diameters": {
+            "description": "",
+            "$ref": "#/definitions/neurite_models"
+        },
+        "trunk_tapers": {
+            "description": "",
+            "$ref": "#/definitions/neurite_models"
+        }
+    },
+    "type": "object",
+    "title": "Diametrizer model parameters",
+    "description": "The model parameters used to diametrize a cell"
+}

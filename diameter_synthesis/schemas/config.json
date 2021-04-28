@@ -1,0 +1,52 @@
+{
+    "additionalProperties": false,
+    "properties": {
+        "asymmetry_threshold": {
+            "type": "object",
+            "properties": {
+                "apical": {
+                    "type": "number"
+                },
+                "basal": {
+                    "type": "number"
+                }
+            }
+        },
+        "models": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "n_samples": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "seed": {
+            "type": "integer"
+        },
+        "taper": {
+            "max": {
+                "type": "number"
+            },
+            "max_residual": {
+                "type": "number"
+            },
+            "min": {
+                "type": "number"
+            },
+            "zeros": {
+                "type": "number"
+            }
+        },
+        "terminal_threshold": {
+            "type": "number"
+        },
+        "trunk_max_tries": {
+            "type": "number"
+        }
+    },
+    "type": "object",
+    "title": "Diametrizer config",
+    "description": "The config used to diametrize a cell"
+}
