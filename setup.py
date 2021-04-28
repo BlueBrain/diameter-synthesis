@@ -17,6 +17,11 @@ setup(
     version=VERSION,
     description="Diametrize cells",
     license="BBP-internal-confidential",
+    url="https://bbpteam.epfl.ch/documentation/projects/diameter-synthesis",
+    project_urls={
+        "Tracker": "https://bbpteam.epfl.ch/project/issues/projects/CELLS/issues",
+        "Source": "ssh://bbpcode.epfl.ch/cells/diameter-synthesis",
+    },
     install_requires=[
         "click>=7.0",
         "jsonschema>=3",

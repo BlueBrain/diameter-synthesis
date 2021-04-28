@@ -3,13 +3,16 @@
     "definitions": {
         "diameter_model": {
             "additionalProperties": false,
+            "description": "The model used to diametrize a cell",
             "properties": {
                 "distribution": {
-                    "type": "string",
-                    "enum": ["exponnorm", "expon_rev", "gamma", "skewnorm"]
+                    "description": "The distribution properties",
+                    "enum": ["exponnorm", "expon_rev", "gamma", "skewnorm"],
+                    "type": "string"
                 },
                 "params": {
                     "additionalProperties": false,
+                    "description": "The parameter properties",
                     "type": "object",
                     "properties": {
                         "a": {
@@ -38,16 +41,19 @@
                         {"type": "null"}
                     ]
                 }
-            }
+            },
+            "title": "Diameter model"
         },
         "neurite_models": {
             "additionalProperties": false,
+            "description": "The model used to diametrize each neurite type",
             "type": "object",
             "properties": {
                 "apical": {"$ref": "#/definitions/diameter_model"},
                 "basal": {"$ref": "#/definitions/diameter_model"},
                 "axon": {"$ref": "#/definitions/diameter_model"}
-            }
+            },
+            "title": "Neurite type model"
         }
     },
     "properties": {
@@ -56,23 +62,23 @@
             "$ref": "#/definitions/neurite_models"
         },
         "sibling_ratios": {
-            "description": "",
+            "description": "The sibling ratio",
             "$ref": "#/definitions/neurite_models"
         },
         "tapers": {
-            "description": "",
+            "description": "The tapers",
             "$ref": "#/definitions/neurite_models"
         },
         "terminal_diameters": {
-            "description": "",
+            "description": "The terminal diameters",
             "$ref": "#/definitions/neurite_models"
         },
         "trunk_diameters": {
-            "description": "",
+            "description": "The trunk diameters",
             "$ref": "#/definitions/neurite_models"
         },
         "trunk_tapers": {
-            "description": "",
+            "description": "The trunk tapers",
             "$ref": "#/definitions/neurite_models"
         }
     },
