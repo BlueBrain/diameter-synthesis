@@ -220,6 +220,7 @@ def fit_model(sampling_model, data, extra_params):
         "params": fit_distribution(
             data,
             sampling_model[0],
+            attribute_name=sampling_model[1],
             extra_params=extra_params,
         ),
     }
