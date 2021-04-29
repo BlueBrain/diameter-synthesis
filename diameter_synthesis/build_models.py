@@ -29,30 +29,23 @@ def _get_model_builder(config):
     all_models = {}
     for model in config["models"]:
         if model == "generic":
-            distribution_types = {}
-            distribution_types["sibling_ratios"] = ["expon_rev", "asymmetry_threshold"]
-            distribution_types["diameter_power_relation"] = [
-                "exponnorm",
-                "asymmetry_threshold",
-            ]
-            distribution_types["terminal_diameters"] = ["exponnorm", None]
-            distribution_types["trunk_diameters"] = ["exponnorm", None]
-            distribution_types["trunk_diameters_method"] = "last"
-            distribution_types["tapers"] = ["expon_rev", None]
+            distribution_types = {
+                "sibling_ratios": ["expon_rev", None],
+                "diameter_power_relation": ["exponnorm", None],
+                "terminal_diameters": ["exponnorm", None],
+                "trunk_diameters": ["exponnorm", None],
+                "trunk_diameters_method": "last",
+                "tapers": ["expon_rev", None],
+            }
         elif model == "astrocyte":
-            distribution_types = {}
-            # distribution_types["sibling_ratios"] = ["expon_rev", None]
-            # distribution_types["diameter_power_relation"] = ["exponnorm", None]
-            distribution_types["sibling_ratios"] = ["expon_rev", "asymmetry_threshold"]
-            distribution_types["diameter_power_relation"] = [
-                "exponnorm",
-                "asymmetry_threshold",
-            ]
-
-            distribution_types["terminal_diameters"] = ["exponnorm", None]
-            distribution_types["trunk_diameters_method"] = "mean"
-            distribution_types["trunk_diameters"] = ["exponnorm", None]
-            distribution_types["tapers"] = ["exponnorm", None]
+            distribution_types = {
+                "sibling_ratios": ["expon_rev", None],
+                "diameter_power_relation": ["exponnorm", None],
+                "terminal_diameters": ["exponnorm", None],
+                "trunk_diameters_method": "mean",
+                "trunk_diameters": ["exponnorm", None],
+                "tapers": ["exponnorm", None],
+            }
         else:
             raise DiameterSynthesisError("model not understood {}".format(model))
 
@@ -227,7 +220,6 @@ def fit_model(sampling_model, data, extra_params):
         "params": fit_distribution(
             data,
             sampling_model[0],
-            attribute_name=sampling_model[1],
             extra_params=extra_params,
         ),
     }

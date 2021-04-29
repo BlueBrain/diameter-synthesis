@@ -1,14 +1,22 @@
 {
     "additionalProperties": false,
     "properties": {
-        "asymmetry_threshold": {
-            "type": "object",
-            "properties": {
-                "apical": {
-                    "type": "number"
-                },
-                "basal": {
-                    "type": "number"
+        "features":{
+            "patternProperties": {
+                ".*": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "properties": {
+                        "apical": {
+                            "type": "number"
+                        },
+                        "basal": {
+                            "type": "number"
+                        },
+                        "axon": {
+                            "type": "number"
+                        }
+                    }
                 }
             }
         },

@@ -40,7 +40,7 @@ def fit_distribution(all_data, distribution, attribute_name=None, extra_params=N
     """Fit a distribution from data.
 
     Args:
-        data (list/array): list of data points to fit a distribution to
+        all_data (list/array): list of data points to fit a distribution to
         distribution (str): Distribution name
         attribute_name (str): Name of additional attribute to fit
         extra_params (dict): Possible additional parameters for the fit
@@ -48,12 +48,24 @@ def fit_distribution(all_data, distribution, attribute_name=None, extra_params=N
     Returns:
         dict: parameters of the fit
     """
-    if attribute_name == "asymmetry_threshold":
+    if attribute_name is not None:
+        if extra_params is None:
+            raise DiameterSynthesisError(
+                "'extra_params' can not be None when 'attribute_name' is not None"
+            )
+        threshold = (
+            extra_params.get("features", {})
+            .get(attribute_name, {})
+            .get(extra_params["neurite_type"])
+        )
+        if threshold is None:
+            raise DiameterSynthesisError(
+                "The threshold could not be retrived from the config in 'features'->"
+                f"'{attribute_name}'->'{extra_params['neurite_type']}'"
+            )
         attribute = np.asarray(all_data, dtype=np.float32)[:, 1]
         data = np.asarray(all_data, dtype=np.float32)[:, 0]
-        data = data[attribute < extra_params["asymmetry_threshold"][extra_params["neurite_type"]]]
-    elif attribute_name is not None:
-        raise DiameterSynthesisError("attribute_name {} not implemented".format(attribute_name))
+        data = data[attribute < threshold]
     else:
         data = all_data
 

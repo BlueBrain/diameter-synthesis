@@ -1,5 +1,5 @@
-Diameter synthesis code, work in progress
-=========================================
+Diameter synthesis
+==================
 
 This code is a work in progress and will aimed at generating synthetic diameters for neurons, with parameters learned from a set of biological neurons.
 

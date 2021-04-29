@@ -13,13 +13,8 @@ def test_build(single_pop, model_params, model_data, empty_build_result):
         "neurite_types": ["basal", "apical"],
         "terminal_threshold": 2,
         "taper": {"max": 1e-6, "min": -0.01},
-        "asymmetry_threshold": {
-            "apical": 0.2,
-            "basal": 1,
-        },
     }
     res = build_models.build(single_pop, config, with_data=True)
-    print(res)
     res_models_params = build_models.build(single_pop, config, with_data=False)
 
     assert len(res) == 2
@@ -32,10 +27,6 @@ def test_build(single_pop, model_params, model_data, empty_build_result):
         "neurite_types": ["basal", "apical"],
         "terminal_threshold": 2,
         "taper": {"max": 1e-6, "min": -0.01},
-        "asymmetry_threshold": {
-            "apical": 0.2,
-            "basal": 1,
-        },
     }
     res_astrocyte = build_models.build(single_pop, config_astrocyte, with_data=True)
 
@@ -52,10 +43,6 @@ def test_build(single_pop, model_params, model_data, empty_build_result):
         "neurite_types": ["basal", "apical"],
         "terminal_threshold": 2,
         "taper": {"max": 1e-6, "min": -0.01},
-        "asymmetry_threshold": {
-            "apical": 0.2,
-            "basal": 1,
-        },
     }
     with pytest.raises(DiameterSynthesisError):
         build_models.build(single_pop, bad_config, with_data=True)

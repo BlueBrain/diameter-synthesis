@@ -1,9 +1,5 @@
 {
     "generic": {
-        "asymmetry_threshold": {
-            "apical": 0.2,
-            "basal": 1.0
-        },
         "models": [
             "generic"
         ],

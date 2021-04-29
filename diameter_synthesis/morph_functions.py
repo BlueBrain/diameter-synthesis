@@ -4,7 +4,8 @@ from functools import lru_cache
 
 import neurom as nm
 import numpy as np
-from neurom.core import iter_sections
+from neurom.core.neuron import iter_sections
+from neurom.core.neuron import Section
 
 from diameter_synthesis.exception import DiameterSynthesisError
 from diameter_synthesis.utils import _get_diameters, _get_mean_diameter
@@ -101,14 +102,14 @@ def terminal_diameters(neurite, method="mean", threshold=1.0, attribute_name=Non
     if method == "mean":
         term_diam = [
             np.mean(_get_diameters(t))
-            for t in nm.core.Section.ileaf(next(iter_sections(neurite)))
+            for t in Section.ileaf(next(iter_sections(neurite)))
             if np.mean(_get_diameters(t)) < threshold * mean_diameter
         ]
 
     elif method == "first":
         term_diam = [
             _get_diameters(t)[-1]
-            for t in nm.core.Section.ileaf(next(iter_sections(neurite)))
+            for t in Section.ileaf(next(iter_sections(neurite)))
             if _get_diameters(t)[-1] < threshold * mean_diameter
         ]
 
@@ -177,42 +178,44 @@ def get_additional_attribute(
     attribute_name, neurite=None, section=None
 ):  # noqa, pylint: disable=too-many-return-statements,too-many-branches
     """Return the value of an additional attribute of a parameter, given a neurite or a section."""
+    section_only = section is not None and neurite is None
+    neurite_only = neurite is not None and section is None
     if attribute_name in ["asymmetry", "asymmetry_threshold"]:
-        if neurite is not None and section is None:
+        if neurite_only:
             out = nm.get("partition_asymmetry_length", [neurite])
             return np.array(out)
-        if section is not None and neurite is None:
+        if section_only:
             return partition_asymmetry_length(section)
 
     if attribute_name == "asymmetry_pair":
-        if section is not None and neurite is None:
+        if section_only:
             return [nm.features.bifurcationfunc.partition_pair(section)]
         raise DiameterSynthesisError("Please provide only a section")
 
     if attribute_name == "tot_length":
-        if neurite is not None and section is None:
+        if neurite_only:
             return nm.get("total_length", neurite)
         raise DiameterSynthesisError("Please provide only a neurite")
 
     if attribute_name == "max_path":
-        if neurite is not None and section is None:
+        if neurite_only:
             return [np.max(nm.get("section_path_distances", neurite))]
         raise DiameterSynthesisError("Please provide only a neurite")
 
     if attribute_name == "max_branch":
-        if neurite is not None and section is None:
+        if neurite_only:
             return [np.max(nm.get("section_branch_orders", neurite))]
         raise DiameterSynthesisError("Please provide only a neurite")
 
     if attribute_name == "root_strahler":
-        if neurite is not None and section is None:
+        if neurite_only:
             return [nm.get("section_strahler_orders", neurite)[0]]
         raise DiameterSynthesisError("Please provide only a neurite")
 
     if attribute_name == "sibling":
-        if neurite is not None and section is None:
+        if neurite_only:
             return compute_sibling_ratios(neurite, method="mean")
-        if section is not None and neurite is None:
+        if section_only:
             return nm.features.bifurcationfunc.sibling_ratio(section, method="mean")
 
     raise DiameterSynthesisError(

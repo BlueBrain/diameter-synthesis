@@ -25,11 +25,12 @@ def test_fit_distribution(config, caplog):
         [0.243, 0.02],
         [0.342, 0.244],
     ]
+    data_1d = [i[0] for i in all_data]
     config[model]["neurite_type"] = "basal"
 
     # Test expon_rev distribution
     res_expon_rev = distribution_fitting.fit_distribution(
-        all_data, "expon_rev", attribute_name="asymmetry_threshold", extra_params=config[model]
+        data_1d, "expon_rev", extra_params=config[model]
     )
     assert res_expon_rev == pytest.approx(
         {"loc": -0.99, "scale": 0.3722, "min": 0.28755, "max": 0.99, "num_value": 10.0}
@@ -37,23 +38,14 @@ def test_fit_distribution(config, caplog):
 
     # Test exponnorm distribution
     res_exponnorm = distribution_fitting.fit_distribution(
-        all_data, "exponnorm", attribute_name="asymmetry_threshold", extra_params=config[model]
+        data_1d, "exponnorm", extra_params=config[model]
     )
-
-    # The function exponnorm was slightly change in scipy 1.6
-    scipy_version = get_distribution("scipy").version
-    if parse_version(scipy_version) < parse_version("1.6"):
-        res_exponnorm_loc = 0.550987
-        res_exponnorm_scale = 0.2245727
-    else:
-        res_exponnorm_loc = 0.5510847
-        res_exponnorm_scale = 0.2245789
 
     assert res_exponnorm == pytest.approx(
         {
             "a": 0.3,
-            "loc": res_exponnorm_loc,
-            "scale": res_exponnorm_scale,
+            "loc": 0.550945,
+            "scale": 0.224617,
             "min": 0.28755,
             "max": 0.9081,
             "num_value": 10,
@@ -61,23 +53,19 @@ def test_fit_distribution(config, caplog):
     )
 
     # Test gamma distribution
-    res_gamma = distribution_fitting.fit_distribution(
-        all_data, "gamma", attribute_name="asymmetry_threshold", extra_params=config[model]
-    )
+    res_gamma = distribution_fitting.fit_distribution(data_1d, "gamma", extra_params=config[model])
     assert res_gamma == pytest.approx(
         {"a": 4.0, "loc": -1e-09, "scale": 0.15445, "min": 0.28755, "max": 0.9081, "num_value": 10}
     )
 
     # Test unknown distribution
     with pytest.raises(DiameterSynthesisError):
-        distribution_fitting.fit_distribution(
-            all_data, "UNKNOWN", attribute_name="asymmetry_threshold", extra_params=config[model]
-        )
+        distribution_fitting.fit_distribution(all_data, "UNKNOWN", extra_params=config[model])
 
     # Test unknown attribute name
     with pytest.raises(DiameterSynthesisError):
         distribution_fitting.fit_distribution(
-            all_data, "expon_rev", attribute_name="UNKNOWN", extra_params=config[model]
+            data_1d, "expon_rev", attribute_name="UNKNOWN", extra_params=config[model]
         )
 
     # Test with empty input data
@@ -111,7 +99,7 @@ def test_fit_distribution(config, caplog):
 
         # Test exponnorm distribution
         res_exponnorm_MIN_MAX = distribution_fitting.fit_distribution(
-            all_data, "exponnorm", attribute_name="asymmetry_threshold", extra_params=config[model]
+            data_1d, "exponnorm", extra_params=config[model]
         )
         assert res_exponnorm_MIN_MAX == pytest.approx(
             {
@@ -126,7 +114,7 @@ def test_fit_distribution(config, caplog):
 
         # Test gamma distribution
         res_gamma_MIN_MAX = distribution_fitting.fit_distribution(
-            all_data, "gamma", attribute_name="asymmetry_threshold", extra_params=config[model]
+            data_1d, "gamma", extra_params=config[model]
         )
         assert res_gamma_MIN_MAX == pytest.approx(
             {
@@ -141,6 +129,19 @@ def test_fit_distribution(config, caplog):
     finally:
         distribution_fitting.A_MIN = A_MIN
         distribution_fitting.A_MAX = A_MAX
+
+    # Test with attribute name
+    config[model]["features"] = {
+        "TEST FEATURE": {
+            "basal": 0.5,
+        }
+    }
+    res_expon_rev_feature = distribution_fitting.fit_distribution(
+        all_data, "expon_rev", attribute_name="TEST FEATURE", extra_params=config[model]
+    )
+    assert res_expon_rev_feature == pytest.approx(
+        {"loc": -0.99, "scale": 0.354875, "min": 0.27765, "max": 0.99, "num_value": 8.0}
+    )
 
 
 @reset_random_seed
