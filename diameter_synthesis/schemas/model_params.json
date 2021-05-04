@@ -1,5 +1,5 @@
 {
-    "additionalProperties": false,
+    "additionalProperties": true,
     "definitions": {
         "diameter_model": {
             "additionalProperties": false,
