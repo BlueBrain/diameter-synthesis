@@ -43,10 +43,11 @@ def _get_neurites(neuron, neurite_type):
     Returns:
         list: list of neurites to consider
     """
+    if isinstance(neurite_type, str):
+        neurite_type = STR_TO_TYPES[neurite_type]
+
     return [
-        list(neurite.iter())
-        for neurite in neuron.root_sections
-        if neurite.type == STR_TO_TYPES[neurite_type]
+        list(neurite.iter()) for neurite in neuron.root_sections if neurite.type == neurite_type
     ]
 
 
