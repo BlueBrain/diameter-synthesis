@@ -1,13 +1,28 @@
 Changelog
 =========
 
+Version 0.2.4
+-------------
+
+- Can use str or morphio neurite type to build diameters
+
+Version 0.2.3
+-------------
+
+- Fix schema
+
+Version 0.2.2
+-------------
+
+- Install missing JSON files
+
 Version 0.2.1
---------------
+-------------
 
 - Fix JSON schema and improve tests
 
 Version 0.2.0
---------------
+-------------
 
 - Upgrade to NeuroM>=2.1
 - Remove asymmetry_threshold and make it generic
