@@ -133,7 +133,7 @@ def fit_distribution(all_data, distribution, attribute_name=None, extra_params=N
     raise DiameterSynthesisError("Distribution not understood")
 
 
-def sample_distribution(model):
+def sample_distribution(model, rng=np.random):
     """Sample from a distribution."""
     if "a" in model["params"]:
         a_clip = np.clip(model["params"]["a"], A_MIN, A_MAX)
@@ -142,28 +142,28 @@ def sample_distribution(model):
         return model["params"]["value"]
 
     if model["distribution"] == "expon_rev":
-        from scipy.stats import expon
-
         return _truncate(
-            lambda: -expon.rvs(model["params"]["loc"], model["params"]["scale"]),
+            lambda: -(
+                model["params"]["loc"] + model["params"]["scale"] * rng.standard_exponential()
+            ),
             model["params"]["min"],
             model["params"]["max"],
         )
 
     if model["distribution"] == "exponnorm":
-        from scipy.stats import exponnorm
-
         return _truncate(
-            lambda: exponnorm.rvs(a_clip, model["params"]["loc"], model["params"]["scale"]),
+            lambda: (
+                model["params"]["loc"]
+                + model["params"]["scale"]
+                * (rng.standard_exponential() * a_clip + rng.standard_normal())
+            ),
             model["params"]["min"],
             model["params"]["max"],
         )
 
     if model["distribution"] == "gamma":
-        from scipy.stats import gamma
-
         return _truncate(
-            lambda: gamma.rvs(a_clip, model["params"]["loc"], model["params"]["scale"]),
+            lambda: model["params"]["loc"] + model["params"]["scale"] * rng.standard_gamma(a_clip),
             model["params"]["min"],
             model["params"]["max"],
         )
