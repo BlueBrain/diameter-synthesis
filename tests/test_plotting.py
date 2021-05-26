@@ -127,7 +127,7 @@ def test_make_cumulative_figures(single_pop, single_pop_diametrized, tmpdir, exp
         / "0_cumulative_segment_radial_distances_volumes.pdf",
         tmpdir
         / "with_individual_cumulative_segment_radial_distances_volumes_individual"
-        / "0_with_individual_cumulative_segment_radial_distances_volumes_C030796A-P3_lite.pdf",
+        / "0_with_individual_cumulative_segment_radial_distances_volumes_C030796A-P3_lite.h5.pdf",
     )
 
 
@@ -168,7 +168,7 @@ def test_cumulative_analysis(
         tmpdir
         / "analysis"
         / "L5_TPC:Acumulative_section_path_distances_areas_individual"
-        / "0_L5_TPC:Acumulative_section_path_distances_areas_C030796A-P3_lite.pdf",
+        / "0_L5_TPC:Acumulative_section_path_distances_areas_C030796A-P3_lite.h5.pdf",
     )
     assert pdfdiff(
         images_path
@@ -177,7 +177,7 @@ def test_cumulative_analysis(
         tmpdir
         / "analysis"
         / "L5_TPC:Acumulative_section_path_distances_volumes_individual"
-        / "0_L5_TPC:Acumulative_section_path_distances_volumes_C030796A-P3_lite.pdf",
+        / "0_L5_TPC:Acumulative_section_path_distances_volumes_C030796A-P3_lite.h5.pdf",
     )
 
     # Test with unconsistent neurondb

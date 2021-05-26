@@ -92,7 +92,8 @@ def run_models(config_file, plot, ext="png"):
     )
 
     morphologies = {
-        mtype: nm.load_neurons(morphologies_dict[mtype]) for mtype in tqdm(morphologies_dict)
+        mtype: [nm.load_neuron(i) for i in morphologies_dict[mtype]]
+        for mtype in tqdm(morphologies_dict)
     }
 
     L.info("Extracting model parameters...")

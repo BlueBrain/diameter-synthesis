@@ -502,7 +502,9 @@ def make_cumulative_figures(
 def _load_morphologies(morph_path, mtypes_file="./neuronDB.xml"):
     """Load the morphologies from a directory, by mtypes or all at once."""
     morphologies_dict = utils.create_morphologies_dict(morph_path, mtypes_file=mtypes_file)
-    return {mtype: nm.load_neurons(morphologies_dict[mtype]) for mtype in morphologies_dict}
+    return {
+        mtype: [nm.load_neuron(i) for i in morphologies_dict[mtype]] for mtype in morphologies_dict
+    }
 
 
 def cumulative_analysis(
@@ -549,7 +551,6 @@ def get_features_all(object1, object2, flist, neurite_type):
             feature_neu = feature_neu + get(feat, obj, neurite_type=neurite_type).tolist()
 
         collect_all.append([feature_pop, feature_neu])
-        print(feat, len(feature_pop), len(feature_neu))
     return collect_all
 
 
@@ -642,8 +643,8 @@ def _analyze_from_dict(max_cells, cells, with_axon=False):
     cell_orig, cell_diametrized, mtype = cells
     cell_diametrized = cell_diametrized[:max_cells]
     cell_orig = cell_orig[:max_cells]
-    original_cells = nm.load_neurons(cell_orig)
-    diametrized_cells = nm.load_neurons(cell_diametrized)
+    original_cells = [nm.load_neuron(i) for i in cell_orig]
+    diametrized_cells = [nm.load_neuron(i) for i in cell_diametrized]
 
     pop_names = ["Original cells of " + mtype, "Synthetised cells of " + mtype]
     data = get_features_all(

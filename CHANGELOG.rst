@@ -4,6 +4,8 @@ Changelog
 Version 0.2.4
 -------------
 
+- No more use NeuroM.Population in main.run_models
+- Improve neurite type handling in build diameters and use random number generators
 - Can use str or morphio neurite type to build diameters
 
 Version 0.2.3
