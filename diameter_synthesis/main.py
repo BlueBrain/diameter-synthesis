@@ -1,4 +1,20 @@
 """Main functions to learn and generate diameters."""
+
+# Copyright (C) 2021  Blue Brain Project, EPFL
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import json
 import logging
 import multiprocessing
@@ -81,7 +97,7 @@ def _build_all_models(morphologies, config, plot=False, ext="png"):
 
 def run_models(config_file, plot, ext="png"):
     """Run the model extraction from config file."""
-    with open(config_file, "r") as filename:
+    with open(config_file, "r", encoding="utf-8") as filename:
         config = json.load(filename)
 
     L.info("Loading morphologies...")
@@ -98,7 +114,7 @@ def run_models(config_file, plot, ext="png"):
     L.info("Extracting model parameters...")
     models_params = _build_all_models(morphologies, config, plot=plot, ext=ext)
 
-    with open(config["models_params_file"], "w") as json_file:
+    with open(config["models_params_file"], "w", encoding="utf-8") as json_file:
         json.dump(models_params, json_file, sort_keys=True, indent=4, cls=NumpyEncoder)
 
 
@@ -137,10 +153,10 @@ class DiameterWorker:
 
 def run_diameters(config_file, models_params_file):
     """Build new diameters from config file and diameter model."""
-    with open(config_file, "r") as filename:
+    with open(config_file, "r", encoding="utf-8") as filename:
         config = json.load(filename)
 
-    with open(models_params_file, "r") as filename:
+    with open(models_params_file, "r", encoding="utf-8") as filename:
         models_params = json.load(filename)
 
     for model in config["models"]:

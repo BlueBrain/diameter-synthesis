@@ -1,4 +1,21 @@
-import diameter_synthesis.utils as utils 
+""" """
+
+# Copyright (C) 2021  Blue Brain Project, EPFL
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import diameter_synthesis.utils as utils
 import json, os, shutil
 
 import matplotlib
@@ -46,9 +63,9 @@ def extract_morphometrics(neuron, neurite_types):
     return dists, areas
 
 def morphometric_distances(morphologies, neurite_types):
-    """ plot morphometrics per mtypes""" 
+    """ plot morphometrics per mtypes"""
 
-    dists_tot = {} 
+    dists_tot = {}
     areas_tot = {}
 
     for morph in morphologies:
@@ -61,8 +78,8 @@ def morphometric_distances(morphologies, neurite_types):
         for i, neuron in enumerate(morphologies[morph]):
             dists, areas = extract_morphometrics(neuron[0], neurite_types)
 
-            dists_tot[morph] += dists 
-            areas_tot[morph] += areas 
+            dists_tot[morph] += dists
+            areas_tot[morph] += areas
 
     return  dists_tot, areas_tot
 
@@ -76,7 +93,7 @@ if __name__ == '__main__':
     if not os.path.isdir(config['new_morph_path']):
         os.mkdir(config['new_morph_path'])
 
-    shutil.copy(config['morph_path']+'/neuronDB.xml', config['new_morph_path']+'/neuronDB.xml') 
+    shutil.copy(config['morph_path']+'/neuronDB.xml', config['new_morph_path']+'/neuronDB.xml')
 
     #Load morphologies
     morphologies = utils.load_morphologies(config['morph_path'], n_morphs_max = config['n_morphs_max'], mtypes_sort = config['mtypes_sort'], n_mtypes_max = config['n_mtypes_max'])
@@ -89,21 +106,21 @@ if __name__ == '__main__':
     if not os.path.isdir('distributions'):
         os.mkdir('distributions')
 
-    DIST_MAX = 10 
+    DIST_MAX = 10
 
     for i, mtype in enumerate(areas):
         area1 = np.array(areas[mtype])
         dist1 = np.array(dists[mtype])
 
         #plt.figure()
-        #plt.hist(val1, range = (0,10**2.5), density=True, bins = 50) 
+        #plt.hist(val1, range = (0,10**2.5), density=True, bins = 50)
         #plt.savefig('distributions/dist_'+mtype+'.png')
         #plt.close()
 
         for j, mtype2 in enumerate(areas):
             area2 = np.array(areas[mtype2])
             dist2 = np.array(dists[mtype2])
-            
+
             dists_tmp = []
             for bi in range(len(bins)-1):
                 area1_tmp = area1[ (dist1 >= bins[bi]) & (dist1 < bins[bi+1])]
@@ -133,7 +150,7 @@ if __name__ == '__main__':
     plt.savefig('wass_dendro_both.png',bbox_inches='tight')
 
     ordering = R['leaves']
- 
+
     plt.figure(figsize=(15,15))
     plt.imshow(area_distances[np.ix_(ordering,ordering)])
 
@@ -150,10 +167,10 @@ if __name__ == '__main__':
 
     import pygenstability.pygenstability as pgs
     import networkx as nx
-    
+
     #A = 1/np.sqrt(1.+area_distances**2)
     A = 1/(1.+area_distances)
-    np.fill_diagonal(A, 0) #remove diagonal 
+    np.fill_diagonal(A, 0) #remove diagonal
     G = nx.Graph(A)
 
     from RMST import RMST
@@ -161,7 +178,7 @@ if __name__ == '__main__':
 
     A = nx.to_numpy_matrix(G)
     plt.figure()
-    plt.imshow(A) 
+    plt.imshow(A)
     plt.colorbar()
     plt.savefig('A.png')
 
@@ -170,7 +187,7 @@ if __name__ == '__main__':
 
     #continuous_combinatorial
     stability = pgs.PyGenStability(G, 'continuous_combinatorial', louvain_runs , precision)
-    stability.use_spectral_gap = True 
+    stability.use_spectral_gap = True
 
     #number of cpu for parallel compuations
     stability.n_processes_louv = 5
@@ -190,29 +207,29 @@ if __name__ == '__main__':
 
     stability.run_single_stability(time = 10**(0.0) )
     stability.print_single_result(1, 1)
-   
+
     comm_id = np.array(stability.single_stability_result['community_id'])
-    
+
     """
     #this merge some singletons, but a bit artificially
     for i in set(comm_id):
         ids = np.argwhere(comm_id==i).flatten()
 
-        if len(ids)==1: 
+        if len(ids)==1:
             if i < np.max(comm_id):
-                comm_id[ids] = i+1 
+                comm_id[ids] = i+1
             else:
                 comm_id[ids] = i-1
     """
 
-    ordering = [] 
+    ordering = []
     for i in set(comm_id):
             ordering += list(np.argwhere(comm_id==i).flatten())
 
     super_mtypes = {}
     for i in set(comm_id):
         super_mtypes[str(i)] = []
-    
+
     #convert the community id to string to be used as super mtypes
     comm_id_str = []
     for c in comm_id:
@@ -224,10 +241,10 @@ if __name__ == '__main__':
         json.dump(super_mtypes, json_file, sort_keys=True, indent=4)
 
     plt.figure(figsize=(15,15))
-    
+
     plt.imshow(A[np.ix_(ordering,ordering)])
 
-    colors = []     
+    colors = []
     cs = ['C0', 'C1', 'C2', 'C3', 'C4', 'C5','C6', 'C7', 'C8',  ]
     for i in comm_id[ordering]:
         colors.append(cs[i % len(cs)])

@@ -4,9 +4,8 @@
     "commitLimit": false,
     "backfillLimit": false,
     "ignoreCommitPattern": "Release [0-9]+\\.[0-9]+\\.[0-9]+|Update CHANGELOG.*|.*\\[skip-changelog\\].*",
-    "commitUrl": "https://bbpgitlab.epfl.ch/neuromath/diameter-synthesis/commit/{id}",
-    "issueUrl": "https://bbpgitlab.epfl.ch/neuromath/diameter-synthesis/issues/{id}",
-    "mergeUrl": "https://bbpgitlab.epfl.ch/neuromath/diameter-synthesis/merge_requests/{id}",
-    "compareUrl": "https://bbpgitlab.epfl.ch/neuromath/diameter-synthesis/compare/{from}...{to}",
-    "tagPrefix": "diameter-synthesis-v"
+    "commitUrl": "https://github.com/BlueBrain/diameter-synthesis/commit/{id}",
+    "issueUrl": "https://github.com/BlueBrain/diameter-synthesis/issues/{id}",
+    "mergeUrl": "https://github.com/BlueBrain/diameter-synthesis/pull/{id}",
+    "compareUrl": "https://github.com/BlueBrain/diameter-synthesis/compare/{from}..{to}"
 }
