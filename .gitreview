@@ -1,6 +1,0 @@
-[gerrit]
-host=bbpcode.epfl.ch
-port=22
-project=cells/diameter-synthesis
-defaultbranch=master
-defaultremote=origin

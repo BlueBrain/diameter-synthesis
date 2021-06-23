@@ -1,14 +1,22 @@
-"""Setup for the diameter-synthesis package."""
-import imp
-import sys
+"""Setup for the diameter-synthesis package.
 
+Copyright (C) 2021  Blue Brain Project, EPFL
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 from setuptools import find_packages
 from setuptools import setup
-
-if sys.version_info < (2, 7):
-    sys.exit("Sorry, Python < 2.7 is not supported")
-
-VERSION = imp.load_source("", "diameter_synthesis/version.py").__version__
 
 test_reqs = [
     "diff_pdf_visually>=1.5.1",
@@ -24,15 +32,13 @@ test_reqs = [
 
 setup(
     name="diameter-synthesis",
-    author="BlueBrain Cells",
-    author_email="bbp-ou-cells@groupes.epfl.ch",
-    version=VERSION,
+    author="Blue Brain Project, EPFL",
     description="Diametrize cells",
-    license="BBP-internal-confidential",
-    url="https://bbpteam.epfl.ch/documentation/projects/diameter-synthesis",
+    license="GPLv3",
+    url="https://github.com/BlueBrain/diameter-synthesis",
     project_urls={
-        "Tracker": "https://bbpteam.epfl.ch/project/issues/projects/CELLS/issues",
-        "Source": "ssh://bbpcode.epfl.ch/cells/diameter-synthesis",
+        "Tracker": "https://github.com/BlueBrain/diameter-synthesis/issues",
+        "Source": "https://github.com/BlueBrain/diameter-synthesis",
     },
     install_requires=[
         "click>=7.0",
@@ -53,10 +59,15 @@ setup(
         "console_scripts": ["diameter-synthesis=diameter_synthesis.cli:cli"],
     },
     python_requires=">=3.6",
+    use_scm_version=True,
+    setup_requires=[
+        "setuptools_scm",
+    ],
     packages=find_packages(exclude="tests"),
     include_package_data=True,
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",

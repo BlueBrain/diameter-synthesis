@@ -1,16 +1,28 @@
-"Plotting functions"""
+"""Plotting functions."""
+
+# Copyright (C) 2021  Blue Brain Project, EPFL
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import division
 
 import json
 import os
 import collections
-import multiprocessing
-import traceback
-import sys
 
 import matplotlib
-matplotlib.use('Agg') 
+matplotlib.use('Agg')
 
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
@@ -42,7 +54,7 @@ def plot_scores_summary(plot_dir):
 
             this_scores = scores.loc[scores['emodel'].str.contains(
                 exemplar_emodel)]
-            
+
             morph_rows = list(this_scores.iterrows())
 
             # For every evaluated me-combo, plot the features using a bar plot
@@ -78,7 +90,7 @@ def plot_scores_summary(plot_dir):
 
             plt.boxplot(stds, vert = False)
             for i, std_rep in enumerate(stds_repaired):
-                if std_rep - stds_unrepaired[i]>0: 
+                if std_rep - stds_unrepaired[i]>0:
                     plt.barh(i+1, width = std_rep - stds_unrepaired[i], left = stds_unrepaired[i], color='0.5')
                 else:
                     plt.barh(i+1, width = stds_unrepaired[i]- std_rep, left =  std_rep, color='C0')
@@ -91,7 +103,7 @@ def plot_scores_summary(plot_dir):
             plt.gca().set_yticklabels(mecombo_scores.keys(),
                                               rotation=0,
                                               fontsize=6)
-             
+
 
             #plt.legend()
             plt.tight_layout()

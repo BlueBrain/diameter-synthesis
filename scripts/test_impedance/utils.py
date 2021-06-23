@@ -1,13 +1,31 @@
+"""Some utils for scripts."""
+
+# Copyright (C) 2021  Blue Brain Project, EPFL
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import os
+import re
+
 import numpy as np
 import matplotlib.pyplot as plt
 
 import bglibpy
-import neurom as nrm
-import os, re
 
-from diameter_synthesis.utils import set_bins 
+from diameter_synthesis.utils import set_bins
 
 bglibpy.set_verbose(100)
+
 
 def compute_impedence(sim, icell, freq=100, neurite_type='basal', is_transfer=True):
     area = 0
@@ -41,11 +59,13 @@ def compute_impedence(sim, icell, freq=100, neurite_type='basal', is_transfer=Tr
             distances.append(distance)
             transfers.append(transfer)
             transfer_phases.append(transfer_phase)
-    
+
     return np.asarray([distances, transfers, transfer_phases])
+
 
 def plot_trace(ssim, gid):
     plt.plot(ssim.get_time_trace(), ssim.get_voltage_trace(gid))
+
 
 def run(morph_dir, gid, morph_name, neurite_type, is_transfer=True, tpe='bio', ext='.svg', folder='figure_traces'):
 
@@ -58,7 +78,7 @@ def run(morph_dir, gid, morph_name, neurite_type, is_transfer=True, tpe='bio', e
     t_stop = 20
     ssim.cells[gid].add_voltage_clamp(t_stop, -50, rs=0.01)
     ssim.run(t_stop = t_stop)
-    
+
     plt.figure()
     plot_trace(ssim, gid)
     plt.axis([0,t_stop, -65, 0])
@@ -69,14 +89,16 @@ def run(morph_dir, gid, morph_name, neurite_type, is_transfer=True, tpe='bio', e
 
     return compute_impedence(bglibpy, icell, neurite_type=neurite_type, is_transfer=is_transfer)
 
+
 def initialize_sim(morph_dir):
     bc = '/gpfs/bbp.cscs.ch/project/proj64/circuits/' \
         'S1HL-200um/20171002/simulations/003/BlueConfig'
 
     ssim = bglibpy.SSim(bc)
     ssim.morph_dir = morph_dir
-    
+
     return ssim
+
 
 def get_cells_gid(ssim, list_cells, mtypes=None):
     gids = {}
@@ -98,8 +120,9 @@ def get_cells_gid(ssim, list_cells, mtypes=None):
 
     return gids
 
+
 def bin_data(bins, data):
-    
+
     mean_data = []
     mean_bins = []
     for i in range(len(bins)-1):
@@ -115,7 +138,7 @@ def plot_impedance(data_bio, data_diam, cell_name, folder, log=False, ext='.svg'
 
     axes[0].scatter(data_bio[0], data_bio[1], 10, marker='o', label='biological cell', c='C0') #data_bio[2])
     axes[0].scatter(data_diam[0], data_diam[1], 10, marker='o', label='diametrized cell', c='C1') #data_bio[2])
-     
+
     bins, values = set_bins(data_bio[0], 20, 5)
 
     mean_bins, mean_data_bio = bin_data(bins, data_bio)
@@ -124,7 +147,7 @@ def plot_impedance(data_bio, data_diam, cell_name, folder, log=False, ext='.svg'
     mean_bins, mean_data_diam = bin_data(bins, data_diam)
     axes[0].plot(mean_bins, mean_data_diam, c='C1', lw=2)
     scale = np.mean(mean_data_diam)
-    mean_data_bio /= scale 
+    mean_data_bio /= scale
     mean_data_diam /= scale
 
     axes[0].legend()
@@ -154,5 +177,5 @@ def plot_impedance(data_bio, data_diam, cell_name, folder, log=False, ext='.svg'
     f.savefig(os.path.join(folder,'impedance_' + cell_name + ext), bbox_inches= 'tight')
     plt.close()
 
-    return error 
+    return error
 

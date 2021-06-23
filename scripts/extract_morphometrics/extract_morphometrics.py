@@ -1,4 +1,21 @@
-import diameter_synthesis.utils as utils 
+"""This extracts some morphometrics from morphologies."""
+
+# Copyright (C) 2021  Blue Brain Project, EPFL
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import diameter_synthesis.utils as utils
 import json, os, shutil
 
 import matplotlib
@@ -44,11 +61,11 @@ def extract_morphometrics(neuron, neurite_types):
                     bos += list(nm.get('section_branch_orders', neurite))
                     dists += list(nm.get('section_path_distances', neurite))
 
-    
+
     return areas, dists, diams, bos
 
 def plot_morphometrics(morphologies, morphologies_new, neurite_types, folder='figures'):
-    """ plot morphometrics per mtypes""" 
+    """ plot morphometrics per mtypes"""
 
     for morph in morphologies:
 
@@ -68,18 +85,18 @@ def plot_morphometrics(morphologies, morphologies_new, neurite_types, folder='fi
             for i, neuron in enumerate(morphologies[morph]):
                 areas, dists, diams, bos = extract_morphometrics(neuron[0], neurite_types)
 
-                diams_tot += diams 
-                areas_tot += areas 
-                dists_tot += dists 
-                bos_tot += bos 
+                diams_tot += diams
+                areas_tot += areas
+                dists_tot += dists
+                bos_tot += bos
 
             for i, neuron in enumerate(morphologies_new[morph]):
                 areas_new, dists_new, diams_new, bos_new = extract_morphometrics(neuron[0], neurite_types)
 
-                diams_tot_new += diams_new 
-                areas_tot_new += areas_new 
-                dists_tot_new += dists_new 
-                bos_tot_new += bos_new 
+                diams_tot_new += diams_new
+                areas_tot_new += areas_new
+                dists_tot_new += dists_new
+                bos_tot_new += bos_new
 
 
             plt.figure(figsize=(5,4))
@@ -201,11 +218,11 @@ if __name__ == '__main__':
         config = json.load(f)
 
 
-    shutil.copy(config['morph_path']+'/neuronDB.xml', config['new_morph_path']+'/neuronDB.xml') 
+    shutil.copy(config['morph_path']+'/neuronDB.xml', config['new_morph_path']+'/neuronDB.xml')
     neurite_types = config['neurite_types']
     folder = 'figures_'+config['new_morph_path']
 
-    if os.path.isdir(folder): 
+    if os.path.isdir(folder):
         shutil.rmtree(folder)
         os.mkdir(folder)
         os.mkdir(folder+'branching_diams')

@@ -1,10 +1,24 @@
-import os, glob, shutil
-import json
+"""This scripts selects morphologies that can be used in diameter-check."""
 
-########################################
-## This scripts selects morphologies  ##
-## that can be used in diameter-check ##
-########################################
+# Copyright (C) 2021  Blue Brain Project, EPFL
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import json
+import os
+import shutil
+
 
 def find_etypes_emodels(morph, emodel_morph_map, emodel_etype_map):
 
@@ -29,6 +43,7 @@ def read_emodel_etype_map(emodel_etype_map_path):
 
     return emodel_etype_map
 
+
 def read_final_json(final_json_path):
     with open(final_json_path) as final_json_file:
         final_json = json.load(final_json_file)
@@ -47,7 +62,6 @@ def extract_test_morphologies(config_file, final_json, emodel_etype_map):
 
     with open(config_file) as f:
         config = json.load(f)
-    
 
     emodel_morph_map = read_final_json(final_json)
     emodel_etype_map = read_emodel_etype_map(emodel_etype_map)
@@ -55,11 +69,11 @@ def extract_test_morphologies(config_file, final_json, emodel_etype_map):
     if not os.path.isdir(config['morph_path']):
         os.mkdir(config['morph_path'])
 
-    #copy the neuronDB.xml file to the new folder for later analysis
+    # copy the neuronDB.xml file to the new folder for later analysis
     shutil.copy(config['rep_morph_path']+'neuronDB.xml', config['morph_path']+'neuronDB.xml')
 
     fnames = []
-    n = 0 
+    n = 0
     for fname in os.listdir(config['rep_morph_path']):
         name, ext = os.path.splitext(fname)
         if ext in {'.h5', '.asc', '.swc'} and find_etypes_emodels(os.path.splitext(fname)[0], emodel_morph_map, emodel_etype_map): #check if the etype exists for this neuron
