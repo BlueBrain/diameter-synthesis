@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.2.5
+-------------
+
+- Use NeuroM version 3
+
 Version 0.2.4
 -------------
 

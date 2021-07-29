@@ -12,7 +12,8 @@ from matplotlib.backends.backend_pdf import PdfPages
 import neurom as nm
 import numpy as np
 
-from neurom import APICAL_DENDRITE, BASAL_DENDRITE, AXON, get, iter_sections, viewer
+from neurom import APICAL_DENDRITE, BASAL_DENDRITE, AXON, get, iter_sections
+from neurom.view import matplotlib_impl
 from neurom.geom import bounding_box
 from scipy import stats
 from tqdm import tqdm
@@ -47,7 +48,7 @@ VIOLIN_FEATURES_LIST = [
 VIOLIN_FEATURES_LIST += [
     "number_of_neurites",
     "number_of_sections_per_neurite",
-    "number_of_terminations",
+    "number_of_leaves",
     "number_of_bifurcations",
     "section_lengths",
     "section_tortuosity",
@@ -139,34 +140,34 @@ def plot_diameter_diff(neuron_name, neuron_new, neurite_types, folder, ext=".png
     if not Path(folder).exists():
         os.mkdir(folder)
 
-    neuron_orig = nm.load_neuron(neuron_name)
-    neuron_diff_pos = nm.load_neuron(neuron_name)
-    neuron_diff_neg = nm.load_neuron(neuron_name)
+    neuron_orig = nm.load_morphology(neuron_name)
+    neuron_diff_pos = nm.load_morphology(neuron_name)
+    neuron_diff_neg = nm.load_morphology(neuron_name)
     _compute_neurite_diff(neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_neg, neurite_types)
 
     bbox = bounding_box(neuron_orig)
 
     fig, axs = plt.subplots(2, 2, figsize=(10, 10))
 
-    viewer.plot_neuron(axs[0, 0], neuron_orig)
+    matplotlib_impl.plot_morph(neuron_orig, axs[0, 0])
     axs[0, 0].set_title("Original neuron")
     axs[0, 0].set_xlim([bbox[0, 0], bbox[1, 0]])
     axs[0, 0].set_ylim([bbox[0, 1], bbox[1, 1]])
     axs[0, 0].set_aspect("equal")
 
-    viewer.plot_neuron(axs[0, 1], neuron_new)
+    matplotlib_impl.plot_morph(neuron_new, axs[0, 1])
     axs[0, 1].set_title("New neuron")
     axs[0, 1].set_xlim([bbox[0, 0], bbox[1, 0]])
     axs[0, 1].set_ylim([bbox[0, 1], bbox[1, 1]])
     axs[0, 1].set_aspect("equal")
 
-    viewer.plot_neuron(axs[1, 0], neuron_diff_pos)
+    matplotlib_impl.plot_morph(neuron_diff_pos, axs[1, 0])
     axs[1, 0].set_title("Positive diameter differences")
     axs[1, 0].set_xlim([bbox[0, 0], bbox[1, 0]])
     axs[1, 0].set_ylim([bbox[0, 1], bbox[1, 1]])
     axs[1, 0].set_aspect("equal")
 
-    viewer.plot_neuron(axs[1, 1], neuron_diff_neg)
+    matplotlib_impl.plot_morph(neuron_diff_neg, axs[1, 1])
     axs[1, 1].set_title("Negative diameter differences")
     axs[1, 1].set_xlim([bbox[0, 0], bbox[1, 0]])
     axs[1, 1].set_ylim([bbox[0, 1], bbox[1, 1]])
@@ -503,7 +504,8 @@ def _load_morphologies(morph_path, mtypes_file="./neuronDB.xml"):
     """Load the morphologies from a directory, by mtypes or all at once."""
     morphologies_dict = utils.create_morphologies_dict(morph_path, mtypes_file=mtypes_file)
     return {
-        mtype: [nm.load_neuron(i) for i in morphologies_dict[mtype]] for mtype in morphologies_dict
+        mtype: [nm.load_morphology(i) for i in morphologies_dict[mtype]]
+        for mtype in morphologies_dict
     }
 
 
@@ -541,14 +543,19 @@ def cumulative_analysis(
 
 def get_features_all(object1, object2, flist, neurite_type):
     """Compute features from module mod."""
+
+    def _get_feature(feat, obj):
+        v = get(feat, obj, neurite_type=neurite_type)
+        return v if isinstance(v, list) else [v]
+
     collect_all = []
     for feat in flist:
         feature_pop = []
         for obj in object1:
-            feature_pop = feature_pop + get(feat, obj, neurite_type=neurite_type).tolist()
+            feature_pop = feature_pop + _get_feature(feat, obj)
         feature_neu = []
         for obj in object2:
-            feature_neu = feature_neu + get(feat, obj, neurite_type=neurite_type).tolist()
+            feature_neu = feature_neu + _get_feature(feat, obj)
 
         collect_all.append([feature_pop, feature_neu])
     return collect_all
@@ -643,8 +650,8 @@ def _analyze_from_dict(max_cells, cells, with_axon=False):
     cell_orig, cell_diametrized, mtype = cells
     cell_diametrized = cell_diametrized[:max_cells]
     cell_orig = cell_orig[:max_cells]
-    original_cells = [nm.load_neuron(i) for i in cell_orig]
-    diametrized_cells = [nm.load_neuron(i) for i in cell_diametrized]
+    original_cells = [nm.load_morphology(i) for i in cell_orig]
+    diametrized_cells = [nm.load_morphology(i) for i in cell_diametrized]
 
     pop_names = ["Original cells of " + mtype, "Synthetised cells of " + mtype]
     data = get_features_all(

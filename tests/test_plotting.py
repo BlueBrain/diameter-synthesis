@@ -15,7 +15,7 @@ def test_plot_diameter_diff(
     # Test with existing directory and with positive changes
 
     # Load neuron with NeuroM
-    new_neuron = nm.load_neuron(neuron_diametrized_path)
+    new_neuron = nm.load_morphology(neuron_diametrized_path)
 
     # Update the neuron
     for sec in new_neuron.sections:
@@ -35,7 +35,7 @@ def test_plot_diameter_diff(
     # Test with new directory and with negative changes
 
     # Load neuron with NeuroM
-    new_neuron = nm.load_neuron(neuron_diametrized_path)
+    new_neuron = nm.load_morphology(neuron_diametrized_path)
 
     # Update the neuron
     for sec in new_neuron.sections:

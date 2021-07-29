@@ -4,8 +4,8 @@ from functools import lru_cache
 
 import neurom as nm
 import numpy as np
-from neurom.core.neuron import iter_sections
-from neurom.core.neuron import Section
+from neurom.core.morphology import iter_sections
+from neurom.core.morphology import Section
 
 from diameter_synthesis.exception import DiameterSynthesisError
 from diameter_synthesis.utils import _get_diameters, _get_mean_diameter
@@ -182,19 +182,19 @@ def get_additional_attribute(
     neurite_only = neurite is not None and section is None
     if attribute_name in ["asymmetry", "asymmetry_threshold"]:
         if neurite_only:
-            out = nm.get("partition_asymmetry_length", [neurite])
+            out = nm.get("partition_asymmetry", neurite, variant="length")
             return np.array(out)
         if section_only:
             return partition_asymmetry_length(section)
 
     if attribute_name == "asymmetry_pair":
         if section_only:
-            return [nm.features.bifurcationfunc.partition_pair(section)]
+            return [nm.features.bifurcation.partition_pair(section)]
         raise DiameterSynthesisError("Please provide only a section")
 
     if attribute_name == "tot_length":
         if neurite_only:
-            return nm.get("total_length", neurite)
+            return [nm.get("total_length", neurite)]
         raise DiameterSynthesisError("Please provide only a neurite")
 
     if attribute_name == "max_path":
@@ -216,7 +216,7 @@ def get_additional_attribute(
         if neurite_only:
             return compute_sibling_ratios(neurite, method="mean")
         if section_only:
-            return nm.features.bifurcationfunc.sibling_ratio(section, method="mean")
+            return nm.features.bifurcation.sibling_ratio(section, method="mean")
 
     raise DiameterSynthesisError(
         "Please provide a valid attribute_name and provide either a neurite or a section, not both"

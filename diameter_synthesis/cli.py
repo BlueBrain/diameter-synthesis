@@ -74,7 +74,7 @@ def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=None, ext
             neurons = morphologies_dict[mtype]
 
         for neuron in tqdm(neurons):
-            neuron_new = nm.load_neuron(Path(diametrized_folder) / neuron.name)
+            neuron_new = nm.load_morphology(Path(diametrized_folder) / neuron.name)
 
             plot_diameter_diff(neuron, neuron_new, neurite_types, plot_folder_mtype, ext=ext)
 

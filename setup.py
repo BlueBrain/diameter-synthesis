@@ -27,7 +27,7 @@ setup(
         "jsonschema>=3",
         "matplotlib>=2.2.0",
         "morphio>=2.3.4",
-        "neurom>=2.1.0",
+        "neurom>=3.0,<4.0",
         "numpy>=1.15.0",
         "pandas>=0.24.0",
         "scipy>=0.13.3",

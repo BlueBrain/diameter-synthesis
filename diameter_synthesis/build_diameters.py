@@ -10,7 +10,7 @@ from numpy.polynomial import polynomial
 from morphio import SectionType, IterType
 
 import diameter_synthesis.morph_functions as morph_funcs
-import diameter_synthesis.utils as utils
+from diameter_synthesis import utils
 from diameter_synthesis.distribution_fitting import sample_distribution
 from diameter_synthesis.exception import DiameterSynthesisError
 

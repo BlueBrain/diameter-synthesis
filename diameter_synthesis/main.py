@@ -11,7 +11,7 @@ from morphio.mut import Morphology
 
 import neurom as nm
 
-import diameter_synthesis.utils as utils
+from diameter_synthesis import utils
 from diameter_synthesis.build_diameters import build as build_diameters
 from diameter_synthesis.build_models import build as build_model
 from diameter_synthesis.plotting import plot_distribution_fit
@@ -92,7 +92,7 @@ def run_models(config_file, plot, ext="png"):
     )
 
     morphologies = {
-        mtype: [nm.load_neuron(i) for i in morphologies_dict[mtype]]
+        mtype: [nm.load_morphology(i) for i in morphologies_dict[mtype]]
         for mtype in tqdm(morphologies_dict)
     }
 

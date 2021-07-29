@@ -14,7 +14,7 @@ import matplotlib
 matplotlib.use('Agg')
 import pylab as plt
 
-from neurom import viewer
+from neurom.view import matplotlib_impl
 
 def plot_neurons_per_mtype_from_xml(folder = '.', filename='neuronDB.xml', output_dir='Subtypes/', ext = '.png'):
     '''
@@ -48,8 +48,8 @@ def plot_neurons_per_mtype_from_xml(folder = '.', filename='neuronDB.xml', outpu
             mtype = mtype + ':' + m.find('msubtype').text
         # Copy all morphologies to the corresponding directory according to mtypes
 
-        neuron = nm.load_neuron(folder + m.find('name').text + '.asc')
-        fig, ax = viewer.draw(neuron)
+        morph = nm.load_morphology(folder + m.find('name').text + '.asc')
+        matplotlib_impl.plot_morph(morph)
         plt.savefig(mtype + '/' + m.find('name').text + ext, dpi = 500)
         plt.close()
 

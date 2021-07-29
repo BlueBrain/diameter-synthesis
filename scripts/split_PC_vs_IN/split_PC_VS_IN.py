@@ -23,7 +23,7 @@ if not os.path.isdir(Inter_folder):
 for fname in os.listdir(input_folder):
 
     if fname.endswith(('.h5', '.asc', '.swc')):
-        neuron = nm.load_neuron(input_folder+fname)
+        neuron = nm.load_morphology(input_folder+fname)
         IN = True
         for neurite in neuron.neurites:
             if neurite.type == tpes.STR_TO_TYPES['apical']:

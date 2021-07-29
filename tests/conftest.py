@@ -75,17 +75,17 @@ def neuron_diametrized(neuron_diametrized_path):
 
 @pytest.fixture
 def single_pop(neuron_path):
-    return [nm.load_neuron(neuron_path)]
+    return [nm.load_morphology(neuron_path)]
 
 
 @pytest.fixture
 def single_pop_diametrized(neuron_diametrized_path):
-    return [nm.load_neuron(neuron_diametrized_path)]
+    return [nm.load_morphology(neuron_diametrized_path)]
 
 
 @pytest.fixture
 def single_neurite(neuron_path):
-    neuron = nm.load_neuron(neuron_path)
+    neuron = nm.load_morphology(neuron_path)
     yield neuron.neurites[0]
 
 

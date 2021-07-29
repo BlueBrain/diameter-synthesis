@@ -25,6 +25,8 @@ def _create_morphologies_dict_dat(morph_path, mtypes_file="neurondb.dat"):
     Returns:
         dict: dictionary of morphologies keyed by mtypes
     """
+    # pylint wrongly determines `morph_name` as TextFileReader
+    # pylint: disable=no-member
     morph_name = pd.read_csv(mtypes_file, sep=r"\s+", header=None)
     name_dict = defaultdict(list)
     if not morph_name.empty:
