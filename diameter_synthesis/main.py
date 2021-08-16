@@ -162,3 +162,35 @@ def run_diameters(config_file, models_params_file):
         list(tqdm(pool.imap(worker, all_neurons), total=len(all_neurons)))
         pool.close()
         pool.join()
+
+
+def diametrize_single_neuron(neuron, config=None, apical_point_sec_ids=None):
+    """Diametrize single neuron by learning diameter model from it.
+
+    Args:
+        neuron (mophio.mut.Morphology): neuron to consider
+        config (dict): dict with entry 'model' and 'diameters' with corresponding dicts, if None,
+            default dict will be used
+        apical_point_sect_ids (list): list of apical points if any
+    """
+    if config is None:
+        config = {
+            "model": {
+                "taper": {"max": 1e-06, "min": -0.1},
+                "terminal_threshold": 2.0,
+                "models": ["generic"],
+                "neurite_types": ["basal", "apical"],
+            },
+            "diameters": {
+                "models": ["generic"],
+                "n_samples": 1,
+                "neurite_types": ["basal", "apical"],
+                "seed": 0,
+                "trunk_max_tries": 100,
+            },
+        }
+
+    model_params = build_model([nm.load_neuron(neuron)], config["model"])
+    if apical_point_sec_ids is not None:
+        model_params["apical_point_sec_ids"] = apical_point_sec_ids
+    build_diameters(neuron, model_params, ["basal", "apical"], config["diameters"])

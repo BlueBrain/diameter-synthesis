@@ -472,7 +472,7 @@ def make_cumulative_figures(
         original_cells, diametrized_cells, feature1, feature2, neurite_types
     )
 
-    figure_name = figname_prefix + "cumulative_{}_{}_{}".format(prefix1, basename1, basename2)
+    figure_name =  f"{figname_prefix}_cumulative_{prefix1}_{basename1}_{basename2}"
 
     fig.savefig(out_dir / (figure_name + ext), bbox_inches="tight")
     plt.close(fig)
@@ -492,7 +492,7 @@ def make_cumulative_figures(
                 neurite_types,
                 auto_limit=False,
             )
-            fname = "{}_{}{}".format(figure_name, original_cell.name, ext)
+            fname = f"{figure_name}_{original_cell.name}_{ext}"
             f.savefig(
                 out_dir / (figure_name + "_individual") / (str(i) + "_" + fname),
                 bbox_inches="tight",

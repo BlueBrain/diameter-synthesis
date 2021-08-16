@@ -3,13 +3,14 @@ import logging
 from collections import deque
 from functools import partial
 from copy import copy
+from copy import deepcopy
 
 import numpy as np
 from numpy.polynomial import polynomial
 
 from morphio import SectionType, IterType
 
-import diameter_synthesis.morph_functions as morph_funcs
+from diameter_synthesis import morph_functions
 from diameter_synthesis import utils
 from diameter_synthesis.distribution_fitting import sample_distribution
 from diameter_synthesis.exception import DiameterSynthesisError
@@ -33,10 +34,10 @@ TYPES_TO_STR = {
 
 def _reset_caches():
     """Reset the cached functions."""
-    morph_funcs.sec_length.cache_clear()
-    morph_funcs.partition_asymmetry_length.cache_clear()
-    morph_funcs.lengths_from_origin.cache_clear()
-    morph_funcs.n_children_downstream.cache_clear()
+    morph_functions.sec_length.cache_clear()
+    morph_functions.partition_asymmetry_length.cache_clear()
+    morph_functions.lengths_from_origin.cache_clear()
+    morph_functions.n_children_downstream.cache_clear()
 
 
 def _get_neurites(neuron, neurite_type):
@@ -75,7 +76,7 @@ def _sample_sibling_ratio(
             return 0.0
         return sample_distribution(params["sibling_ratios"][neurite_type], rng=rng)
     # This case should never happen since the mode is already checked in `_select_model`
-    raise DiameterSynthesisError("mode not understood {}".format(mode))
+    raise DiameterSynthesisError(f"mode not understood {mode}")
 
 
 def _sample_diameter_power_relation(
@@ -102,7 +103,7 @@ def _sample_diameter_power_relation(
         # This case should never happen since this mode is not known by `_select_model`
         return 1.0
     # This case should never happen since the mode is already checked in `_select_model`
-    raise DiameterSynthesisError("mode not understood {}".format(mode))
+    raise DiameterSynthesisError(f"mode not understood {mode}")
 
 
 def _sample_trunk_diameter(params, neurite_type, rng=np.random):
@@ -180,7 +181,7 @@ def _sample_daughter_diameters(section, params, params_tree, rng=np.random):
             rng=rng,
         )
 
-        reduction_factor = morph_funcs.diameter_power_relation_factor(
+        reduction_factor = morph_functions.diameter_power_relation_factor(
             diameter_power_relation, sibling_ratio
         )
 
@@ -220,7 +221,7 @@ def _diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=10
         min_diam (flaot): minimum diameter
         max_diam (float): maximum diameter
     """
-    diams = polynomial.polyval(morph_funcs.lengths_from_origin(section), [initial_diam, taper])
+    diams = polynomial.polyval(morph_functions.lengths_from_origin(section), [initial_diam, taper])
     section.diameters = np.clip(diams, min_diam, max_diam)
 
 
@@ -235,7 +236,7 @@ def _diametrize_tree(neurite, params, params_tree, rng=np.random):
     Returns:
         bool: True is all terminal diameters are small enough, False otherwise
     """
-    params_tree["tot_length"] = morph_funcs.get_total_length(neurite)
+    params_tree["tot_length"] = morph_functions.get_total_length(neurite)
     max_diam = params["terminal_diameters"][params_tree["neurite_type"]]["params"]["max"]
     wrong_tips = False
     active = deque([neurite[0]])
@@ -285,7 +286,7 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config, rng=n
         neurite_type (str or morphio.SectionType): the neurite type to consider
         config (dict): general configuration parameters
     """
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals, too-many-branches
     major_sections = set()
     if params_tree["with_asymmetry"]:
         # Get sections on the major branch
@@ -308,15 +309,24 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config, rng=n
             n_tries = 0
             trunk_diam_frac = 1.0
             n_tries_step = 1
+
+            _params = deepcopy(params) if "taper_increase" in params_tree else params
             while wrong_tips:
-                trunk_diam = trunk_diam_frac * _sample_trunk_diameter(params, neurite_type, rng=rng)
+                if "taper_increase" in params_tree:
+                    _params["tapers"][neurite_type]["params"]["scale"] *= params_tree[
+                        "taper_increase"
+                    ]
+                    params_tree["trunk_diam"] = neurite[0].diameters[0]
+                else:
+                    trunk_diam = trunk_diam_frac * _sample_trunk_diameter(
+                        _params, neurite_type, rng=rng
+                    )
+                    if trunk_diam < 0.01:
+                        trunk_diam = 1.0
+                        L.warning("sampled trunk diameter < 0.01, so use 1 instead")
+                    params_tree["trunk_diam"] = trunk_diam
 
-                if trunk_diam < 0.01:
-                    trunk_diam = 1.0
-                    L.warning("sampled trunk diameter < 0.01, so use 1 instead")
-
-                params_tree["trunk_diam"] = trunk_diam
-                wrong_tips = _diametrize_tree(neurite, params, params_tree, rng=rng)
+                wrong_tips = _diametrize_tree(neurite, _params, params_tree, rng=rng)
 
                 # if we can't get a good model, reduce the trunk diameter progressively
                 if n_tries > N_TRIES_BEFORE_REDUC * n_tries_step:
@@ -349,8 +359,16 @@ def _select_model(model):
         params_tree["mode_diameter_power_relation"] = "generic"
         params_tree["with_asymmetry"] = True
         params_tree["reduction_factor_max"] = 3.0
+    elif model == "neurite_based":
+        params_tree = {}
+        params_tree["mode_sibling"] = "threshold"
+        params_tree["mode_diameter_power_relation"] = "threshold"
+        params_tree["with_asymmetry"] = True
+        params_tree["reduction_factor_max"] = 1.0
+        params_tree["taper_increase"] = 1.02
+
     else:
-        raise DiameterSynthesisError("Unknown diameter model: {}".format(model))
+        raise DiameterSynthesisError(f"Unknown diameter model: {model}")
 
     return partial(_diametrize_neuron, params_tree)
 

@@ -25,6 +25,8 @@ def _truncate(sample_func, min_value, max_value):
     """Ensure sample is within bounds."""
     sample = sample_func()
     n_tries = 0
+    if min_value == max_value:
+        return min_value
     while sample > max_value or sample < min_value:
         sample = sample_func()
         n_tries += 1

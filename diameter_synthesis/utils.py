@@ -30,13 +30,13 @@ def _create_morphologies_dict_dat(morph_path, mtypes_file="neurondb.dat"):
     morph_name = pd.read_csv(mtypes_file, sep=r"\s+", header=None)
     name_dict = defaultdict(list)
     if not morph_name.empty:
-        first_name = morph_name.loc[0, 0]
+        first_name = morph_name.loc[0, 0]  # pylint: disable=no-member
         file_list = Path(morph_path).glob(first_name + "*")
         try:
             ext = next(file_list).suffix
         except StopIteration as e:
             raise DiameterSynthesisError(f"Could not find a file starting with {first_name}") from e
-    for morph in morph_name.values:
+    for morph in morph_name.values:  # pylint: disable=no-member
         name_dict[morph[2]] += [Path(morph_path) / (morph[0] + ext)]
     return name_dict
 
@@ -96,7 +96,7 @@ def create_morphologies_dict(morph_path, mtypes_file=None):
                 L.info("found dat file")
                 return _create_morphologies_dict_dat(morph_path, mtypes_file=mtypes_file)
             raise DiameterSynthesisError(
-                "neurondb file format {} not implemented".format(mtype_path.suffix)
+                f"neurondb file format {mtype_path.suffix} not implemented"
             )
 
     L.info("use all files as single mtype")

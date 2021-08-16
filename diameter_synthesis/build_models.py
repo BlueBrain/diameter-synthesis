@@ -47,7 +47,7 @@ def _get_model_builder(config):
                 "tapers": ["exponnorm", None],
             }
         else:
-            raise DiameterSynthesisError("model not understood {}".format(model))
+            raise DiameterSynthesisError(f"model not understood {model}")
 
         all_models[model] = partial(build_single_model, distribution_types)
     return all_models
