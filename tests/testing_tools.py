@@ -1,8 +1,8 @@
+"""Some tools used in tests."""
 import json
 
-import numpy as np
 import neurom as nm
-from decorator import decorator
+import numpy as np
 from numpy.testing import assert_allclose
 
 
@@ -30,7 +30,8 @@ def _compare_diameters(neuron_a, neuron_b, **kwargs):
 
 
 def nested_round(obj, precision=6):
-    """Round all floats (recursively) in a nested dictionary"""
+    """Round all floats (recursively) in a nested dictionary."""
+    # pylint: disable=too-many-return-statements
     if precision is None:
         precision = 0
     if isinstance(obj, np.ndarray):
@@ -49,17 +50,8 @@ def nested_round(obj, precision=6):
 
 
 def compare_dicts(ref, test, precision=None):
+    """Compare two dictionnaries."""
     if precision is not None:
         ref = nested_round(ref, precision)
         test = nested_round(test, precision)
     return json.dumps(ref, sort_keys=True) == json.dumps(test, sort_keys=True)
-
-
-def reset_random_seed(func):
-    """Decorator to reset the numpy random seed to 0."""
-
-    def wrapper(func, *args, **kwargs):
-        np.random.seed(0)
-        return func(*args, **kwargs)
-
-    return decorator(wrapper, func)

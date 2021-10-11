@@ -1,9 +1,8 @@
 """Tools to validate the input parameters."""
 import json
-from pkg_resources import resource_stream
 
 from jsonschema import validate
-
+from pkg_resources import resource_stream
 
 MODEL_SCHEMA = json.load(resource_stream("diameter_synthesis", "schemas/model_params.json"))
 CONFIG_SCHEMA = json.load(resource_stream("diameter_synthesis", "schemas/config.json"))

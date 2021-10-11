@@ -2,13 +2,13 @@
 import json
 import logging
 import os
-from pathlib import Path
 from collections import defaultdict
+from pathlib import Path
 from xml.etree import ElementTree as ET
 
 import numpy as np
-from neurom import COLS
 import pandas as pd
+from neurom import COLS
 
 from diameter_synthesis.exception import DiameterSynthesisError
 

@@ -1,14 +1,14 @@
 """Build neurite diameters from a pre-generated model. TO REVIEW!."""
 import logging
 from collections import deque
-from functools import partial
 from copy import copy
 from copy import deepcopy
+from functools import partial
 
 import numpy as np
+from morphio import IterType
+from morphio import SectionType
 from numpy.polynomial import polynomial
-
-from morphio import SectionType, IterType
 
 from diameter_synthesis import morph_functions
 from diameter_synthesis import utils
@@ -283,8 +283,9 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config, rng=n
         params_tree (dict): specific parameters of the current tree
         neuron (morphio.mut.Morphology): neuron to diametrize
         params (dict): model parameters
-        neurite_type (str or morphio.SectionType): the neurite type to consider
+        neurite_types (str or morphio.SectionType): the neurite type to consider
         config (dict): general configuration parameters
+        rng: the random number generator to use
     """
     # pylint: disable=too-many-locals, too-many-branches
     major_sections = set()
@@ -379,8 +380,9 @@ def build(neuron, model_params, neurite_types, config, rng=np.random):
     Args:
         neuron (morphio.mut.Morphology): neuron to diametrize
         model_params (dict): model parameters
-        neurite_type (str): the neurite type to consider
+        neurite_types (str): the neurite type to consider
         config (dict): general configuration parameters
+        rng: random number generator to use
     """
     if "seed" in config:
         np.random.seed(config["seed"])
@@ -468,6 +470,7 @@ def diametrize_axon(
         main_taper (float): taper rate of main branch (set to 0 for no taper, should be negative)
         axon_point_isec (int): morphio section id of axon point (see morph_tool.axon_point module)
         ais_length (float): length of ais for which we keep original diameters
+        rng: random number generator to use
     """
     model_params = {
         "trunk_diameters": {

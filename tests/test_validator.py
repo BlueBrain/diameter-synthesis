@@ -1,3 +1,4 @@
+"""Test the validators module."""
 import pytest
 from jsonschema.exceptions import ValidationError
 

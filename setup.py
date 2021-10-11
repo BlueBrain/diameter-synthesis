@@ -1,14 +1,26 @@
-#!/usr/bin/env python
-
+"""Setup for the diameter-synthesis package."""
 import imp
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from setuptools import setup
 
 if sys.version_info < (2, 7):
     sys.exit("Sorry, Python < 2.7 is not supported")
 
 VERSION = imp.load_source("", "diameter_synthesis/version.py").__version__
+
+test_reqs = [
+    "diff_pdf_visually>=1.5.1",
+    "matplotlib<=3.3.4",
+    "decorator",
+    "matplotlib<3.4",  # PDF rendering is slightly modified with matplotlib >= 3.4
+    "mock",
+    "pytest",
+    "pytest-cov",
+    "pytest-html",
+    "pytest-xdist",
+]
 
 setup(
     name="diameter-synthesis",
@@ -32,7 +44,11 @@ setup(
         "pandas>=0.24.0",
         "scipy>=0.13.3",
     ],
-    extras_require={'plot': 'seaborn>=0.11.1'},
+    extras_require={
+        "plot": "seaborn>=0.11.1",
+        "test": test_reqs,
+    },
+    tests_require=test_reqs,
     entry_points={
         "console_scripts": ["diameter-synthesis=diameter_synthesis.cli:cli"],
     },

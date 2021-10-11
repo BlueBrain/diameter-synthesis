@@ -1,7 +1,8 @@
+"""Test the build_diameters module."""
 import logging
 
-import numpy as np
 import morphio.mut
+import numpy as np
 import pytest
 from morphio import PointLevel
 from morphio import SectionType
@@ -10,11 +11,10 @@ from diameter_synthesis import build_diameters
 from diameter_synthesis.exception import DiameterSynthesisError
 
 from .testing_tools import _compare_diameters
-from .testing_tools import reset_random_seed
 
 
 def test_build_simple(config, model_params, small_morph):
-    """Test the main build function to diametrize a neuron"""
+    """Test the main build function to diametrize a neuron."""
     neurite_types = ["basal", "apical"]
     mtype = "L5_TPC:A"
     model = "generic"
@@ -48,7 +48,7 @@ def test_build_simple(config, model_params, small_morph):
 
 
 def test_build_simple_with_apical_sections(config, model_params, small_morph):
-    """Test the main build function to diametrize a neuron with a known apical section"""
+    """Test the main build function to diametrize a neuron with a known apical section."""
     neurite_types = ["basal", "apical"]
     mtype = "L5_TPC:A"
     model = "generic"
@@ -83,7 +83,7 @@ def test_build_simple_with_apical_sections(config, model_params, small_morph):
 
 
 def test_build_simple_with_several_apical_sections(config, model_params, small_morph):
-    """Test the main build function to diametrize a neuron with a known apical section"""
+    """Test the main build function to diametrize a neuron with a known apical section."""
     neurite_types = ["basal", "apical"]
     mtype = "L5_TPC:A"
     model = "generic"
@@ -138,7 +138,7 @@ def test_build_simple_with_several_apical_sections(config, model_params, small_m
 
 
 def test_build(config, model_params, neuron, neuron_diametrized):
-    """Test the main build function to diametrize a neuron"""
+    """Test the main build function to diametrize a neuron."""
     neurite_types = ["basal", "apical"]
     mtype = "L5_TPC:A"
     model = "generic"
@@ -149,7 +149,7 @@ def test_build(config, model_params, neuron, neuron_diametrized):
 
 
 def test_build_no_seed(config, model_params, neuron, neuron_diametrized):
-    """Test main build without seed in config"""
+    """Test main build without seed in config."""
     neurite_types = ["basal", "apical"]
     mtype = "L5_TPC:A"
     model = "generic"
@@ -162,7 +162,7 @@ def test_build_no_seed(config, model_params, neuron, neuron_diametrized):
 
 
 def test_build_multiple_models_warning(config, model_params, neuron, neuron_diametrized, caplog):
-    """Test main build with multiple models in config"""
+    """Test main build with multiple models in config."""
     neurite_types = ["basal", "apical"]
     mtype = "L5_TPC:A"
     model = "generic"
@@ -181,7 +181,7 @@ def test_build_multiple_models_warning(config, model_params, neuron, neuron_diam
 
 
 def test_build_one_sample(test_data_path, config, model_params, neuron):
-    """Test main build with 1 sample in config"""
+    """Test main build with 1 sample in config."""
     neurite_types = ["basal", "apical"]
     mtype = "L5_TPC:A"
     model = "generic"
@@ -197,7 +197,7 @@ def test_build_one_sample(test_data_path, config, model_params, neuron):
 
 
 def test_build_no_sequential(test_data_path, config, model_params, neuron):
-    """Test main build with no sequential in config"""
+    """Test main build with no sequential in config."""
     neurite_types = ["basal", "apical"]
     mtype = "L5_TPC:A"
     model = "astrocyte"
@@ -218,7 +218,7 @@ def test_build_no_sequential(test_data_path, config, model_params, neuron):
 
 
 def test_build_small_n_tries_warning(config, model_params, neuron, caplog):
-    """Test main build with trunk_max_tries = 1"""
+    """Test main build with trunk_max_tries = 1."""
     neurite_types = ["basal", "apical"]
     mtype = "L5_TPC:A"
     model = "generic"
@@ -247,7 +247,7 @@ def test_build_small_n_tries_warning(config, model_params, neuron, caplog):
 
 
 def test_build_small_trunk_diam_warning(config, model_params, neuron, caplog):
-    """Test trunk diam warning in main build"""
+    """Test trunk diam warning in main build."""
     neurite_types = ["basal", "apical"]
     mtype = "L5_TPC:A"
     model = "generic"
@@ -270,7 +270,9 @@ def test_build_small_trunk_diam_warning(config, model_params, neuron, caplog):
 
 
 def test_select_model():
-    """Test the _select_model function"""
+    """Test the _select_model function."""
+    # pylint: disable=protected-access
+    # pylint: disable=no-member
     f_generic = build_diameters._select_model("generic")
     assert f_generic.args == (
         {
@@ -295,9 +297,9 @@ def test_select_model():
         build_diameters._select_model("UNKNOWN")
 
 
-@reset_random_seed
 def test_sample_sibling_ratio(model_params):
-    """Test the _sample_sibling_ratio function"""
+    """Test the _sample_sibling_ratio function."""
+    # pylint: disable=protected-access
     mtype = "L5_TPC:A"
     model = "generic"
     d_generic = build_diameters._sample_sibling_ratio(
@@ -316,9 +318,9 @@ def test_sample_sibling_ratio(model_params):
         )
 
 
-@reset_random_seed
 def test_sample_diameter_power_relation(model_params):
-    """Test the _sample_diameter_power_relation function"""
+    """Test the _sample_diameter_power_relation function."""
+    # pylint: disable=protected-access
     mtype = "L5_TPC:A"
     model = "generic"
     d_generic = build_diameters._sample_diameter_power_relation(
@@ -342,9 +344,9 @@ def test_sample_diameter_power_relation(model_params):
         )
 
 
-@reset_random_seed
 def test_sample_daughter_diameters(neuron, model_params):
-    """Test the _sample_diameter_power_relation function"""
+    """Test the _sample_diameter_power_relation function."""
+    # pylint: disable=protected-access
     mtype = "L5_TPC:A"
     model = "generic"
 
@@ -372,9 +374,8 @@ def test_sample_daughter_diameters(neuron, model_params):
     assert d_no_asymmetry == pytest.approx([1.120733059071045, 0.8804980886414063])
 
 
-def test_diametrize_axon(config, model_params, small_morph):
-    """Test the axon diametrizer"""
-
+def test_diametrize_axon(small_morph):
+    """Test the axon diametrizer."""
     build_diameters.diametrize_axon(small_morph)
 
     expected = morphio.mut.Morphology(small_morph)

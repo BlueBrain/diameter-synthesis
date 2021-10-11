@@ -1,20 +1,23 @@
 """Plotting functions."""
-import os
 import logging
-from pathlib import Path
-from functools import partial
 import multiprocessing
+import os
+from functools import partial
+from pathlib import Path
 
-import pandas
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
 import neurom as nm
 import numpy as np
-
-from neurom import APICAL_DENDRITE, BASAL_DENDRITE, AXON, get, iter_sections
-from neurom.view import matplotlib_impl
+import pandas
+from matplotlib.backends.backend_pdf import PdfPages
+from neurom import APICAL_DENDRITE
+from neurom import AXON
+from neurom import BASAL_DENDRITE
+from neurom import get
+from neurom import iter_sections
 from neurom.geom import bounding_box
+from neurom.view import matplotlib_impl
 from scipy import stats
 from tqdm import tqdm
 
@@ -119,6 +122,7 @@ def _compute_neurite_diff(neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_
             for section_orig, section_new in zip(
                 iter_sections(neurite_orig), iter_sections(neurite_new)
             ):
+                # pylint: disable=protected-access
                 diam_orig.append(utils._get_diameters(section_orig))
                 diam_new.append(utils._get_diameters(section_new))
 
@@ -215,7 +219,7 @@ def plot_distribution_fit(data, model, neurite_types, fig_name="test", ext=".png
         if len(model[neurite_type]) > 0:
             min_val = model[neurite_type]["params"]["min"]
             max_val = model[neurite_type]["params"]["max"]
-            if Path(fig_name).name == "sibling_ratios" or Path(fig_name).name == "tapers":
+            if Path(fig_name).name in ["sibling_ratios", "tapers"]:
                 hist_range = [min_val, max_val]
             else:
                 hist_range = [min_val * 0.5, max_val * 2.0]
@@ -322,20 +326,22 @@ def plot_cumulative_distribution(
     step_size=1.0,
     auto_limit=True,
 ):
-    """
-    Plot the cumulative distribution of features.
+    """Plot the cumulative distribution of features.
 
     It plots feature2 with respect to
-    the metric values determined via feature1
+    the metric values determined via feature1.
 
     Args:
         original_cells: list of NeuroM objects
         diametrized_cells: list of NeuroM objects
-            The new cell with the changed diameters.
+            The new cells with the changed diameters.
+        feature1: the metric feature
+        feature2: the cumulative distribution feature
         neurite_types: string
             The list neurite types to be considered. e.g. ['basal', 'axon']
         step_size: float
             The step size of the cumulative histogram
+        auto_limit: automatically compute limits
 
     Examples of metric features (feature1):
         - segment_radial_distances
@@ -472,7 +478,7 @@ def make_cumulative_figures(
         original_cells, diametrized_cells, feature1, feature2, neurite_types
     )
 
-    figure_name =  f"{figname_prefix}_cumulative_{prefix1}_{basename1}_{basename2}"
+    figure_name = f"{figname_prefix}cumulative_{prefix1}_{basename1}_{basename2}"
 
     fig.savefig(out_dir / (figure_name + ext), bbox_inches="tight")
     plt.close(fig)
@@ -492,7 +498,7 @@ def make_cumulative_figures(
                 neurite_types,
                 auto_limit=False,
             )
-            fname = f"{figure_name}_{original_cell.name}_{ext}"
+            fname = f"{figure_name}_{original_cell.name}{ext}"
             f.savefig(
                 out_dir / (figure_name + "_individual") / (str(i) + "_" + fname),
                 bbox_inches="tight",

@@ -1,3 +1,4 @@
+"""Test the plotting module."""
 import neurom as nm
 import pytest
 from diff_pdf_visually import pdfdiff
@@ -7,11 +8,8 @@ from diameter_synthesis import plotting
 from diameter_synthesis.exception import DiameterSynthesisError
 
 
-def test_plot_diameter_diff(
-    neuron_path, neuron, neuron_diametrized_path, tmpdir, expected_images_path
-):
-    """Test the plot_diameter_diff function"""
-
+def test_plot_diameter_diff(neuron_diametrized_path, tmpdir, expected_images_path):
+    """Test the plot_diameter_diff function."""
     # Test with existing directory and with positive changes
 
     # Load neuron with NeuroM
@@ -54,8 +52,7 @@ def test_plot_diameter_diff(
 
 
 def test_plot_distribution_fit(model_params, model_data, tmpdir, expected_images_path):
-    """Test the plot_distribution_fit function"""
-
+    """Test the plot_distribution_fit function."""
     # Plot the figure
     plotting.plot_distribution_fit(
         model_data["diameter_power_relation"],
@@ -79,10 +76,9 @@ def test_plot_distribution_fit(model_params, model_data, tmpdir, expected_images
 def test_plot_cumulative_distribution(
     single_pop, single_pop_diametrized, tmpdir, expected_images_path
 ):
-    """Test the plot_cumulative_distribution function"""
-
+    """Test the plot_cumulative_distribution function."""
     # Plot the figure
-    fig, ax = plotting.plot_cumulative_distribution(
+    plotting.plot_cumulative_distribution(
         single_pop,
         single_pop_diametrized,
         "segment_radial_distances",
@@ -100,8 +96,7 @@ def test_plot_cumulative_distribution(
 
 
 def test_make_cumulative_figures(single_pop, single_pop_diametrized, tmpdir, expected_images_path):
-    """Test the make_cumulative_figures function"""
-
+    """Test the make_cumulative_figures function."""
     # Plot the figures
     plotting.make_cumulative_figures(
         single_pop,
@@ -138,8 +133,7 @@ def test_cumulative_analysis(
     single_pop_data_dir,
     single_pop_diametrized_data_dir,
 ):
-    """Test the cumulative_analysis function"""
-
+    """Test the cumulative_analysis function."""
     # Plot the figures
     plotting.cumulative_analysis(
         single_pop_data_dir,
@@ -200,8 +194,7 @@ def test_cumulative_analysis(
 def test_violin_analysis(
     tmpdir, expected_images_path, single_pop_data_dir, single_pop_diametrized_data_dir
 ):
-    """Test the violin_analysis function"""
-
+    """Test the violin_analysis function."""
     # Plot the figures
     plotting.violin_analysis(
         single_pop_data_dir,

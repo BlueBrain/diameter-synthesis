@@ -1,17 +1,14 @@
+"""Test the distribution_fitting module."""
 import logging
 
 import pytest
-from pkg_resources import get_distribution
-from pkg_resources import parse_version
 
 from diameter_synthesis import distribution_fitting
 from diameter_synthesis.exception import DiameterSynthesisError
 
-from .testing_tools import reset_random_seed
-
 
 def test_fit_distribution(config, caplog):
-    """Test the fit_distribution function"""
+    """Test the fit_distribution function."""
     model = "generic"
     all_data = [
         [0.75, 0.25],
@@ -144,9 +141,8 @@ def test_fit_distribution(config, caplog):
     )
 
 
-@reset_random_seed
 def test_sample_distribution():
-    """Test the sample_distribution function"""
+    """Test the sample_distribution function."""
     model = {
         "params": {
             "a": 1.5,
@@ -190,10 +186,8 @@ def test_sample_distribution():
         distribution_fitting.sample_distribution(model)
 
 
-@reset_random_seed
 def test_evaluate_distribution():
-    """Test the evaluate_distribution function"""
-
+    """Test the evaluate_distribution function."""
     # Test expon_rev distribution
     res_expon_rev = distribution_fitting.evaluate_distribution(
         -1, "expon_rev", {"loc": 1, "scale": 10}

@@ -1,3 +1,4 @@
+"""Test the morph_functions module."""
 import pytest
 
 from diameter_synthesis import morph_functions
@@ -5,8 +6,7 @@ from diameter_synthesis.exception import DiameterSynthesisError
 
 
 def test_partition_asymmetry_length(neuron):
-    """Test the partition_asymmetry_length function"""
-
+    """Test the partition_asymmetry_length function."""
     section = neuron.root_sections[0]
     res = morph_functions.partition_asymmetry_length(section)
     assert res == pytest.approx(157.6603)
@@ -19,7 +19,7 @@ def test_partition_asymmetry_length(neuron):
 
 
 def test_compute_sibling_ratios(single_neurite):
-    """Test the compute_sibling_ratios function"""
+    """Test the compute_sibling_ratios function."""
     res = morph_functions.compute_sibling_ratios(single_neurite, "mean")
     assert res == pytest.approx([0.508197, 0.434402, 1, 1, 0.395023, 1, 1])
 
@@ -30,7 +30,7 @@ def test_compute_sibling_ratios(single_neurite):
 
 
 def test_compute_diameter_power_relation(single_neurite):
-    """Test the compute_diameter_power_relation function"""
+    """Test the compute_diameter_power_relation function."""
     res = morph_functions.compute_diameter_power_relation(single_neurite, "mean")
     assert res == pytest.approx(
         [6.964765, 4.492706, 5.942041, 2.534333, 7.254541, 2.822203, 16.933426]
@@ -43,7 +43,7 @@ def test_compute_diameter_power_relation(single_neurite):
 
 
 def test_terminal_diameters(single_neurite):
-    """Test the terminal_diameters function"""
+    """Test the terminal_diameters function."""
     res = morph_functions.terminal_diameters(single_neurite, "mean")
     assert res == pytest.approx([0.3, 0.3, 0.23, 0.23, 0.3, 0.3, 0.23, 0.23])
 
@@ -58,7 +58,7 @@ def test_terminal_diameters(single_neurite):
 
 
 def test_min_diameter(single_neurite):
-    """Test the min_diameter function"""
+    """Test the min_diameter function."""
     res = morph_functions.min_diameter(single_neurite)
     assert res == pytest.approx([0.23])
 
@@ -67,7 +67,7 @@ def test_min_diameter(single_neurite):
 
 
 def test_max_diameter(single_neurite):
-    """Test the max_diameter function"""
+    """Test the max_diameter function."""
     res = morph_functions.max_diameter(single_neurite)
     assert res == pytest.approx([1.84])
 
@@ -76,7 +76,7 @@ def test_max_diameter(single_neurite):
 
 
 def test_trunk_diameter(single_neurite):
-    """Test the trunk_diameter function"""
+    """Test the trunk_diameter function."""
     res = morph_functions.trunk_diameter(single_neurite)
     assert res == pytest.approx([1.84])
 
@@ -91,7 +91,7 @@ def test_trunk_diameter(single_neurite):
 
 
 def test_taper(single_neurite):
-    """Test the taper function"""
+    """Test the taper function."""
     params = {"min": 0, "max": 1}
     res = morph_functions.taper(single_neurite, params)
     assert res == pytest.approx([0.0, 0.0, 0.0, 0.0, 0.0])
@@ -105,7 +105,7 @@ def test_taper(single_neurite):
 
 
 def test_get_additional_attribute(single_neurite):
-    """Test the get_additional_attribute function"""
+    """Test the get_additional_attribute function."""
     res_asymmetry = morph_functions.get_additional_attribute("asymmetry", single_neurite)
     assert res_asymmetry == pytest.approx(
         [0.19022014, 0.02628145, 0.16578421, 0.16073337, 0.00042449, 0.00093826, 0.02613346],
@@ -164,7 +164,7 @@ def test_get_additional_attribute(single_neurite):
 
 
 def test_add_additional_attributes(single_neurite):
-    """Test the add_additional_attributes function"""
+    """Test the add_additional_attributes function."""
     res_max_branch = morph_functions.add_additional_attributes(
         [-1, 1, 10], single_neurite, "max_branch"
     )

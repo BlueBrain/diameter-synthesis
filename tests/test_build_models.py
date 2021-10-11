@@ -1,3 +1,4 @@
+"""Test the build_models module."""
 import pytest
 
 from diameter_synthesis import build_models
@@ -7,6 +8,7 @@ from .testing_tools import compare_dicts
 
 
 def test_build(single_pop, model_params, model_data, empty_build_result):
+    """Test the build function."""
     # Test with generic model
     config = {
         "models": ["generic"],

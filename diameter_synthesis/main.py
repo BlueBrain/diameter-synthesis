@@ -4,12 +4,11 @@ import logging
 import multiprocessing
 import os
 from pathlib import Path
-from tqdm import tqdm
-import numpy as np
-
-from morphio.mut import Morphology
 
 import neurom as nm
+import numpy as np
+from morphio.mut import Morphology
+from tqdm import tqdm
 
 from diameter_synthesis import utils
 from diameter_synthesis.build_diameters import build as build_diameters
@@ -171,7 +170,7 @@ def diametrize_single_neuron(neuron, config=None, apical_point_sec_ids=None):
         neuron (mophio.mut.Morphology): neuron to consider
         config (dict): dict with entry 'model' and 'diameters' with corresponding dicts, if None,
             default dict will be used
-        apical_point_sect_ids (list): list of apical points if any
+        apical_point_sec_ids (list): list of apical points if any
     """
     if config is None:
         config = {

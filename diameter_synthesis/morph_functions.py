@@ -4,11 +4,12 @@ from functools import lru_cache
 
 import neurom as nm
 import numpy as np
-from neurom.core.morphology import iter_sections
 from neurom.core.morphology import Section
+from neurom.core.morphology import iter_sections
 
 from diameter_synthesis.exception import DiameterSynthesisError
-from diameter_synthesis.utils import _get_diameters, _get_mean_diameter
+from diameter_synthesis.utils import _get_diameters
+from diameter_synthesis.utils import _get_mean_diameter
 
 L = logging.getLogger(__name__)
 
