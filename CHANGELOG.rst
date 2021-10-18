@@ -4,6 +4,7 @@ Changelog
 Version 0.2.5
 -------------
 
+- Add diameter smoother
 - Use NeuroM version 3
 
 Version 0.2.4
