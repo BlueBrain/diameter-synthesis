@@ -38,9 +38,8 @@ doc_reqs = [
 
 test_reqs = [
     "diff_pdf_visually>=1.5.1",
-    "matplotlib<=3.3.4",
     "decorator",
-    "matplotlib<3.4",  # PDF rendering is slightly modified with matplotlib >= 3.4
+    "matplotlib",
     "mock",
     "pytest",
     "pytest-cov",

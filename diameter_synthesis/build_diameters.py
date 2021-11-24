@@ -349,7 +349,7 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config, rng=n
                 if n_tries > N_TRIES_BEFORE_REDUC * n_tries_step:
                     trunk_diam_frac -= TRUNK_FRAC_DECREASE
                     n_tries_step += 1
-                if n_tries > config["trunk_max_tries"]:
+                if n_tries > config.get("trunk_max_tries", 100):
                     L.warning("max tries attained with %s", neurite_type)
                     wrong_tips = False
                 n_tries += 1
@@ -409,14 +409,15 @@ def build(neuron, model_params, neurite_types, config, rng=np.random):
     diameter_generator = _select_model(config["models"][0])
 
     diameter_generator(neuron, model_params, neurite_types, config, rng=rng)
-    if config["n_samples"] > 1:
+    n_samples = config.get("n_samples", 1)
+    if n_samples > 1:
         diameters = utils.get_all_diameters(neuron)
-        for _ in range(config["n_samples"] - 1):
+        for _ in range(n_samples - 1):
             diameter_generator(neuron, model_params, neurite_types, config, rng=rng)
             for i, new_diams in enumerate(utils.get_all_diameters(neuron)):
                 diameters[i] += new_diams
         for i, _ in enumerate(diameters):
-            diameters[i] /= config["n_samples"]
+            diameters[i] /= n_samples
         utils.set_all_diameters(neuron, diameters)
 
 

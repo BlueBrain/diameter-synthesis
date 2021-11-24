@@ -103,7 +103,7 @@ def run_models(config_file, plot, ext="png"):
     L.info("Loading morphologies...")
     morphologies_dict = utils.create_morphologies_dict(
         config["morph_path"],
-        mtypes_file=config["mtypes_file"],
+        mtypes_file=config.get("mtypes_file", None),
     )
 
     morphologies = {
@@ -164,7 +164,7 @@ def run_diameters(config_file, models_params_file):
 
         morphologies_dict = utils.create_morphologies_dict(
             config["morph_path"],
-            mtypes_file=config["mtypes_file"],
+            mtypes_file=config.get("mtypes_file", None),
         )
 
         worker = DiameterWorker(model, models_params, config)
@@ -173,10 +173,8 @@ def run_diameters(config_file, models_params_file):
             [neuron, mtype] for mtype in morphologies_dict for neuron in morphologies_dict[mtype]
         ]
 
-        pool = multiprocessing.Pool(config["n_cpu"])  # pylint: disable=consider-using-with
-        list(tqdm(pool.imap(worker, all_neurons), total=len(all_neurons)))
-        pool.close()
-        pool.join()
+        with multiprocessing.Pool(config.get("n_cpu", 1)) as pool:
+            list(tqdm(pool.imap(worker, all_neurons), total=len(all_neurons)))
 
 
 def diametrize_single_neuron(neuron, config=None, apical_point_sec_ids=None):

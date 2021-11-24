@@ -1,0 +1,18 @@
+{
+    "models": [
+        "generic"
+    ],
+    "models_params_file": "diameter_model.json",
+    "morph_path": "morphologies",
+    "neurite_types": [
+        "basal",
+        "apical"
+    ],
+    "taper": {
+        "max": 0.005,
+        "max_residual": 100,
+        "min": -0.01,
+        "zeros": 1e-08
+    },
+    "terminal_threshold": 2.0
+}

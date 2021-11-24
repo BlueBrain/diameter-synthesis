@@ -1,0 +1,15 @@
+{
+    "models": [
+        "generic"
+    ],
+    "morph_path": "morphologies",
+    "n_cpu": 2,
+    "n_samples": 10,
+    "neurite_types": [
+        "basal",
+        "apical"
+    ],
+    "new_morph_path": "diametrized_morphologies",
+    "seed": 1,
+    "trunk_max_tries": 100
+}
