@@ -39,7 +39,7 @@ def test_run_models(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir
     extract_models_params["neurite_types"] = ["basal", "apical"]
 
     config_file = str(tmpdir / "diametrizer_params.json")
-    with open(config_file, "w") as json_file:
+    with open(config_file, "w", encoding="utf-8") as json_file:
         json.dump(extract_models_params, json_file, sort_keys=True, indent=4)
 
     # Run with CLI
@@ -47,7 +47,7 @@ def test_run_models(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir
     runner.invoke(cli.cli, ["run_models", config_file], catch_exceptions=False)
 
     # Check results
-    with open(extract_models_params["models_params_file"], "r") as json_file:
+    with open(extract_models_params["models_params_file"], "r", encoding="utf-8") as json_file:
         res = json.load(json_file)
 
     assert list(res.keys()) == ["generic"]
@@ -98,7 +98,7 @@ def test_run_diameters(tmpdir, single_pop_data_dir, config, model_params_path):
     extract_models_params["new_morph_path"] = str(res_path)
 
     config_file = str(tmpdir / "diametrizer_params.json")
-    with open(config_file, "w") as json_file:
+    with open(config_file, "w", encoding="utf-8") as json_file:
         json.dump(extract_models_params, json_file, sort_keys=True, indent=4)
 
     # Run with CLI

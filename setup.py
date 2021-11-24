@@ -40,17 +40,9 @@ setup(
         "Tracker": "https://github.com/BlueBrain/diameter-synthesis/issues",
         "Source": "https://github.com/BlueBrain/diameter-synthesis",
     },
-    install_requires=[
-        "click>=7.0",
-        "jsonschema>=3",
-        "matplotlib>=2.2.0",
-        "morphio>=2.3.4",
-        "neurom>=3.0,<4.0",
-        "numpy>=1.15.0",
-        "pandas>=0.24.0",
-        "scipy>=0.13.3",
-    ],
+    install_requires=reqs,
     extras_require={
+        "docs": doc_reqs,
         "plot": "seaborn>=0.11.1",
         "test": test_reqs,
     },
@@ -73,5 +65,6 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
 )

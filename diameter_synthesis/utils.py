@@ -205,7 +205,7 @@ def _create_morphologies_dict_json(
     prefix="",
 ):
     """Create dict to load the morphologies from a directory, with json."""
-    with open(mtypes_file, "r") as filename:
+    with open(mtypes_file, "r", encoding="utf-8") as filename:
         morph_name = json.load(filename)
 
     name_dict = {}

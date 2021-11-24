@@ -20,6 +20,7 @@ import multiprocessing
 import os
 from functools import partial
 from pathlib import Path
+from copy import copy
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -30,6 +31,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from neurom import APICAL_DENDRITE
 from neurom import AXON
 from neurom import BASAL_DENDRITE
+from neurom import COLS
 from neurom import get
 from neurom import iter_sections
 from neurom.geom import bounding_box
@@ -47,23 +49,18 @@ L = logging.getLogger(__name__)
 COLORS = {"basal": "r", "apical": "m", "axon": "b"}
 
 CUMULATIVE_FEATURE_PAIRS = [
-    #    ("section_radial_distances", "section_volumes"),
-    #    ("section_radial_distances", "section_areas"),
     ("section_path_distances", "section_volumes"),
     ("section_path_distances", "section_areas"),
-    #    ("section_branch_orders", "section_volumes"),
-    #    ("section_branch_orders", "section_areas"),
 ]
 
 VIOLIN_FEATURES_LIST = [
     "segment_radii",
     "section_areas",
     "section_volumes",
-    #    "sibling_ratio",
-    #    "diameter_power_relation",
 ]
 
 # to include morphologies only features
+"""
 VIOLIN_FEATURES_LIST += [
     "number_of_neurites",
     "number_of_sections_per_neurite",
@@ -76,16 +73,16 @@ VIOLIN_FEATURES_LIST += [
     "section_branch_orders",
     "remote_bifurcation_angles",
 ]
+"""
 
 VIOLIN_FEATURES_NAME = [
     "Segment radii",
     "Section areas",
     "Section volumes",
-    #    "Sibling ratios",
-    #    "Diameter power relation",
 ]
 
 # to include morphologies only features
+"""
 VIOLIN_FEATURES_NAME += [
     "Number of neurites",
     "Number of sections",
@@ -98,6 +95,7 @@ VIOLIN_FEATURES_NAME += [
     "Section branch orders",
     "Remote bif angles",
 ]
+"""
 
 NEURITE_STR_TO_TYPES = {
     "basal": nm.NeuriteType.basal_dendrite,
@@ -133,26 +131,27 @@ def _compute_neurite_diff(neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_
         for neurite_orig, neurite_new, neurite_diff_pos, neurite_diff_neg in zip(
             neurites_orig, neurites_new, neurites_diff_pos, neurites_diff_neg
         ):
-            diam_orig = []
-            diam_new = []
+            orig = []
+            new = []
             for section_orig, section_new in zip(
                 iter_sections(neurite_orig), iter_sections(neurite_new)
             ):
-                # pylint: disable=protected-access
-                diam_orig.append(utils._get_diameters(section_orig))
-                diam_new.append(utils._get_diameters(section_new))
+                orig.append(section_orig.points)
+                new.append(section_new.points)
 
             for j, section in enumerate(iter_sections(neurite_diff_pos)):
-                diff = diam_new[j] - diam_orig[j]
-                diff_pos = diff.copy()
-                diff_pos[diff_pos < 0] = 0
-                section.points[:, nm.COLS.R] = diff_pos
+                _diff = new[j][:, COLS.R] - orig[j][:, COLS.R]
+                _diff[_diff < 0] = 0
+                diff = copy(orig[j])
+                diff[:, COLS.R] = _diff
+                section.points = diff
 
             for j, section in enumerate(iter_sections(neurite_diff_neg)):
-                diff = diam_new[j] - diam_orig[j]
-                diff_neg = -diff.copy()
-                diff_neg[diff_neg < 0] = 0
-                section.points[:, nm.COLS.R] = diff_neg
+                _diff = -(new[j][:, COLS.R] - orig[j][:, COLS.R])
+                _diff[_diff < 0] = 0
+                diff = copy(orig[j])
+                diff[:, COLS.R] = _diff
+                section.points = diff
 
 
 def plot_diameter_diff(neuron_name, neuron_new, neurite_types, folder, ext=".png"):
@@ -494,9 +493,8 @@ def make_cumulative_figures(
         original_cells, diametrized_cells, feature1, feature2, neurite_types
     )
 
-    figure_name = f"{figname_prefix}cumulative_{prefix1}_{basename1}_{basename2}"
-
-    fig.savefig(out_dir / (figure_name + ext), bbox_inches="tight")
+    figure_name = f"{figname_prefix}cumulative_{prefix1}_{basename1}_{basename2}{ext}"
+    fig.savefig(out_dir / figure_name, bbox_inches="tight")
     plt.close(fig)
 
     if individual:

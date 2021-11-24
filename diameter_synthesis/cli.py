@@ -60,29 +60,31 @@ def run_diameters(config_file, models_params_file):
 
 
 @cli.command("plot_diff")
-@click.argument("original_folder", type=click.Path(exists=True))
-@click.argument("diametrized_folder", type=click.Path(exists=True))
-@click.argument("plot_folder", type=click.Path())
-@click.option("-n", "--ncells", help="max number of cells to plot")
-@click.option("-e", "--ext", help="figures extention")
-def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=None, ext=".png"):
+@click.option("--orig-path", help="Path to original cells", required=True)
+@click.option("--diam-path", help="Path to diametrized cells", required=True)
+@click.option("-o", "--out-dir", help="Directory to output the analysis results", required=True)
+@click.option("-n", "--ncells", default=10, help="max number of cells to plot")
+@click.option("-e", "--ext", default=".png", help="figures extention")
+def plot_diff(orig_path, diam_path, out_dir, ncells=None, ext=".png"):
     """Plot original and new neurons as well as their differences."""
     from .plotting import plot_diameter_diff
 
     neurite_types = ["basal", "apical", "axon"]
     import neurom as nm
 
-    morphologies_dict = create_morphologies_dict(original_folder)
-
-    if not Path(plot_folder).exists():
-        os.mkdir(plot_folder)
+    morphologies_dict = create_morphologies_dict(orig_path)
+    out_dir = Path(out_dir) / "diffs"
+    if not out_dir.exists():
+        os.mkdir(out_dir)
 
     for mtype in morphologies_dict:
-        L.info("Plot mtype %s", mtype)
-
-        plot_folder_mtype = Path(plot_folder) / mtype
-        if not Path(plot_folder_mtype).exists:
-            os.mkdir(plot_folder_mtype)
+        if len(morphologies_dict) > 1:
+            L.info("Plot mtype %s", mtype)
+            plot_folder_mtype = out_dir / mtype
+            if not plot_folder_mtype.exists:
+                os.mkdir(plot_folder_mtype)
+        else:
+            plot_folder_mtype = out_dir
 
         if ncells is not None:
             neurons = morphologies_dict[mtype][: int(ncells)]
@@ -90,8 +92,7 @@ def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=None, ext
             neurons = morphologies_dict[mtype]
 
         for neuron in tqdm(neurons):
-            neuron_new = nm.load_morphology(Path(diametrized_folder) / neuron.name)
-
+            neuron_new = nm.load_morphology(Path(diam_path) / neuron.name)
             plot_diameter_diff(neuron, neuron_new, neurite_types, plot_folder_mtype, ext=ext)
 
 
@@ -103,7 +104,7 @@ def plot_diff(original_folder, diametrized_folder, plot_folder, ncells=None, ext
 @click.option("--cumulative", help="Cumulative distribution plots", is_flag=True)
 @click.option("--individual", help="Output a plot for each neuron", is_flag=True)
 @click.option("--violin", help="Violin distribution plots", is_flag=True)
-@click.option("-e", "--ext", help="Figures extention")
+@click.option("-e", "--ext", default=".png", help="Figures extention")
 def run_analysis(
     orig_path, diam_path, out_dir, cumulative, individual, violin, mtypes_file=None, ext=".png"
 ):
@@ -113,33 +114,16 @@ def run_analysis(
     if cumulative:
         from .plotting import cumulative_analysis
 
-        cumulative_analysis(
-            orig_path,
-            diam_path,
-            Path(out_dir) / "basal",
-            individual,
-            mtypes_file=mtypes_file,
-            neurite_types=["basal"],
-            ext=ext,
-        )
-        cumulative_analysis(
-            orig_path,
-            diam_path,
-            Path(out_dir) / "axon",
-            individual,
-            mtypes_file=mtypes_file,
-            neurite_types=["axon"],
-            ext=ext,
-        )
-        cumulative_analysis(
-            orig_path,
-            diam_path,
-            Path(out_dir) / "apical",
-            individual,
-            mtypes_file=mtypes_file,
-            neurite_types=["apical"],
-            ext=ext,
-        )
+        for neurite_type in ["basal", "axon", "apical"]:
+            cumulative_analysis(
+                orig_path,
+                diam_path,
+                Path(out_dir) / neurite_type,
+                individual,
+                mtypes_file=mtypes_file,
+                neurite_types=[neurite_type],
+                ext=ext,
+            )
     if violin:
         from .plotting import violin_analysis
 

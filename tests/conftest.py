@@ -62,7 +62,7 @@ def config_path(test_data_path):
 @pytest.fixture
 def config(config_path):
     """The config used in tests."""
-    with open(config_path) as filename:
+    with open(config_path, encoding="utf-8") as filename:
         return json.load(filename)
 
 
@@ -75,14 +75,14 @@ def model_params_path(test_data_path):
 @pytest.fixture
 def model_params(model_params_path):
     """The model parameters."""
-    with open(model_params_path) as filename:
+    with open(model_params_path, encoding="utf-8") as filename:
         return json.load(filename)
 
 
 @pytest.fixture
 def model_data(test_data_path):
     """The model data."""
-    with open(test_data_path / "model_data.json", "r") as filename:
+    with open(test_data_path / "model_data.json", "r", encoding="utf-8") as filename:
         return json.load(filename)
 
 

@@ -97,13 +97,13 @@ def _build_all_models(morphologies, config, plot=False, ext="png"):
 
 def run_models(config_file, plot, ext="png"):
     """Run the model extraction from config file."""
-    with open(config_file, "r") as filename:
+    with open(config_file, "r", encoding="utf-8") as filename:
         config = json.load(filename)
 
     L.info("Loading morphologies...")
     morphologies_dict = utils.create_morphologies_dict(
         config["morph_path"],
-        mtypes_file=config["mtypes_file"],
+        mtypes_file=config.get("mtypes_file", None),
     )
 
     morphologies = {
@@ -114,7 +114,7 @@ def run_models(config_file, plot, ext="png"):
     L.info("Extracting model parameters...")
     models_params = _build_all_models(morphologies, config, plot=plot, ext=ext)
 
-    with open(config["models_params_file"], "w") as json_file:
+    with open(config["models_params_file"], "w", encoding="utf-8") as json_file:
         json.dump(models_params, json_file, sort_keys=True, indent=4, cls=NumpyEncoder)
 
 
@@ -153,10 +153,10 @@ class DiameterWorker:
 
 def run_diameters(config_file, models_params_file):
     """Build new diameters from config file and diameter model."""
-    with open(config_file, "r") as filename:
+    with open(config_file, "r", encoding="utf-8") as filename:
         config = json.load(filename)
 
-    with open(models_params_file, "r") as filename:
+    with open(models_params_file, "r", encoding="utf-8") as filename:
         models_params = json.load(filename)
 
     for model in config["models"]:
@@ -164,7 +164,7 @@ def run_diameters(config_file, models_params_file):
 
         morphologies_dict = utils.create_morphologies_dict(
             config["morph_path"],
-            mtypes_file=config["mtypes_file"],
+            mtypes_file=config.get("mtypes_file", None),
         )
 
         worker = DiameterWorker(model, models_params, config)
@@ -173,10 +173,8 @@ def run_diameters(config_file, models_params_file):
             [neuron, mtype] for mtype in morphologies_dict for neuron in morphologies_dict[mtype]
         ]
 
-        pool = multiprocessing.Pool(config["n_cpu"])  # pylint: disable=consider-using-with
-        list(tqdm(pool.imap(worker, all_neurons), total=len(all_neurons)))
-        pool.close()
-        pool.join()
+        with multiprocessing.Pool(config.get("n_cpu", 1)) as pool:
+            list(tqdm(pool.imap(worker, all_neurons), total=len(all_neurons)))
 
 
 def diametrize_single_neuron(neuron, config=None, apical_point_sec_ids=None):
