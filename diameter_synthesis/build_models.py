@@ -37,10 +37,10 @@ def _get_model_builder(config):
     """Get the diameter model builder.
 
     Args:
-        config (dict): configuration dictionary
+        config (dict): configuration dictionary.
 
     Returns:
-        dict: dictionary of models
+        dict: dictionary of models.
     """
     all_models = {}
     for model in config["models"]:
@@ -73,11 +73,12 @@ def build(morphologies, config, with_data=False):
     """Build a model from a set of morphologies and a config file.
 
     Args:
-        morphologies (dict): dictionary of morphologies
-        config (dict): configuration dictionary
+        morphologies (dict): dictionary of morphologies.
+        config (dict): configuration dictionary.
+        with_data (bool): if set to True, the model data are also returned.
 
     Returns:
-        dict: parameter of the models (possibly the data extracted)
+        dict: parameter of the models (and possibly the data extracted if `with_data==True`).
     """
     all_models = _get_model_builder(config)
     models_params, models_data = all_models[config["models"][0]](morphologies, config)
@@ -90,12 +91,12 @@ def build_single_model(sampling_model, morphologies, config):
     """Build a single model.
 
     Args:
-        sampling_model (dict): parameters for model building
-        morphologies (dict): dictionary of morphologies
-        config (dict): configuration dictionary
+        sampling_model (dict): parameters for model building.
+        morphologies (dict): dictionary of morphologies.
+        config (dict): configuration dictionary.
 
     Returns:
-        dict: parameter of the models data extracted)
+        dict: parameter of the models data extracted.
     """
     all_data = extract_parameters(sampling_model, morphologies, config)
     all_models = fit_all_models(all_data, sampling_model, config)
@@ -103,15 +104,15 @@ def build_single_model(sampling_model, morphologies, config):
 
 
 def extract_parameters(sampling_model, morphologies, config):
-    """Extract parameters from neurites to then use for model building..
+    """Extract parameters from neurites to then use for model building.
 
     Args:
-        sampling_model (dict): parameters for model building
-        morphologies (dict): dictionary of morphologies
-        config (dict): configuration dictionary
+        sampling_model (dict): parameters for model building.
+        morphologies (dict): dictionary of morphologies.
+        config (dict): configuration dictionary.
 
     Returns:
-        dict: data extracted
+        dict: data extracted.
     """
     all_data = {
         "sibling_ratios": {},
@@ -159,15 +160,15 @@ def extract_parameters(sampling_model, morphologies, config):
 
 
 def fit_all_models(all_data, sampling_model, config):
-    """Fit the parmaeters to get models.
+    """Fit the parameters to get models.
 
     Args:
-        all_data (dict): parameters to fit
-        sampling_model (dict): parameters for model building
-        config (dict): configuration dictionary
+        all_data (dict): parameters to fit.
+        sampling_model (dict): parameters for model building.
+        config (dict): configuration dictionary.
 
     Returns:
-        dict: models
+        dict: models.
     """
     all_models = {
         "sibling_ratios": {},
@@ -221,12 +222,12 @@ def fit_model(sampling_model, data, extra_params):
     """Fit a single parameter.
 
     Args:
-        sampling_model (dict): model parameters
-        data (array): parameter to fit
-        extra_aprams (dict): additional parameters
+        sampling_model (dict): model parameters.
+        data (array): parameter to fit.
+        extra_params (dict): additional parameters.
 
     Returns:
-        dict: fit parameters
+        dict: fit parameters.
     """
     if len(data) == 0:
         return {}

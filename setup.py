@@ -34,6 +34,7 @@ doc_reqs = [
     "sphinx",
     "sphinx-bluebrain-theme",
     "sphinx-jsonschema",
+    "sphinx_click",
 ]
 
 test_reqs = [

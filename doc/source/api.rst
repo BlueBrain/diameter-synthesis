@@ -7,7 +7,6 @@ API Documentation
     diameter_synthesis
     diameter_synthesis.build_diameters
     diameter_synthesis.build_models
-    diameter_synthesis.cli
     diameter_synthesis.distribution_fitting
     diameter_synthesis.exception
     diameter_synthesis.main

@@ -50,7 +50,14 @@ class NumpyEncoder(json.JSONEncoder):
 
 
 def plot_models(morphologies, config, models_params, models_data, ext="png"):
-    """Plot the models."""
+    """Plot the models.
+
+    Args:
+        morphologies (dict): a dict with mtype->[morphologies].
+        config (dict): the config to use.
+        models_params (dict): the models parameters.
+        models_data (dict): the models data.
+    """
     L.info("Plot the fits...")
 
     if not Path(config["fig_folder"]).exists():
@@ -96,7 +103,13 @@ def _build_all_models(morphologies, config, plot=False, ext="png"):
 
 
 def run_models(config_file, plot, ext="png"):
-    """Run the model extraction from config file."""
+    """Run the model extraction from config file.
+
+    Args:
+        config_file (str): the path to the configuration file.
+        plot (bool): plot the models once they are built.
+        ext (str): the file extension used to export the plots.
+    """
     with open(config_file, "r", encoding="utf-8") as filename:
         config = json.load(filename)
 
@@ -119,7 +132,13 @@ def run_models(config_file, plot, ext="png"):
 
 
 class DiameterWorker:
-    """Worker for building diameters."""
+    """Worker for building diameters.
+
+    Args:
+        model (str): The model to use.
+        models_params (dict): The parameters of the models containing the model name as key.
+        config (dict): The configuration to use.
+    """
 
     def __init__(self, model, models_params, config):
         """Init function."""
@@ -152,7 +171,12 @@ class DiameterWorker:
 
 
 def run_diameters(config_file, models_params_file):
-    """Build new diameters from config file and diameter model."""
+    """Build new diameters from config file and diameter model.
+
+    Args:
+        config_file (str): the path to the configuration file.
+        models_params_file (str): the path to the file containing the model parameters.
+    """
     with open(config_file, "r", encoding="utf-8") as filename:
         config = json.load(filename)
 
@@ -181,10 +205,10 @@ def diametrize_single_neuron(neuron, config=None, apical_point_sec_ids=None):
     """Diametrize single neuron by learning diameter model from it.
 
     Args:
-        neuron (mophio.mut.Morphology): neuron to consider
+        neuron (mophio.mut.Morphology): neuron to consider.
         config (dict): dict with entry 'model' and 'diameters' with corresponding dicts, if None,
-            default dict will be used
-        apical_point_sec_ids (list): list of apical points if any
+            default dict will be used.
+        apical_point_sec_ids (list): list of apical points if any.
     """
     if config is None:
         config = {

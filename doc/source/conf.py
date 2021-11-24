@@ -9,7 +9,7 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-
+import re
 from pkg_resources import get_distribution
 
 # -- Project information -----------------------------------------------------
@@ -33,6 +33,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
+    "sphinx_click",
     "sphinx-jsonschema",
     "m2r2",
 ]
@@ -78,6 +79,22 @@ autodoc_default_options = {
 }
 
 intersphinx_mapping = {
+    "morphio": ("https://morphio.readthedocs.io/en/latest/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
     "python": ("https://docs.python.org/3", None),
     "pandas": ("https://pandas.pydata.org/docs", None),
 }
+
+
+def fix_signature(app, what, name, obj, options, signature, return_annotation):
+    """Remove the module locations from signatures."""
+    if signature:
+        module_pattern = r"(.*)<module '(.*)' from '.*'>(.*)"
+        match = re.match(module_pattern, signature)
+        if match:
+            return "".join(match.groups()), return_annotation
+
+
+def setup(app):
+    """Setup Sphinx by connecting functions to events."""
+    app.connect("autodoc-process-signature", fix_signature)

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=import-outside-toplevel,redefined-outer-name
 import logging
 import os
 from pathlib import Path
@@ -28,9 +29,6 @@ from .utils import create_morphologies_dict
 morphio.set_maximum_warnings(0)
 L = logging.getLogger(__name__)
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
-
-
-# pylint: disable=import-outside-toplevel,redefined-outer-name
 
 
 @click.group()

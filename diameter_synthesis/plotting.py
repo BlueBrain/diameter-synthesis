@@ -303,20 +303,16 @@ def plot_cumulative_distribution(
 ):
     """Plot the cumulative distribution of features.
 
-    It plots feature2 with respect to
-    the metric values determined via feature1.
+    It plots feature2 with respect to the metric values determined via feature1.
 
     Args:
-        original_cells: list of NeuroM objects
-        diametrized_cells: list of NeuroM objects
-            The new cells with the changed diameters.
-        feature1: the metric feature
-        feature2: the cumulative distribution feature
-        neurite_types: string
-            The list neurite types to be considered. e.g. ['basal', 'axon']
-        step_size: float
-            The step size of the cumulative histogram
-        auto_limit: automatically compute limits
+        original_cells: list of NeuroM objects.
+        diametrized_cells (list): The new cells with the changed diameters.
+        feature1: the metric feature.
+        feature2: the cumulative distribution feature.
+        neurite_types (string): The list neurite types to be considered. e.g. ['basal', 'axon'].
+        step_size (float): The step size of the cumulative histogram.
+        auto_limit (bool): automatically compute limits.
 
     Examples of metric features (feature1):
         - segment_radial_distances

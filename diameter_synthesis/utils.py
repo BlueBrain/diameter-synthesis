@@ -35,11 +35,11 @@ def _create_morphologies_dict_dat(morph_path, mtypes_file="neurondb.dat"):
     """Create dict to load the morphologies from a directory, with dat file.
 
     Args:
-        morph_path (str): path to morphologies
-        mtype_file (str): path to dat file
+        morph_path (str): path to morphologies.
+        mtype_file (str): path to dat file.
 
     Returns:
-        dict: dictionary of morphologies keyed by mtypes
+        dict: dictionary of morphologies keyed by mtypes.
     """
     # pylint wrongly determines `morph_name` as TextFileReader
     # pylint: disable=no-member
@@ -61,10 +61,10 @@ def _create_morphologies_dict_folder(morph_path):
     """Create dict to load the morphologies from a directory, from folders.
 
     Args:
-        morph_path (str): path to morphologies
+        morph_path (str): path to morphologies.
 
     Returns:
-        dict: dictionary of morphologies keyed by mtypes
+        dict: dictionary of morphologies keyed by mtypes.
     """
     name_dict = defaultdict(list)
     for mtype in Path(morph_path).iterdir():
@@ -78,10 +78,10 @@ def _create_morphologies_dict_all(morph_path):
     """Create dict to load the morphologies from a directory, all together.
 
     Args:
-        morph_path (str): path to morphologies
+        morph_path (str): path to morphologies.
 
     Returns:
-        dict: dictionary of morphologies with single key
+        dict: dictionary of morphologies with single key.
     """
     name_dict = {"generic_type": []}
     for fname in Path(morph_path).iterdir():
@@ -95,11 +95,11 @@ def create_morphologies_dict(morph_path, mtypes_file=None):
     """Create dict to load the morphologies from a directory, by mtype.
 
      Args:
-        morph_path (str): path to morphologies
-        mtype_file (str): path to dat file
+        morph_path (str): path to morphologies.
+        mtype_file (str): path to dat file.
 
     Returns:
-        dict: dictionary of morphologies with single key
+        dict: dictionary of morphologies with single key.
     """
     if mtypes_file is None and next(Path(morph_path).iterdir()).is_dir():
         L.info("found folder structure per mtype")
@@ -120,11 +120,11 @@ def create_morphologies_dict(morph_path, mtypes_file=None):
 
 
 def _set_diameters(section, diameters):
-    """Set diameters (neurom 2.0.0 only).
+    """Set diameters.
 
     Args:
-        section (neurom 2.0.0 section): section to diametrize
-        diameters (list/ndarray): diameters
+        section (neurom.Section): section to diametrize.
+        diameters (list/ndarray): diameters.
     """
     section.morphio_section.diameters = diameters
 
@@ -132,14 +132,14 @@ def _set_diameters(section, diameters):
 def _get_mean_diameter(section):
     """Section mean diameter.
 
-    It is obtained by averaging the segment truncated cone
-    diameters and weighting them by their length. (neurom only)
+    It is obtained by averaging the segment truncated cone diameters and weighting them by their
+    length. (neurom only)
 
     Args:
-        section (neurom section): section to consider
+        section (neurom.Section): section to consider.
 
     Returns:
-        float: mean diameter of the section
+        float: mean diameter of the section.
     """
     segment_lengths = np.linalg.norm(
         section.points[1:, COLS.XYZ] - section.points[:-1, COLS.XYZ], axis=1
@@ -164,8 +164,8 @@ def set_all_diameters(neuron, all_diameters):
     """Set all neuron diameters (morphio only).
 
     Args:
-        neuron (morphio.mut.Morophology): neuron to consider
-        all_diameters (list): list of section diameters
+        neuron (morphio.mut.Morophology): neuron to consider.
+        all_diameters (list): list of section diameters.
     """
     for diameters, section in zip(all_diameters, neuron.iter()):
         section.diameters = diameters
@@ -175,7 +175,7 @@ def _get_diameters(section):
     """Get diameters (neurom only).
 
     Args:
-        section (neurom section): section to consider
+        section (neurom.Section): section to consider.
 
     Return:
         list: diameters of section
@@ -187,9 +187,9 @@ def redefine_diameter_section(section, diam_ind, diam_new):
     """Replace given diameters at indices diam_ind with values diam_new (morphio only).
 
     Args:
-        section (neurom section): section to consider
-        diam_ind (list): indices of diameters, or points on the section
-        diam_new (list): corresponding diameters
+        section (neurom.Section): section to consider.
+        diam_ind (list): indices of diameters, or points on the section.
+        diam_new (list): corresponding diameters.
     """
     diameters = section.diameters
     diameters[diam_ind] = diam_new
