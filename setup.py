@@ -18,6 +18,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from setuptools import find_packages
 from setuptools import setup
 
+reqs = [
+    "click>=7.0",
+    "jsonschema>=3",
+    "matplotlib>=2.2.0",
+    "morphio>=2.3.4",
+    "neurom>=3.0,<4.0",
+    "numpy>=1.15.0",
+    "pandas>=0.24.0",
+    "scipy>=0.13.3",
+]
+
+doc_reqs = [
+    "m2r2",
+    "sphinx",
+    "sphinx-bluebrain-theme",
+    "sphinx-jsonschema",
+]
+
 test_reqs = [
     "diff_pdf_visually>=1.5.1",
     "matplotlib<=3.3.4",
@@ -58,7 +76,8 @@ setup(
     packages=find_packages(exclude="tests"),
     include_package_data=True,
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Science/Research",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",

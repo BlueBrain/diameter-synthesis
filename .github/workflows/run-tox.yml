@@ -1,4 +1,4 @@
-name: Run all tox python3
+name: Run all tox jobs using python3
 
 on:
     pull_request:
