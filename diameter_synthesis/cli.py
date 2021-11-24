@@ -75,7 +75,7 @@ def plot_diff(orig_path, diam_path, out_dir, ncells=None, ext=".png"):
     morphologies_dict = create_morphologies_dict(orig_path)
     out_dir = Path(out_dir) / "diffs"
     if not out_dir.exists():
-        os.mkdir(out_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
 
     for mtype in morphologies_dict:
         if len(morphologies_dict) > 1:

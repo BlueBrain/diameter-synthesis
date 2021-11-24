@@ -121,8 +121,11 @@ def test_plot_diff(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir)
         cli.cli,
         [
             "plot_diff",
+            "--orig-path",
             str(single_pop_data_dir),
+            "--diam-path",
             str(single_pop_diametrized_data_dir),
+            "--out-dir",
             str(res_path),
             "--ext",
             ".pdf",
@@ -131,7 +134,7 @@ def test_plot_diff(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir)
     )
 
     # Check results
-    assert [i.name for i in (res_path / "generic_type").iterdir()] == ["C030796A-P3_lite.pdf"]
+    assert [i.name for i in (res_path / "diffs").iterdir()] == ["C030796A-P3_lite.pdf"]
 
 
 def test_run_analysis(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir):

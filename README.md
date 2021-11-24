@@ -53,6 +53,11 @@ Several additional scripts in folder `scripts`:
 - `extract_morphologies`: from a cell release, find the ones that can be run through diameter-check
 - `plot_morphologies`: plot all morphologies in mtype folders
 
+# Example
+
+To run this example, simply do `./run.sh`.
+
+It will fetch morphologies from neuromorpho.org, learn a diameter model, redimetrize these morphologies, and perform some analysis of the results to compare original and diametrized morphologies.
 
 ## Funding & Acknowledgment
 

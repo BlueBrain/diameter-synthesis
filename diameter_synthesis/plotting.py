@@ -18,9 +18,9 @@
 import logging
 import multiprocessing
 import os
+from copy import copy
 from functools import partial
 from pathlib import Path
-from copy import copy
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -53,49 +53,9 @@ CUMULATIVE_FEATURE_PAIRS = [
     ("section_path_distances", "section_areas"),
 ]
 
-VIOLIN_FEATURES_LIST = [
-    "segment_radii",
-    "section_areas",
-    "section_volumes",
-]
+VIOLIN_FEATURES_LIST = ["segment_radii", "section_areas", "section_volumes"]
 
-# to include morphologies only features
-"""
-VIOLIN_FEATURES_LIST += [
-    "number_of_neurites",
-    "number_of_sections_per_neurite",
-    "number_of_leaves",
-    "number_of_bifurcations",
-    "section_lengths",
-    "section_tortuosity",
-    "section_radial_distances",
-    "section_path_distances",
-    "section_branch_orders",
-    "remote_bifurcation_angles",
-]
-"""
-
-VIOLIN_FEATURES_NAME = [
-    "Segment radii",
-    "Section areas",
-    "Section volumes",
-]
-
-# to include morphologies only features
-"""
-VIOLIN_FEATURES_NAME += [
-    "Number of neurites",
-    "Number of sections",
-    "Number of terminations",
-    "Number of bifurcations",
-    "Section lengths",
-    "Section tortuosity",
-    "Section radial distances",
-    "Section path distances",
-    "Section branch orders",
-    "Remote bif angles",
-]
-"""
+VIOLIN_FEATURES_NAME = ["Segment radii", "Section areas", "Section volumes"]
 
 NEURITE_STR_TO_TYPES = {
     "basal": nm.NeuriteType.basal_dendrite,
@@ -493,8 +453,8 @@ def make_cumulative_figures(
         original_cells, diametrized_cells, feature1, feature2, neurite_types
     )
 
-    figure_name = f"{figname_prefix}cumulative_{prefix1}_{basename1}_{basename2}{ext}"
-    fig.savefig(out_dir / figure_name, bbox_inches="tight")
+    figure_name = f"{figname_prefix}cumulative_{prefix1}_{basename1}_{basename2}"
+    fig.savefig(out_dir / f"{figure_name}{ext}", bbox_inches="tight")
     plt.close(fig)
 
     if individual:
