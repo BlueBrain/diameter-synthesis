@@ -49,7 +49,7 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
-def plot_models(morphologies, config, models_params, models_data, ext="png"):
+def plot_models(morphologies, config, models_params, models_data, ext=".png"):
     """Plot the models.
 
     Args:
@@ -57,8 +57,12 @@ def plot_models(morphologies, config, models_params, models_data, ext="png"):
         config (dict): the config to use.
         models_params (dict): the models parameters.
         models_data (dict): the models data.
+        ext (str): the file extension used to export the figures.
     """
     L.info("Plot the fits...")
+
+    if not ext.startswith("."):
+        ext = f".{ext}"
 
     if not Path(config["fig_folder"]).exists():
         os.mkdir(config["fig_folder"])
@@ -82,7 +86,7 @@ def plot_models(morphologies, config, models_params, models_data, ext="png"):
                 )
 
 
-def _build_all_models(morphologies, config, plot=False, ext="png"):
+def _build_all_models(morphologies, config, plot=False, ext=".png"):
     """Build all the models in the list of models."""
     models_params = {}
     models_data = {}
@@ -102,7 +106,7 @@ def _build_all_models(morphologies, config, plot=False, ext="png"):
     return models_params
 
 
-def run_models(config_file, plot, ext="png"):
+def run_models(config_file, plot, ext=".png"):
     """Run the model extraction from config file.
 
     Args:

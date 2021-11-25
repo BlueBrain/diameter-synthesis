@@ -492,7 +492,8 @@ def diametrize_axon(
         main_diameter (float): diameter of main axon branch (from soma to `axon_point_isec`).
         colateral_diameter (float): diameter of colateral branches.
         main_taper (float): taper rate of main branch (set to 0 for no taper, should be negative).
-        axon_point_isec (int): morphio section id of axon point (see :mod:`morph_tool.axon_point` module).
+        axon_point_isec (int): morphio section id of axon point (see :mod:`morph_tool.axon_point`
+            module).
         ais_length (float): length of ais for which we keep original diameters.
         rng (numpy.random.Generator): the random number generator to use.
     """

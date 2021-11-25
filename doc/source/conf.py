@@ -10,6 +10,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 import re
+
 from pkg_resources import get_distribution
 
 # -- Project information -----------------------------------------------------
@@ -88,11 +89,14 @@ intersphinx_mapping = {
 
 def fix_signature(app, what, name, obj, options, signature, return_annotation):
     """Remove the module locations from signatures."""
+    # pylint: disable=unused-argument
     if signature:
         module_pattern = r"(.*)<module '(.*)' from '.*'>(.*)"
         match = re.match(module_pattern, signature)
         if match:
             return "".join(match.groups()), return_annotation
+
+    return None
 
 
 def setup(app):
