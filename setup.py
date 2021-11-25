@@ -68,7 +68,7 @@ setup(
     entry_points={
         "console_scripts": ["diameter-synthesis=diameter_synthesis.cli:cli"],
     },
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     use_scm_version=True,
     setup_requires=[
         "setuptools_scm",
@@ -81,8 +81,6 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
