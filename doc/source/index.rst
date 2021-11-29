@@ -1,4 +1,4 @@
-.. include:: ../../README.rst
+.. mdinclude:: ../../README.md
 
 
 .. toctree::
@@ -7,5 +7,7 @@
 
    Home <self>
    params_and_distrs
+   cli
    api
    changelog
+   contributing

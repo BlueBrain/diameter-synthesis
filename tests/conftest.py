@@ -1,4 +1,20 @@
 """Prepare the tests."""
+
+# Copyright (C) 2021  Blue Brain Project, EPFL
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # pylint: disable=redefined-outer-name
 import json
 import shutil
@@ -46,7 +62,7 @@ def config_path(test_data_path):
 @pytest.fixture
 def config(config_path):
     """The config used in tests."""
-    with open(config_path) as filename:
+    with open(config_path, encoding="utf-8") as filename:
         return json.load(filename)
 
 
@@ -59,14 +75,14 @@ def model_params_path(test_data_path):
 @pytest.fixture
 def model_params(model_params_path):
     """The model parameters."""
-    with open(model_params_path) as filename:
+    with open(model_params_path, encoding="utf-8") as filename:
         return json.load(filename)
 
 
 @pytest.fixture
 def model_data(test_data_path):
     """The model data."""
-    with open(test_data_path / "model_data.json", "r") as filename:
+    with open(test_data_path / "model_data.json", "r", encoding="utf-8") as filename:
         return json.load(filename)
 
 

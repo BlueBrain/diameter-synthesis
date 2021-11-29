@@ -1,11 +1,26 @@
-"""Functions to fit distributions to parameters of diameter models. TO REVIEW!."""
+"""Functions to fit distributions to parameters of diameter models."""
+
+# Copyright (C) 2021  Blue Brain Project, EPFL
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# pylint: disable=import-outside-toplevel
 import logging
 
 import numpy as np
 
 from diameter_synthesis.exception import DiameterSynthesisError
-
-# pylint: disable=import-outside-toplevel
 
 MIN_DATA_POINTS = 1  # minimum number of points to fit a distribution
 A_MAX = 4
@@ -42,13 +57,13 @@ def fit_distribution(all_data, distribution, attribute_name=None, extra_params=N
     """Fit a distribution from data.
 
     Args:
-        all_data (list/array): list of data points to fit a distribution to
-        distribution (str): Distribution name
-        attribute_name (str): Name of additional attribute to fit
-        extra_params (dict): Possible additional parameters for the fit
+        all_data (list/array): list of data points to fit a distribution to.
+        distribution (str): Distribution name.
+        attribute_name (str): Name of additional attribute to fit.
+        extra_params (dict): Possible additional parameters for the fit.
 
     Returns:
-        dict: parameters of the fit
+        dict: parameters of the fit.
     """
     if attribute_name is not None:
         if extra_params is None:
@@ -136,7 +151,15 @@ def fit_distribution(all_data, distribution, attribute_name=None, extra_params=N
 
 
 def sample_distribution(model, rng=np.random):
-    """Sample from a distribution."""
+    """Sample from a distribution.
+
+    Args:
+        model (dict): the model to use.
+        rng (numpy.random.Generator): the random number generator.
+
+    Returns:
+        float: the value of the distribution at the given position.
+    """
     if "a" in model["params"]:
         a_clip = np.clip(model["params"]["a"], A_MIN, A_MAX)
 
@@ -174,7 +197,16 @@ def sample_distribution(model, rng=np.random):
 
 
 def evaluate_distribution(value, distribution, params):
-    """Evaluate the fit of a distribution."""
+    """Evaluate the fit of a distribution.
+
+    Args:
+        value (float): the position at which the distribution is evaluated.
+        distribution (str): the name of the distribution.
+        params (dict): the parameters of the distributions.
+
+    Returns:
+        float: the value of the distribution at the given position.
+    """
     if distribution == "expon_rev":
         from scipy.stats import expon
 

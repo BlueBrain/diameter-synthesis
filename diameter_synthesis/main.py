@@ -1,4 +1,20 @@
 """Main functions to learn and generate diameters."""
+
+# Copyright (C) 2021  Blue Brain Project, EPFL
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import json
 import logging
 import multiprocessing
@@ -33,9 +49,20 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
-def plot_models(morphologies, config, models_params, models_data, ext="png"):
-    """Plot the models."""
+def plot_models(morphologies, config, models_params, models_data, ext=".png"):
+    """Plot the models.
+
+    Args:
+        morphologies (dict): a dict with mtype->[morphologies].
+        config (dict): the config to use.
+        models_params (dict): the models parameters.
+        models_data (dict): the models data.
+        ext (str): the file extension used to export the figures.
+    """
     L.info("Plot the fits...")
+
+    if not ext.startswith("."):
+        ext = f".{ext}"
 
     if not Path(config["fig_folder"]).exists():
         os.mkdir(config["fig_folder"])
@@ -59,7 +86,7 @@ def plot_models(morphologies, config, models_params, models_data, ext="png"):
                 )
 
 
-def _build_all_models(morphologies, config, plot=False, ext="png"):
+def _build_all_models(morphologies, config, plot=False, ext=".png"):
     """Build all the models in the list of models."""
     models_params = {}
     models_data = {}
@@ -79,15 +106,21 @@ def _build_all_models(morphologies, config, plot=False, ext="png"):
     return models_params
 
 
-def run_models(config_file, plot, ext="png"):
-    """Run the model extraction from config file."""
-    with open(config_file, "r") as filename:
+def run_models(config_file, plot, ext=".png"):
+    """Run the model extraction from config file.
+
+    Args:
+        config_file (str): the path to the configuration file.
+        plot (bool): plot the models once they are built.
+        ext (str): the file extension used to export the plots.
+    """
+    with open(config_file, "r", encoding="utf-8") as filename:
         config = json.load(filename)
 
     L.info("Loading morphologies...")
     morphologies_dict = utils.create_morphologies_dict(
         config["morph_path"],
-        mtypes_file=config["mtypes_file"],
+        mtypes_file=config.get("mtypes_file", None),
     )
 
     morphologies = {
@@ -98,12 +131,18 @@ def run_models(config_file, plot, ext="png"):
     L.info("Extracting model parameters...")
     models_params = _build_all_models(morphologies, config, plot=plot, ext=ext)
 
-    with open(config["models_params_file"], "w") as json_file:
+    with open(config["models_params_file"], "w", encoding="utf-8") as json_file:
         json.dump(models_params, json_file, sort_keys=True, indent=4, cls=NumpyEncoder)
 
 
 class DiameterWorker:
-    """Worker for building diameters."""
+    """Worker for building diameters.
+
+    Args:
+        model (str): The model to use.
+        models_params (dict): The parameters of the models containing the model name as key.
+        config (dict): The configuration to use.
+    """
 
     def __init__(self, model, models_params, config):
         """Init function."""
@@ -136,11 +175,16 @@ class DiameterWorker:
 
 
 def run_diameters(config_file, models_params_file):
-    """Build new diameters from config file and diameter model."""
-    with open(config_file, "r") as filename:
+    """Build new diameters from config file and diameter model.
+
+    Args:
+        config_file (str): the path to the configuration file.
+        models_params_file (str): the path to the file containing the model parameters.
+    """
+    with open(config_file, "r", encoding="utf-8") as filename:
         config = json.load(filename)
 
-    with open(models_params_file, "r") as filename:
+    with open(models_params_file, "r", encoding="utf-8") as filename:
         models_params = json.load(filename)
 
     for model in config["models"]:
@@ -148,7 +192,7 @@ def run_diameters(config_file, models_params_file):
 
         morphologies_dict = utils.create_morphologies_dict(
             config["morph_path"],
-            mtypes_file=config["mtypes_file"],
+            mtypes_file=config.get("mtypes_file", None),
         )
 
         worker = DiameterWorker(model, models_params, config)
@@ -157,20 +201,18 @@ def run_diameters(config_file, models_params_file):
             [neuron, mtype] for mtype in morphologies_dict for neuron in morphologies_dict[mtype]
         ]
 
-        pool = multiprocessing.Pool(config["n_cpu"])  # pylint: disable=consider-using-with
-        list(tqdm(pool.imap(worker, all_neurons), total=len(all_neurons)))
-        pool.close()
-        pool.join()
+        with multiprocessing.Pool(config.get("n_cpu", 1)) as pool:
+            list(tqdm(pool.imap(worker, all_neurons), total=len(all_neurons)))
 
 
 def diametrize_single_neuron(neuron, config=None, apical_point_sec_ids=None):
     """Diametrize single neuron by learning diameter model from it.
 
     Args:
-        neuron (mophio.mut.Morphology): neuron to consider
+        neuron (mophio.mut.Morphology): neuron to consider.
         config (dict): dict with entry 'model' and 'diameters' with corresponding dicts, if None,
-            default dict will be used
-        apical_point_sec_ids (list): list of apical points if any
+            default dict will be used.
+        apical_point_sec_ids (list): list of apical points if any.
     """
     if config is None:
         config = {

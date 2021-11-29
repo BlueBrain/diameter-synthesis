@@ -1,7 +1,0 @@
-Additional scripts for diameter-synthesis
-
-extract_morphologies:
-    select the morphologies from the 2017 release which can be run through diameter-check
-
-diameter-check:
-    run diameter-check on a folder with morphologies, taken from 2017 release

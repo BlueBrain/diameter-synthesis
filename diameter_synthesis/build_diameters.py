@@ -1,4 +1,20 @@
-"""Build neurite diameters from a pre-generated model. TO REVIEW!."""
+"""Build neurite diameters from a pre-generated model."""
+
+# Copyright (C) 2021  Blue Brain Project, EPFL
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import logging
 from collections import deque
 from copy import copy
@@ -44,11 +60,11 @@ def _get_neurites(neuron, neurite_type):
     """Get a list of neurites to diametrize.
 
     Args:
-        neuron (morphio.mu.Morphology): a neuron
-        neurite_type (morphio.SectionType): the neurite type to consider
+        neuron (morphio.mut.Morphology): a neuron.
+        neurite_type (morphio.SectionType): the neurite type to consider.
 
     Returns:
-        list: list of neurites to consider
+        list: list of neurites to consider.
     """
     return [
         list(neurite.iter()) for neurite in neuron.root_sections if neurite.type == neurite_type
@@ -61,13 +77,14 @@ def _sample_sibling_ratio(
     """Sample a sibling ratio from distribution.
 
     Args:
-        params (dict): model parameters
-        neurite_type (str): the neurite type to consider
-        apply_asymmetry (bool): asymmetry of current branching point
-        mode (str): to use or not the asymmetry_threshold
+        params (dict): model parameters.
+        neurite_type (str): the neurite type to consider.
+        apply_asymmetry (bool): asymmetry of current branching point.
+        mode (str): to use or not the `asymmetry_threshold`.
+        rng (numpy.random.Generator): the random number generator to use.
 
     Returns:
-        float: sibling ratio
+        float: sibling ratio.
     """
     if mode == "generic":
         return sample_distribution(params["sibling_ratios"][neurite_type], rng=rng)
@@ -85,13 +102,14 @@ def _sample_diameter_power_relation(
     """Sample a diameter power relation from distribution.
 
     Args:
-        params (dict): model parameters
-        neurite_type (str): the neurite type to consider
-        apply_asymmetry (bool): asymmetry of current branching point
-        mode (str): to use or not the asymmetry_threshold
+        params (dict): model parameters.
+        neurite_type (str): the neurite type to consider.
+        apply_asymmetry (bool): asymmetry of current branching point.
+        mode (str): to use or not the `asymmetry_threshold`.
+        rng (numpy.random.Generator): the random number generator to use.
 
     Returns:
-        float: diameter power relation
+        float: diameter power relation.
     """
     if mode == "generic":
         return sample_distribution(params["diameter_power_relation"][neurite_type], rng=rng)
@@ -110,8 +128,9 @@ def _sample_trunk_diameter(params, neurite_type, rng=np.random):
     """Sample a trunk diameter from distribution.
 
     Args:
-        params (dict): model parameters
-        neurite_type (str): the neurite type to consider
+        params (dict): model parameters.
+        neurite_type (str): the neurite type to consider.
+        rng (numpy.random.Generator): the random number generator to use.
 
     Returns:
         float: trunk diameter
@@ -125,6 +144,7 @@ def _sample_terminal_diameter(params, neurite_type, rng=np.random):
     Args:
         params (dict): model parameters
         neurite_type (str): the neurite type to consider
+        rng (numpy.random.Generator): the random number generator to use.
 
     Returns:
         float: terminal diameter
@@ -138,6 +158,7 @@ def _sample_taper(params, neurite_type, rng=np.random):
     Args:
         params (dict): model parameters
         neurite_type (str): the neurite type to consider
+        rng (numpy.random.Generator): the random number generator to use.
 
     Returns:
         float: taper rate
@@ -149,12 +170,13 @@ def _sample_daughter_diameters(section, params, params_tree, rng=np.random):
     """Compute the daughter diameters of the current section.
 
     Args:
-        section (morphio  section): section to consider
-        params (dict): model parameters
-        params_tree (dict): specific parameters of the current tree
+        section (morphio.Section): section to consider.
+        params (dict): model parameters.
+        params_tree (dict): specific parameters of the current tree.
+        rng (numpy.random.Generator): the random number generator to use.
 
     Returns:
-       list: list of daughter diameters
+       list: list of daughter diameters.
     """
     # pylint: disable=too-many-locals
     major_sections = params_tree["major_sections"]
@@ -215,11 +237,11 @@ def _diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=10
     """Diameterize a section.
 
     Args:
-        section (morphio section): current section
-        initial_diam (float): initial diameter
-        taper (float): taper rate
-        min_diam (flaot): minimum diameter
-        max_diam (float): maximum diameter
+        section (morphio.Section): current section.
+        initial_diam (float): initial diameter.
+        taper (float): taper rate.
+        min_diam (flaot): minimum diameter.
+        max_diam (float): maximum diameter.
     """
     diams = polynomial.polyval(morph_functions.lengths_from_origin(section), [initial_diam, taper])
     section.diameters = np.clip(diams, min_diam, max_diam)
@@ -229,12 +251,13 @@ def _diametrize_tree(neurite, params, params_tree, rng=np.random):
     """Diametrize a tree, or neurite.
 
     Args:
-        neurite (morphio neurite): current neurite
-        params (dict): model parameters
-        params_tree (dict): specific parameters of the current tree
+        neurite (morphio neurite): current neurite.
+        params (dict): model parameters.
+        params_tree (dict): specific parameters of the current tree.
+        rng (numpy.random.Generator): the random number generator to use.
 
     Returns:
-        bool: True is all terminal diameters are small enough, False otherwise
+        bool: `True` is all terminal diameters are small enough, `False` otherwise.
     """
     params_tree["tot_length"] = morph_functions.get_total_length(neurite)
     max_diam = params["terminal_diameters"][params_tree["neurite_type"]]["params"]["max"]
@@ -280,12 +303,12 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config, rng=n
     """Diametrize a neuron.
 
     Args:
-        params_tree (dict): specific parameters of the current tree
-        neuron (morphio.mut.Morphology): neuron to diametrize
-        params (dict): model parameters
-        neurite_types (str or morphio.SectionType): the neurite type to consider
-        config (dict): general configuration parameters
-        rng: the random number generator to use
+        params_tree (dict): specific parameters of the current tree.
+        neuron (morphio.mut.Morphology): neuron to diametrize.
+        params (dict): model parameters.
+        neurite_types (str or morphio.SectionType): the neurite type to consider.
+        config (dict): general configuration parameters.
+        rng (numpy.random.Generator): the random number generator to use.
     """
     # pylint: disable=too-many-locals, too-many-branches
     major_sections = set()
@@ -333,7 +356,7 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config, rng=n
                 if n_tries > N_TRIES_BEFORE_REDUC * n_tries_step:
                     trunk_diam_frac -= TRUNK_FRAC_DECREASE
                     n_tries_step += 1
-                if n_tries > config["trunk_max_tries"]:
+                if n_tries > config.get("trunk_max_tries", 100):
                     L.warning("max tries attained with %s", neurite_type)
                     wrong_tips = False
                 n_tries += 1
@@ -343,10 +366,10 @@ def _select_model(model):
     """Select a diametrized model to use.
 
     Args:
-        model (str): model name
+        model (str): model name.
 
     Returns:
-        function: diamtrizer with specific params_tree
+        function: diametrizer with specific `params_tree`.
     """
     if model == "generic":
         params_tree = {}
@@ -378,11 +401,11 @@ def build(neuron, model_params, neurite_types, config, rng=np.random):
     """Builder function for generating diameters of a neuron from the a diameter models.
 
     Args:
-        neuron (morphio.mut.Morphology): neuron to diametrize
-        model_params (dict): model parameters
-        neurite_types (str): the neurite type to consider
-        config (dict): general configuration parameters
-        rng: random number generator to use
+        neuron (morphio.mut.Morphology): neuron to diametrize.
+        model_params (dict): model parameters.
+        neurite_types (str): the neurite type to consider.
+        config (dict): general configuration parameters.
+        rng (numpy.random.Generator): the random number generator to use.
     """
     if "seed" in config:
         np.random.seed(config["seed"])
@@ -393,14 +416,15 @@ def build(neuron, model_params, neurite_types, config, rng=np.random):
     diameter_generator = _select_model(config["models"][0])
 
     diameter_generator(neuron, model_params, neurite_types, config, rng=rng)
-    if config["n_samples"] > 1:
+    n_samples = config.get("n_samples", 1)
+    if n_samples > 1:
         diameters = utils.get_all_diameters(neuron)
-        for _ in range(config["n_samples"] - 1):
+        for _ in range(n_samples - 1):
             diameter_generator(neuron, model_params, neurite_types, config, rng=rng)
             for i, new_diams in enumerate(utils.get_all_diameters(neuron)):
                 diameters[i] += new_diams
         for i, _ in enumerate(diameters):
-            diameters[i] /= config["n_samples"]
+            diameters[i] /= n_samples
         utils.set_all_diameters(neuron, diameters)
 
 
@@ -464,13 +488,14 @@ def diametrize_axon(
     diameter_power_relation = 0.5.
 
     Args:
-        morphology (morphio.mut.Morphology): morpholoty to diametrize
-        main_diameter (float): diameter of main axon branch (from soma to axon_point_isec)
-        colateral_diameter (float): diameter of colateral branches
-        main_taper (float): taper rate of main branch (set to 0 for no taper, should be negative)
-        axon_point_isec (int): morphio section id of axon point (see morph_tool.axon_point module)
-        ais_length (float): length of ais for which we keep original diameters
-        rng: random number generator to use
+        morphology (morphio.mut.Morphology): morphology to diametrize.
+        main_diameter (float): diameter of main axon branch (from soma to `axon_point_isec`).
+        colateral_diameter (float): diameter of colateral branches.
+        main_taper (float): taper rate of main branch (set to 0 for no taper, should be negative).
+        axon_point_isec (int): morphio section id of axon point (see :mod:`morph_tool.axon_point`
+            module).
+        ais_length (float): length of ais for which we keep original diameters.
+        rng (numpy.random.Generator): the random number generator to use.
     """
     model_params = {
         "trunk_diameters": {
