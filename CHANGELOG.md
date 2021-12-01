@@ -2,10 +2,10 @@
 
 ## [0.3.0](https://github.com/BlueBrain/diameter-synthesis/compare/0.2.6..0.3.0)
 
-> 23 November 2021
+> 29 November 2021
 
+- Change license and open the sources [#1](https://github.com/BlueBrain/diameter-synthesis/pull/1)
 - Setup auto-changelog (Adrien Berchet - [f7c4e02](https://github.com/BlueBrain/diameter-synthesis/commit/f7c4e0295bf1de0ba4a352373c0f95e89c5c52eb))
-- Migration from gerrit to github (Adrien Berchet - [f0ce1ee](https://github.com/BlueBrain/diameter-synthesis/commit/f0ce1ee78a1ca1cf6fcc87fad4c24cdbf7170982))
 
 ## [0.2.6](https://github.com/BlueBrain/diameter-synthesis/compare/0.2.5..0.2.6)
 
