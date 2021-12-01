@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.3](https://github.com/BlueBrain/diameter-synthesis/compare/0.3.2..0.3.3)
+
+> 1 December 2021
+
+- Fix RTD [#11](https://github.com/BlueBrain/diameter-synthesis/pull/11)
+
 ## [0.3.2](https://github.com/BlueBrain/diameter-synthesis/compare/0.3.1..0.3.2)
 
 > 1 December 2021
