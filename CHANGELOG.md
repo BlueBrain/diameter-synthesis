@@ -1,9 +1,14 @@
 # Changelog
 
+## [0.3.1](https://github.com/BlueBrain/diameter-synthesis/compare/0.3.0..0.3.1)
+
+- Add long description in setup.py [#7](https://github.com/BlueBrain/diameter-synthesis/pull/7)
+
 ## [0.3.0](https://github.com/BlueBrain/diameter-synthesis/compare/0.2.6..0.3.0)
 
-> 29 November 2021
+> 1 December 2021
 
+- Fix CITATION.cff file [#6](https://github.com/BlueBrain/diameter-synthesis/pull/6)
 - Change license and open the sources [#1](https://github.com/BlueBrain/diameter-synthesis/pull/1)
 - Setup auto-changelog (Adrien Berchet - [f7c4e02](https://github.com/BlueBrain/diameter-synthesis/commit/f7c4e0295bf1de0ba4a352373c0f95e89c5c52eb))
 
