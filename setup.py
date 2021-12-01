@@ -18,6 +18,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from setuptools import find_packages
 from setuptools import setup
 
+# Read the contents of the README file
+with open("README.md", encoding="utf-8") as f:
+    README = f.read()
+
 reqs = [
     "click>=7.0",
     "jsonschema>=3",
@@ -52,6 +56,8 @@ setup(
     name="diameter-synthesis",
     author="Blue Brain Project, EPFL",
     description="Diametrize cells",
+    long_description=README,
+    long_description_content_type="text/markdown",
     license="GPLv3",
     url="https://github.com/BlueBrain/diameter-synthesis",
     project_urls={
