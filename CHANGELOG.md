@@ -1,6 +1,14 @@
 # Changelog
 
+## [0.3.2](https://github.com/BlueBrain/diameter-synthesis/compare/0.3.1..0.3.2)
+
+> 1 December 2021
+
+- Setup RTD [#9](https://github.com/BlueBrain/diameter-synthesis/pull/9)
+
 ## [0.3.1](https://github.com/BlueBrain/diameter-synthesis/compare/0.3.0..0.3.1)
+
+> 1 December 2021
 
 - Add long description in setup.py [#7](https://github.com/BlueBrain/diameter-synthesis/pull/7)
 
