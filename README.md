@@ -1,7 +1,7 @@
 [![Version](https://img.shields.io/pypi/v/diameter-synthesis)](https://github.com/BlueBrain/diameter-synthesis/releases)
 [![Build status](https://github.com/BlueBrain/diameter-synthesis/actions/workflows/run-tox.yml/badge.svg?branch=main)](https://github.com/BlueBrain/diameter-synthesis/actions)
-[![Codecov.io](https://codecov.io/github/BlueBrain/diameter-synthesis/coverage.svg?branch=master)](https://codecov.io/github/BlueBrain/diameter-synthesis?branch=master)
-[![License](https://img.shields.io/badge/License-GPLv3-blue)](https://github.com/BlueBrain/diameter-synthesis/blob/master/LICENSE.txt)
+[![Codecov.io](https://codecov.io/github/BlueBrain/diameter-synthesis/coverage.svg?branch=main)](https://codecov.io/github/BlueBrain/diameter-synthesis?branch=main)
+[![License](https://img.shields.io/badge/License-GPLv3-blue)](https://github.com/BlueBrain/diameter-synthesis/blob/main/LICENSE.txt)
 [![Documentation status](https://readthedocs.org/projects/diameter-synthesis/badge/?version=latest)](https://diameter-synthesis.readthedocs.io/)
 [![DOI](https://img.shields.io/badge/DOI-10.1101/2020.04.15.040410-blue)](https://doi.org/10.1101/2020.04.15.040410)
 
