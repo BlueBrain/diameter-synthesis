@@ -77,7 +77,7 @@ def fit_distribution(all_data, distribution, attribute_name=None, extra_params=N
         )
         if threshold is None:
             raise DiameterSynthesisError(
-                "The threshold could not be retrived from the config in 'features'->"
+                "The threshold could not be retrieved from the config in 'features'->"
                 f"'{attribute_name}'->'{extra_params['neurite_type']}'"
             )
         attribute = np.asarray(all_data, dtype=np.float32)[:, 1]

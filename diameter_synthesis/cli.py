@@ -61,8 +61,8 @@ def run_diameters(config_file, models_params_file):
 @click.option("--orig-path", help="Path to original cells", required=True)
 @click.option("--diam-path", help="Path to diametrized cells", required=True)
 @click.option("-o", "--out-dir", help="Directory to output the analysis results", required=True)
-@click.option("-n", "--ncells", default=10, help="max number of cells to plot")
-@click.option("-e", "--ext", default=".png", help="figures extention")
+@click.option("-n", "--ncells", default=10, help="Max number of cells to plot")
+@click.option("-e", "--ext", default=".png", help="Figures extension")
 def plot_diff(orig_path, diam_path, out_dir, ncells=None, ext=".png"):
     """Plot original and new neurons as well as their differences."""
     from .plotting import plot_diameter_diff
@@ -102,7 +102,7 @@ def plot_diff(orig_path, diam_path, out_dir, ncells=None, ext=".png"):
 @click.option("--cumulative", help="Cumulative distribution plots", is_flag=True)
 @click.option("--individual", help="Output a plot for each neuron", is_flag=True)
 @click.option("--violin", help="Violin distribution plots", is_flag=True)
-@click.option("-e", "--ext", default=".png", help="Figures extention")
+@click.option("-e", "--ext", default=".png", help="Figures extension")
 def run_analysis(
     orig_path, diam_path, out_dir, cumulative, individual, violin, mtypes_file=None, ext=".png"
 ):

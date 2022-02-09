@@ -33,3 +33,12 @@ jobs:
         files: ./coverage.xml
         flags: pytest
         name: "diameter-synthesis-py39"
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: tests-${{ matrix.python-version }}
+        retention-days: 1
+        path: |
+          .tox/py*/tmp
+          .tox/docs/tmp

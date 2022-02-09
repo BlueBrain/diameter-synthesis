@@ -18,6 +18,7 @@
 import logging
 import multiprocessing
 import os
+import re
 from copy import copy
 from functools import partial
 from pathlib import Path
@@ -365,10 +366,10 @@ def plot_cumulative_distribution(
             axes[0].plot(bin_centers, means + sdevs, c=color, linestyle="--", lw=3)
 
         axes[0].set_xlabel("path distance")
-        axes[0].set_ylabel("cummulative section areas")
+        axes[0].set_ylabel("cumulative section areas")
 
         axes[0].set_xlabel("path distance")
-        axes[0].set_ylabel("cummulative section areas")
+        axes[0].set_ylabel("cumulative section areas")
 
         stats1[stats1 == 0] = 1
         diffs = stats1 - stats2  # / stats1
@@ -388,7 +389,7 @@ def plot_cumulative_distribution(
         axes[1].axhline(0, ls="--", c="k")
 
         axes[1].set_xlabel("path distance")
-        axes[1].set_ylabel("difference in cummulative section areas")
+        axes[1].set_ylabel("difference in cumulative section areas")
 
         if auto_limit:
             lim_min = 0.5 * np.min(stats1[:, -1])
@@ -448,6 +449,10 @@ def make_cumulative_figures(
     fig, _ = plot_cumulative_distribution(
         original_cells, diametrized_cells, feature1, feature2, neurite_types
     )
+
+    if figname_prefix and not figname_prefix.endswith("_"):
+        figname_prefix = figname_prefix + "_"
+    figname_prefix = re.sub(r"[^\w\s-]", "_", figname_prefix)
 
     figure_name = f"{figname_prefix}cumulative_{prefix1}_{basename1}_{basename2}"
     fig.savefig(out_dir / f"{figure_name}{ext}", bbox_inches="tight")

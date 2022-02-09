@@ -66,7 +66,7 @@ def nested_round(obj, precision=6):
 
 
 def compare_dicts(ref, test, precision=None):
-    """Compare two dictionnaries."""
+    """Compare two dictionaries."""
     if precision is not None:
         ref = nested_round(ref, precision)
         test = nested_round(test, precision)

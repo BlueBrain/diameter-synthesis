@@ -169,14 +169,14 @@ def test_run_analysis(tmpdir, single_pop_data_dir, single_pop_diametrized_data_d
         [i.relative_to(res_path).as_posix() for i in res_path.glob("**") if i != res_path]
     ) == [
         "apical",
-        "apical/L5_TPC:Acumulative_section_path_distances_areas_individual",
-        "apical/L5_TPC:Acumulative_section_path_distances_volumes_individual",
+        "apical/L5_TPC_A_cumulative_section_path_distances_areas_individual",
+        "apical/L5_TPC_A_cumulative_section_path_distances_volumes_individual",
         "axon",
-        "axon/L5_TPC:Acumulative_section_path_distances_areas_individual",
-        "axon/L5_TPC:Acumulative_section_path_distances_volumes_individual",
+        "axon/L5_TPC_A_cumulative_section_path_distances_areas_individual",
+        "axon/L5_TPC_A_cumulative_section_path_distances_volumes_individual",
         "basal",
-        "basal/L5_TPC:Acumulative_section_path_distances_areas_individual",
-        "basal/L5_TPC:Acumulative_section_path_distances_volumes_individual",
+        "basal/L5_TPC_A_cumulative_section_path_distances_areas_individual",
+        "basal/L5_TPC_A_cumulative_section_path_distances_volumes_individual",
     ]
 
     # Test with neither cumukative nor violin

@@ -164,33 +164,33 @@ def test_cumulative_analysis(
     # Check the figures
     images_path = expected_images_path / "test_cumulative_analysis" / "analysis"
     assert pdfdiff(
-        images_path / "L5_TPC:Acumulative_section_path_distances_areas.pdf",
-        tmpdir / "analysis" / "L5_TPC:Acumulative_section_path_distances_areas.pdf",
+        images_path / "L5_TPC_A_cumulative_section_path_distances_areas.pdf",
+        tmpdir / "analysis" / "L5_TPC_A_cumulative_section_path_distances_areas.pdf",
     )
     assert pdfdiff(
-        images_path / "L5_TPC:Acumulative_section_path_distances_volumes.pdf",
-        tmpdir / "analysis" / "L5_TPC:Acumulative_section_path_distances_volumes.pdf",
-    )
-    assert pdfdiff(
-        images_path
-        / "L5_TPC:Acumulative_section_path_distances_areas_individual"
-        / "0_L5_TPC:Acumulative_section_path_distances_areas_C030796A-P3_lite.pdf",
-        tmpdir
-        / "analysis"
-        / "L5_TPC:Acumulative_section_path_distances_areas_individual"
-        / "0_L5_TPC:Acumulative_section_path_distances_areas_C030796A-P3_lite.h5.pdf",
+        images_path / "L5_TPC_A_cumulative_section_path_distances_volumes.pdf",
+        tmpdir / "analysis" / "L5_TPC_A_cumulative_section_path_distances_volumes.pdf",
     )
     assert pdfdiff(
         images_path
-        / "L5_TPC:Acumulative_section_path_distances_volumes_individual"
-        / "0_L5_TPC:Acumulative_section_path_distances_volumes_C030796A-P3_lite.pdf",
+        / "L5_TPC_A_cumulative_section_path_distances_areas_individual"
+        / "0_L5_TPC_A_cumulative_section_path_distances_areas_C030796A-P3_lite.pdf",
         tmpdir
         / "analysis"
-        / "L5_TPC:Acumulative_section_path_distances_volumes_individual"
-        / "0_L5_TPC:Acumulative_section_path_distances_volumes_C030796A-P3_lite.h5.pdf",
+        / "L5_TPC_A_cumulative_section_path_distances_areas_individual"
+        / "0_L5_TPC_A_cumulative_section_path_distances_areas_C030796A-P3_lite.h5.pdf",
+    )
+    assert pdfdiff(
+        images_path
+        / "L5_TPC_A_cumulative_section_path_distances_volumes_individual"
+        / "0_L5_TPC_A_cumulative_section_path_distances_volumes_C030796A-P3_lite.pdf",
+        tmpdir
+        / "analysis"
+        / "L5_TPC_A_cumulative_section_path_distances_volumes_individual"
+        / "0_L5_TPC_A_cumulative_section_path_distances_volumes_C030796A-P3_lite.h5.pdf",
     )
 
-    # Test with unconsistent neurondb
+    # Test with inconsistent neurondb
     single_pop_neurondb.loc[0, "morphology"] = "UNKNOWN_MORPHOLOGY"
     single_pop_neurondb.to_csv(
         single_pop_data_dir / "neurondb.dat", sep=" ", header=False, index=False

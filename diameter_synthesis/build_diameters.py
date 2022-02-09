@@ -240,7 +240,7 @@ def _diametrize_section(section, initial_diam, taper, min_diam=0.07, max_diam=10
         section (morphio.Section): current section.
         initial_diam (float): initial diameter.
         taper (float): taper rate.
-        min_diam (flaot): minimum diameter.
+        min_diam (float): minimum diameter.
         max_diam (float): maximum diameter.
     """
     diams = polynomial.polyval(morph_functions.lengths_from_origin(section), [initial_diam, taper])
@@ -472,7 +472,7 @@ def _set_first_diams(morphology, diams, length):
 def diametrize_axon(
     morphology,
     main_diameter=1.0,
-    colateral_diameter=0.1,
+    collateral_diameter=0.1,
     main_taper=-0.0005,
     axon_point_isec=None,
     ais_length=60,
@@ -483,14 +483,14 @@ def diametrize_axon(
     The main axon branch (from soma to axon point) will have a tapered diameter, and the
     colaterals a constant diameter.
 
-    If an axon point is not provided, and main_diameter > colateral_diameter, the diameters will
+    If an axon point is not provided, and main_diameter > collateral_diameter, the diameters will
     decrease with taper and bifurcations, with hardcoded parameters sibling_ratio = 0.5 and
     diameter_power_relation = 0.5.
 
     Args:
         morphology (morphio.mut.Morphology): morphology to diametrize.
         main_diameter (float): diameter of main axon branch (from soma to `axon_point_isec`).
-        colateral_diameter (float): diameter of colateral branches.
+        collateral_diameter (float): diameter of collateral branches.
         main_taper (float): taper rate of main branch (set to 0 for no taper, should be negative).
         axon_point_isec (int): morphio section id of axon point (see :mod:`morph_tool.axon_point`
             module).
@@ -507,7 +507,7 @@ def diametrize_axon(
         "terminal_diameters": {
             "axon": {
                 "distribution": "constant",
-                "params": {"value": colateral_diameter, "max": main_diameter},
+                "params": {"value": collateral_diameter, "max": main_diameter},
             }
         },
         "tapers": {
