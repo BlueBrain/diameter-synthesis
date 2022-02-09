@@ -452,7 +452,7 @@ def make_cumulative_figures(
 
     if figname_prefix and not figname_prefix.endswith("_"):
         figname_prefix = figname_prefix + "_"
-    figname_prefix = re.sub(r'[^\w\s-]', '_', figname_prefix)
+    figname_prefix = re.sub(r"[^\w\s-]", "_", figname_prefix)
 
     figure_name = f"{figname_prefix}cumulative_{prefix1}_{basename1}_{basename2}"
     fig.savefig(out_dir / f"{figure_name}{ext}", bbox_inches="tight")
