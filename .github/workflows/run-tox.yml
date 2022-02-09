@@ -37,9 +37,8 @@ jobs:
       uses: actions/upload-artifact@v2
       if: always()
       with:
-        name: tests
+        name: tests-${{ matrix.python-version }}
         retention-days: 1
-        fail_ci_if_error: false
         path: |
           .tox/py*/tmp
           .tox/docs/tmp
