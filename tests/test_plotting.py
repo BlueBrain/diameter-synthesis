@@ -190,7 +190,7 @@ def test_cumulative_analysis(
         / "0_L5_TPC:Acumulative_section_path_distances_volumes_C030796A-P3_lite.h5.pdf",
     )
 
-    # Test with unconsistent neurondb
+    # Test with inconsistent neurondb
     single_pop_neurondb.loc[0, "morphology"] = "UNKNOWN_MORPHOLOGY"
     single_pop_neurondb.to_csv(
         single_pop_data_dir / "neurondb.dat", sep=" ", header=False, index=False

@@ -365,10 +365,10 @@ def plot_cumulative_distribution(
             axes[0].plot(bin_centers, means + sdevs, c=color, linestyle="--", lw=3)
 
         axes[0].set_xlabel("path distance")
-        axes[0].set_ylabel("cummulative section areas")
+        axes[0].set_ylabel("cumulative section areas")
 
         axes[0].set_xlabel("path distance")
-        axes[0].set_ylabel("cummulative section areas")
+        axes[0].set_ylabel("cumulative section areas")
 
         stats1[stats1 == 0] = 1
         diffs = stats1 - stats2  # / stats1
@@ -388,7 +388,7 @@ def plot_cumulative_distribution(
         axes[1].axhline(0, ls="--", c="k")
 
         axes[1].set_xlabel("path distance")
-        axes[1].set_ylabel("difference in cummulative section areas")
+        axes[1].set_ylabel("difference in cumulative section areas")
 
         if auto_limit:
             lim_min = 0.5 * np.min(stats1[:, -1])
