@@ -18,6 +18,7 @@
 import logging
 import multiprocessing
 import os
+import re
 from copy import copy
 from functools import partial
 from pathlib import Path
@@ -448,6 +449,10 @@ def make_cumulative_figures(
     fig, _ = plot_cumulative_distribution(
         original_cells, diametrized_cells, feature1, feature2, neurite_types
     )
+
+    if figname_prefix and not figname_prefix.endswith("_"):
+        figname_prefix = figname_prefix + "_"
+    figname_prefix = re.sub(r'[^\w\s-]', '_', figname_prefix)
 
     figure_name = f"{figname_prefix}cumulative_{prefix1}_{basename1}_{basename2}"
     fig.savefig(out_dir / f"{figure_name}{ext}", bbox_inches="tight")
