@@ -108,12 +108,13 @@ def test_trunk_diameter(single_neurite):
 
 def test_taper(single_neurite):
     """Test the taper function."""
-    params = {"min": 0, "max": 1}
+    params = {"min": -1e-9, "max": 1e-9}
     res = morph_functions.taper(single_neurite, params)
-    assert res == pytest.approx([0.0, 0.0, 0.0, 0.0, 0.0])
+    assert res == pytest.approx([0.0] * 12)
 
     res_tot_length = morph_functions.taper(single_neurite, params, "tot_length")
-    assert res_tot_length == []
+    assert len(res_tot_length) == 1
+    assert res_tot_length[0] == pytest.approx([0.0, 828.830532])
 
     # Test with None params
     with pytest.raises(DiameterSynthesisError):
