@@ -425,7 +425,9 @@ def build(neuron, neurite_types, model_params, diam_params, random_generator=np.
     if n_samples > 1:
         diameters = utils.get_all_diameters(neuron)
         for _ in range(n_samples - 1):
-            diameter_generator(neuron, model_params, neurite_types, diam_params, rng=random_generator)
+            diameter_generator(
+                neuron, model_params, neurite_types, diam_params, rng=random_generator
+            )
             for i, new_diams in enumerate(utils.get_all_diameters(neuron)):
                 diameters[i] += new_diams
         for i, _ in enumerate(diameters):
