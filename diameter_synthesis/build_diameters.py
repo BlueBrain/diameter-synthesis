@@ -397,30 +397,35 @@ def _select_model(model):
     return partial(_diametrize_neuron, params_tree)
 
 
-def build(neuron, model_params, neurite_types, config, rng=np.random):
+def build(neuron, neurite_types, model_params, diam_params, random_generator=np.random):
     """Builder function for generating diameters of a neuron from the a diameter models.
 
     Args:
         neuron (morphio.mut.Morphology): neuron to diametrize.
+        neurite_types (list[str] or str or list[SectionType] or SectionType): the neurite type(s)
+            to consider.
         model_params (dict): model parameters.
-        neurite_types (str): the neurite type to consider.
-        config (dict): general configuration parameters.
-        rng (numpy.random.Generator): the random number generator to use.
+        diam_params (dict): general configuration parameters.
+        random_generator (numpy.random.Generator): the random number generator to use.
     """
-    if "seed" in config:
-        np.random.seed(config["seed"])
+    if isinstance(neurite_types, (str, SectionType)):
+        neurite_types = [neurite_types]
+
+    if "seed" in diam_params:
+        random_generator = np.random.default_rng(diam_params["seed"])
+
     _reset_caches()
 
-    if len(config["models"]) > 1:
+    if len(diam_params["models"]) > 1:
         L.warning("Several models provided, we will only use the first")
-    diameter_generator = _select_model(config["models"][0])
+    diameter_generator = _select_model(diam_params["models"][0])
 
-    diameter_generator(neuron, model_params, neurite_types, config, rng=rng)
-    n_samples = config.get("n_samples", 1)
+    diameter_generator(neuron, model_params, neurite_types, diam_params, rng=random_generator)
+    n_samples = diam_params.get("n_samples", 1)
     if n_samples > 1:
         diameters = utils.get_all_diameters(neuron)
         for _ in range(n_samples - 1):
-            diameter_generator(neuron, model_params, neurite_types, config, rng=rng)
+            diameter_generator(neuron, model_params, neurite_types, diam_params, rng=random_generator)
             for i, new_diams in enumerate(utils.get_all_diameters(neuron)):
                 diameters[i] += new_diams
         for i, _ in enumerate(diameters):
@@ -535,5 +540,5 @@ def diametrize_axon(
     config = {"models": ["generic"], "trunk_max_tries": 1, "n_samples": 1}
 
     diams = _save_first_diams(morphology, ais_length)
-    build(morphology, model_params, neurite_types=["axon"], config=config, rng=rng)
+    build(morphology, "axon", model_params, diam_params=config, random_generator=rng)
     _set_first_diams(morphology, diams, ais_length)

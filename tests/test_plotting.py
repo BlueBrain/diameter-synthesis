@@ -42,8 +42,8 @@ def test_plot_diameter_diff(neuron_diametrized_path, tmpdir, expected_images_pat
 
     # Check the figure
     assert pdfdiff(
-        expected_images_path / "test_plot_diameter_diff_mult.pdf",
-        tmpdir / neuron_diametrized_path.with_suffix(".pdf").name,
+        str(expected_images_path / "test_plot_diameter_diff_mult.pdf"),
+        str(tmpdir / neuron_diametrized_path.with_suffix(".pdf").name),
     )
 
     # Test with new directory and with negative changes
@@ -62,8 +62,8 @@ def test_plot_diameter_diff(neuron_diametrized_path, tmpdir, expected_images_pat
 
     # Check the figure
     assert pdfdiff(
-        expected_images_path / "test_plot_diameter_diff_div.pdf",
-        tmpdir / "new_dir" / neuron_diametrized_path.with_suffix(".pdf").name,
+        str(expected_images_path / "test_plot_diameter_diff_div.pdf"),
+        str(tmpdir / "new_dir" / neuron_diametrized_path.with_suffix(".pdf").name),
     )
 
 
@@ -80,12 +80,12 @@ def test_plot_distribution_fit(model_params, model_data, tmpdir, expected_images
 
     # Check the figures
     assert pdfdiff(
-        expected_images_path / "test_plot_distribution_fit.pdf",
-        tmpdir / "test_plot_distribution_fit.pdf",
+        str(expected_images_path / "test_plot_distribution_fit.pdf"),
+        str(tmpdir / "test_plot_distribution_fit.pdf"),
     )
     assert pdfdiff(
-        expected_images_path / "test_plot_distribution_fit_scatter.pdf",
-        tmpdir / "test_plot_distribution_fit_scatter.pdf",
+        str(expected_images_path / "test_plot_distribution_fit_scatter.pdf"),
+        str(tmpdir / "test_plot_distribution_fit_scatter.pdf"),
     )
 
 
@@ -106,8 +106,8 @@ def test_plot_cumulative_distribution(
 
     # Check the figures
     assert pdfdiff(
-        expected_images_path / "test_plot_cumulative_distribution.pdf",
-        tmpdir / "test_plot_cumulative_distribution.pdf",
+        str(expected_images_path / "test_plot_cumulative_distribution.pdf"),
+        str(tmpdir / "test_plot_cumulative_distribution.pdf"),
     )
 
 
@@ -129,16 +129,23 @@ def test_make_cumulative_figures(single_pop, single_pop_diametrized, tmpdir, exp
     # Check the figures
     images_path = expected_images_path / "test_make_cumulative_figures"
     assert pdfdiff(
-        images_path / "cumulative_segment_radial_distances_volumes.pdf",
-        tmpdir / "with_individual_cumulative_segment_radial_distances_volumes.pdf",
+        str(images_path / "cumulative_segment_radial_distances_volumes.pdf"),
+        str(tmpdir / "with_individual_cumulative_segment_radial_distances_volumes.pdf"),
     )
     assert pdfdiff(
-        images_path
-        / "cumulative_segment_radial_distances_volumes_individual"
-        / "0_cumulative_segment_radial_distances_volumes.pdf",
-        tmpdir
-        / "with_individual_cumulative_segment_radial_distances_volumes_individual"
-        / "0_with_individual_cumulative_segment_radial_distances_volumes_C030796A-P3_lite.h5.pdf",
+        str(
+            images_path
+            / "cumulative_segment_radial_distances_volumes_individual"
+            / "0_cumulative_segment_radial_distances_volumes.pdf"
+        ),
+        str(
+            tmpdir
+            / "with_individual_cumulative_segment_radial_distances_volumes_individual"
+            / (
+                "0_with_individual_cumulative_segment_radial_distances_volumes_C030796A-P3_lite"
+                ".h5.pdf"
+            )
+        ),
     )
 
 
@@ -164,30 +171,38 @@ def test_cumulative_analysis(
     # Check the figures
     images_path = expected_images_path / "test_cumulative_analysis" / "analysis"
     assert pdfdiff(
-        images_path / "L5_TPC_A_cumulative_section_path_distances_areas.pdf",
-        tmpdir / "analysis" / "L5_TPC_A_cumulative_section_path_distances_areas.pdf",
+        str(images_path / "L5_TPC_A_cumulative_section_path_distances_areas.pdf"),
+        str(tmpdir / "analysis" / "L5_TPC_A_cumulative_section_path_distances_areas.pdf"),
     )
     assert pdfdiff(
-        images_path / "L5_TPC_A_cumulative_section_path_distances_volumes.pdf",
-        tmpdir / "analysis" / "L5_TPC_A_cumulative_section_path_distances_volumes.pdf",
+        str(images_path / "L5_TPC_A_cumulative_section_path_distances_volumes.pdf"),
+        str(tmpdir / "analysis" / "L5_TPC_A_cumulative_section_path_distances_volumes.pdf"),
     )
     assert pdfdiff(
-        images_path
-        / "L5_TPC_A_cumulative_section_path_distances_areas_individual"
-        / "0_L5_TPC_A_cumulative_section_path_distances_areas_C030796A-P3_lite.pdf",
-        tmpdir
-        / "analysis"
-        / "L5_TPC_A_cumulative_section_path_distances_areas_individual"
-        / "0_L5_TPC_A_cumulative_section_path_distances_areas_C030796A-P3_lite.h5.pdf",
+        str(
+            images_path
+            / "L5_TPC_A_cumulative_section_path_distances_areas_individual"
+            / "0_L5_TPC_A_cumulative_section_path_distances_areas_C030796A-P3_lite.pdf"
+        ),
+        str(
+            tmpdir
+            / "analysis"
+            / "L5_TPC_A_cumulative_section_path_distances_areas_individual"
+            / "0_L5_TPC_A_cumulative_section_path_distances_areas_C030796A-P3_lite.h5.pdf"
+        ),
     )
     assert pdfdiff(
-        images_path
-        / "L5_TPC_A_cumulative_section_path_distances_volumes_individual"
-        / "0_L5_TPC_A_cumulative_section_path_distances_volumes_C030796A-P3_lite.pdf",
-        tmpdir
-        / "analysis"
-        / "L5_TPC_A_cumulative_section_path_distances_volumes_individual"
-        / "0_L5_TPC_A_cumulative_section_path_distances_volumes_C030796A-P3_lite.h5.pdf",
+        str(
+            images_path
+            / "L5_TPC_A_cumulative_section_path_distances_volumes_individual"
+            / "0_L5_TPC_A_cumulative_section_path_distances_volumes_C030796A-P3_lite.pdf"
+        ),
+        str(
+            tmpdir
+            / "analysis"
+            / "L5_TPC_A_cumulative_section_path_distances_volumes_individual"
+            / "0_L5_TPC_A_cumulative_section_path_distances_volumes_C030796A-P3_lite.h5.pdf"
+        ),
     )
 
     # Test with inconsistent neurondb
@@ -221,6 +236,6 @@ def test_violin_analysis(
 
     # Check the figures
     assert pdfdiff(
-        expected_images_path / "test_violin_analysis.pdf",
-        tmpdir / "analysis" / "morphometrics.pdf",
+        str(expected_images_path / "test_violin_analysis.pdf"),
+        str(tmpdir / "analysis" / "morphometrics.pdf"),
     )

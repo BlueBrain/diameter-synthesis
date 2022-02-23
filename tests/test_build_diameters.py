@@ -35,23 +35,23 @@ def test_build_simple(config, model_params, small_morph):
     mtype = "L5_TPC:A"
     model = "generic"
 
-    build_diameters.build(small_morph, model_params[model][mtype], neurite_types, config[model])
+    build_diameters.build(small_morph, neurite_types, model_params[model][mtype], config[model])
 
     expected = morphio.mut.Morphology(small_morph)
     diameters = {
-        0: [1.12723756, 0.8501913, 0.67725074],  # basal
-        1: [1.88172221, 1.60697436, 1.33222628],  # basal
-        2: [0.7807585, 0.5290243, 0.52312386],  # basal
-        3: [0.80801165, 0.62176675, 0.59818721],  # basal
-        4: [3.19154882, 2.68855309, 2.1855576],  # apical
-        5: [1.23321462, 0.85168982, 0.63268346],  # apical
-        6: [1.1493628, 0.83900893, 0.72536111],  # apical
-        7: [0.52783465, 0.44990396, 0.42342067],  # apical
-        8: [0.51564646, 0.40626049, 0.37496084],  # apical
-        9: [0.36634988, 0.40507823, 0.45199862],  # apical
-        10: [0.36634988, 0.40620297, 0.47370234],  # apical
-        11: [0.41420197, 0.42738733, 0.46979269],  # apical
-        12: [0.41356379, 0.38290364, 0.389568],  # apical
+        0: [1.2997824, 0.9000233, 0.72673666],  # basal
+        1: [1.6028887, 1.2359781, 0.91419667],  # basal
+        2: [0.7737082, 0.6514245, 0.61029184],  # basal
+        3: [0.727182, 0.5553919, 0.540321 ],  # basal
+        4: [3.2547958, 2.7254605, 2.1961255],  # apical
+        5: [1.2261434, 0.5947401, 0.44064492],  # apical
+        6: [1.2281191, 1.0033262, 0.85901225],  # apical
+        7: [0.5838221, 0.40629458, 0.38336557],  # apical
+        8: [0.6178318, 0.6467553, 0.70707476],  # apical
+        9: [0.58992374, 0.4161563, 0.4003501 ],  # apical
+        10: [0.5538684, 0.47851545, 0.4900443 ],  # apical
+        11: [0.44196147, 0.42748648, 0.42748648],  # apical
+        12: [0.43044534, 0.38146895, 0.39314994],  # apical
         13: [0.2, 0.2, 0.2],  # axon
         14: [0.2, 0.2, 0.2],  # axon
         15: [0.2, 0.2, 0.2],  # basal
@@ -70,23 +70,23 @@ def test_build_simple_with_apical_sections(config, model_params, small_morph):
     model = "generic"
     model_params[model][mtype]["apical_point_sec_ids"] = [6]
 
-    build_diameters.build(small_morph, model_params[model][mtype], neurite_types, config[model])
+    build_diameters.build(small_morph, neurite_types, model_params[model][mtype], config[model])
 
     expected = morphio.mut.Morphology(small_morph)
     diameters = {
-        0: [1.57616556, 1.10349214, 0.71787846],  # basal
-        1: [1.9246546, 1.59596884, 1.29954779],  # basal
-        2: [0.8029623, 0.5610494, 0.53921282],  # basal
-        3: [0.92826194, 0.69051898, 0.61900127],  # basal
-        4: [3.54046178, 3.02864218, 2.51682234],  # apical
-        5: [0.49307173, 0.38693029, 0.38693029],  # apical
-        6: [2.51682234, 2.15803671, 1.8276546],  # apical
-        7: [0.90557307, 0.65467209, 0.48454937],  # apical
-        8: [1.32304311, 1.06992745, 0.8688401],  # apical
-        9: [0.71307242, 0.5796622, 0.47997007],  # apical
-        10: [0.68834245, 0.61472285, 0.61060423],  # apical
-        11: [0.51838523, 0.38276276, 0.38276276],  # apical
-        12: [0.46621996, 0.42117757, 0.44140521],  # apical
+        0: [1.6146091, 1.1505961, 0.74188745],  # basal
+        1: [1.8352976, 1.5289228, 1.2671413],  # basal
+        2: [0.96662533, 0.72055197, 0.6243407 ],  # basal
+        3: [0.894905, 0.653613, 0.56571424],  # basal
+        4: [3.5404124, 2.9960587, 2.4517055],  # apical
+        5: [0.4869547, 0.45853767, 0.4576969 ],  # apical
+        6: [2.4517055, 2.073075, 1.769174 ],  # apical
+        7: [0.8419878, 0.60131085, 0.44629398],  # apical
+        8: [1.3291866, 1.1325629, 0.979848 ],  # apical
+        9: [0.59224963, 0.48624295, 0.4726326 ],  # apical
+        10: [0.6087809, 0.511539, 0.4896373],  # apical
+        11: [0.41421217, 0.3673572, 0.39478624],  # apical
+        12: [0.43502575, 0.43636972, 0.4498969 ],  # apical
         13: [0.2, 0.2, 0.2],  # axon
         14: [0.2, 0.2, 0.2],  # axon
         15: [0.2, 0.2, 0.2],  # basal
@@ -116,36 +116,36 @@ def test_build_simple_with_several_apical_sections(config, model_params, small_m
 
     model_params[model][mtype]["apical_point_sec_ids"] = [6, 19]
 
-    build_diameters.build(small_morph, model_params[model][mtype], neurite_types, config[model])
+    build_diameters.build(small_morph, neurite_types, model_params[model][mtype], config[model])
 
     expected = morphio.mut.Morphology(small_morph)
     diameters = {
-        0: [1.39890289, 0.94757283, 0.60740244],  # basal
-        1: [1.97971463, 1.43837976, 1.02925932],  # basal
-        2: [0.81800926, 0.58568162, 0.54873765],  # basal
-        3: [0.73983711, 0.59171486, 0.59403551],  # basal
-        4: [3.71459246, 3.34208155, 2.96956968],  # apical
-        5: [0.44482154, 0.3843236, 0.37343067],  # apical
-        6: [2.96956968, 2.40652895, 1.8434881],  # apical
-        7: [1.08870435, 0.77451909, 0.49428192],  # apical
-        8: [1.25662541, 0.99705613, 0.84291184],  # apical
-        9: [0.63015556, 0.48776197, 0.44297838],  # apical
-        10: [0.62148929, 0.47264618, 0.45764357],  # apical
-        11: [0.41042924, 0.38227296, 0.41449428],  # apical
-        12: [0.40574685, 0.35985672, 0.3745116],  # apical
+        0: [1.6581707, 1.0526989, 0.6265956],  # basal
+        1: [1.8037863, 1.4524208, 1.1289493],  # basal
+        2: [0.7909685, 0.64985496, 0.56315005],  # basal
+        3: [0.86445045, 0.6507469, 0.56271935],  # basal
+        4: [3.3207638, 2.783594, 2.294971 ],  # apical
+        5: [0.54798895, 0.4854589, 0.48255223],  # apical
+        6: [2.294971, 1.9488478, 1.6358488],  # apical
+        7: [0.47745314, 0.44113955, 0.48057836],  # apical
+        8: [1.6358488, 1.5305059, 1.4305559],  # apical
+        9: [0.86752427, 0.6409085, 0.47136444],  # apical
+        10: [0.9211162, 0.71516794, 0.56216586],  # apical
+        11: [0.43250427, 0.41028976, 0.4410184 ],  # apical
+        12: [0.45779485, 0.42024216, 0.39077753],  # apical
         13: [0.2, 0.2, 0.2],  # axon
         14: [0.2, 0.2, 0.2],  # axon
         15: [0.2, 0.2, 0.2],  # basal
         16: [0.2, 0.2, 0.2],  # basal
-        17: [1.53278005, 1.13844323, 0.88405502],  # apical
-        18: [0.66239756, 0.52660555, 0.52660555],  # apical
-        19: [0.88405502, 0.70394671, 0.66747582],  # apical
-        20: [0.66346329, 0.53578627, 0.53427696],  # apical
-        21: [0.59090728, 0.49942747, 0.46960464],  # apical
-        22: [0.46960464, 0.46642455, 0.47136903],  # apical
-        23: [0.46960464, 0.42222959, 0.41856867],  # apical
-        24: [0.38936657, 0.38004285, 0.38004285],  # apical
-        25: [0.38936657, 0.45000905, 0.51071393],  # apical
+        17: [1.2681566, 0.8854807, 0.66164625],  # apical
+        18: [0.5188144, 0.45719615, 0.45719615],  # apical
+        19: [0.66164625, 0.59810007, 0.6117419 ],  # apical
+        20: [0.6117419, 0.46071988, 0.46071988],  # apical
+        21: [0.4938531, 0.46393174, 0.49159345],  # apical
+        22: [0.42158556, 0.41690236, 0.41896287],  # apical
+        23: [0.41675425, 0.4613071, 0.49716002],  # apical
+        24: [0.41612378, 0.4461469, 0.46464235],  # apical
+        25: [0.4088277, 0.4126462, 0.42915756],  # apical
     }
     for section_id, section in expected.sections.items():
         section.diameters = diameters[section_id]
@@ -159,7 +159,7 @@ def test_build(config, model_params, neuron, neuron_diametrized):
     mtype = "L5_TPC:A"
     model = "generic"
 
-    build_diameters.build(neuron, model_params[model][mtype], neurite_types, config[model])
+    build_diameters.build(neuron, neurite_types, model_params[model][mtype], config[model])
 
     _compare_diameters(neuron_diametrized, neuron)
 
@@ -171,8 +171,9 @@ def test_build_no_seed(config, model_params, neuron, neuron_diametrized):
     model = "generic"
 
     seed = config[model].pop("seed")
-    np.random.seed(seed)
-    build_diameters.build(neuron, model_params[model][mtype], neurite_types, config[model])
+    rng = np.random.default_rng(seed)
+
+    build_diameters.build(neuron, neurite_types, model_params[model][mtype], config[model], rng)
 
     _compare_diameters(neuron_diametrized, neuron)
 
@@ -186,7 +187,7 @@ def test_build_multiple_models_warning(config, model_params, neuron, neuron_diam
 
     caplog.clear()
     caplog.set_level(logging.WARNING)
-    build_diameters.build(neuron, model_params[model][mtype], neurite_types, config[model])
+    build_diameters.build(neuron, neurite_types, model_params[model][mtype], config[model])
 
     module, level, entry = caplog.record_tuples[0]
     assert module == "diameter_synthesis.build_diameters"
@@ -203,7 +204,7 @@ def test_build_one_sample(test_data_path, config, model_params, neuron):
     model = "generic"
     config[model]["n_samples"] = 1
 
-    build_diameters.build(neuron, model_params[model][mtype], neurite_types, config[model])
+    build_diameters.build(neuron, neurite_types, model_params[model][mtype], config[model])
 
     neuron_diametrized = morphio.mut.Morphology(
         test_data_path / "C030796A-P3_lite_diametrized_1_sample.h5"
@@ -224,7 +225,7 @@ def test_build_no_sequential(test_data_path, config, model_params, neuron):
     model_params[model] = model_params["generic"]
     model_params[model][mtype]["sibling_ratios"]["apical"]["sequential"] = None
 
-    build_diameters.build(neuron, model_params[model][mtype], neurite_types, config[model])
+    build_diameters.build(neuron, neurite_types, model_params[model][mtype], config[model])
 
     neuron_diametrized = morphio.mut.Morphology(
         test_data_path / "C030796A-P3_lite_diametrized_astrocyte.h5"
@@ -242,17 +243,17 @@ def test_build_small_n_tries_warning(config, model_params, neuron, caplog):
 
     caplog.clear()
     caplog.set_level(logging.WARNING)
-    build_diameters.build(neuron, model_params[model][mtype], neurite_types, config[model])
+    build_diameters.build(neuron, neurite_types, model_params[model][mtype], config[model])
 
     assert len(caplog.record_tuples) == 8
     neurite_types = [
+        "basal",
         "apical",
         "apical",
         "basal",
         "apical",
         "apical",
         "apical",
-        "basal",
         "apical",
     ]
     for i in zip(neurite_types, caplog.record_tuples):
@@ -273,11 +274,11 @@ def test_build_small_trunk_diam_warning(config, model_params, neuron, caplog):
         build_diameters.TRUNK_FRAC_DECREASE = 999
         caplog.clear()
         caplog.set_level(logging.WARNING)
-        build_diameters.build(neuron, model_params[model][mtype], neurite_types, config[model])
+        build_diameters.build(neuron, neurite_types, model_params[model][mtype], config[model])
     finally:
         build_diameters.TRUNK_FRAC_DECREASE = TRUNK_FRAC_DECREASE
 
-    assert len(caplog.record_tuples) == 5
+    assert len(caplog.record_tuples) == 8
     for i in caplog.record_tuples:
         module, level, entry = i
         assert module == "diameter_synthesis.build_diameters"
