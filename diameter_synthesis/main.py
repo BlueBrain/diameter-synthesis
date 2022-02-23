@@ -159,8 +159,8 @@ class DiameterWorker:
 
         build_diameters(
             neuron,
-            self.models_params[mtype],
             self.config["neurite_types"],
+            self.models_params[mtype],
             self.config,
         )
 
@@ -234,4 +234,4 @@ def diametrize_single_neuron(neuron, config=None, apical_point_sec_ids=None):
     model_params = build_model([nm.load_neuron(neuron)], config["model"])
     if apical_point_sec_ids is not None:
         model_params["apical_point_sec_ids"] = apical_point_sec_ids
-    build_diameters(neuron, model_params, ["basal", "apical"], config["diameters"])
+    build_diameters(neuron, ["basal", "apical"], model_params, config["diameters"])
