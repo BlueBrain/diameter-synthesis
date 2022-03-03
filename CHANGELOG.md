@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.2](https://github.com/BlueBrain/diameter-synthesis/compare/0.4.1..0.4.2)
+
+- Fix asymmetry of last children in apical diametrizer [#16](https://github.com/BlueBrain/diameter-synthesis/pull/16)
+
+## [0.4.1](https://github.com/BlueBrain/diameter-synthesis/compare/0.3.3..0.4.1)
+
+> 23 February 2022
+
+- Update the signature of build_diameters.build so it can be passed directly to NeuroTS [#15](https://github.com/BlueBrain/diameter-synthesis/pull/15)
+- Add codespell in lint [#14](https://github.com/BlueBrain/diameter-synthesis/pull/14)
+- Fix badges [#13](https://github.com/BlueBrain/diameter-synthesis/pull/13)
+
 ## [0.3.3](https://github.com/BlueBrain/diameter-synthesis/compare/0.3.2..0.3.3)
 
 > 1 December 2021
