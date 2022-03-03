@@ -315,7 +315,7 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config, rng=n
     if params_tree["with_asymmetry"]:
         # Get sections on the major branch
         for apical_section in params.get("apical_point_sec_ids", []):
-            if neuron.sections[apical_section].parent is None:
+            if neuron.sections[apical_section].is_root:
                 continue
             for sec in neuron.sections[apical_section].parent.iter(IterType.upstream):
                 major_sections.add(sec.id)

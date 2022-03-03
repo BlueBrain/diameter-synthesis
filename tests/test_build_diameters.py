@@ -97,6 +97,36 @@ def test_build_simple_with_apical_sections(config, model_params, small_morph):
 
     _compare_diameters(expected, small_morph)
 
+    # test if we use root section as apical
+    model_params[model][mtype]["apical_point_sec_ids"] = [4]
+
+    build_diameters.build(small_morph, neurite_types, model_params[model][mtype], config[model])
+
+    expected = morphio.mut.Morphology(small_morph)
+    diameters = {
+        0: [1.2997824, 0.9000233, 0.72673666],  # basal
+        1: [1.6028887, 1.2359781, 0.91419667],  # basal
+        2: [0.7737082, 0.6514245, 0.61029184],  # basal
+        3: [0.727182, 0.5553919, 0.540321],  # basal
+        4: [3.2547958, 2.7254605, 2.1961255],  # apical
+        5: [1.2261434, 0.5947401, 0.44064492],  # apical
+        6: [1.2281191, 1.0033262, 0.85901225],  # apical
+        7: [0.5838221, 0.40629458, 0.38336557],  # apical
+        8: [0.6178318, 0.6467553, 0.70707476],  # apical
+        9: [0.58992374, 0.4161563, 0.4003501],  # apical
+        10: [0.5538684, 0.47851545, 0.4900443],  # apical
+        11: [0.44196147, 0.42748648, 0.42748648],  # apical
+        12: [0.43044534, 0.38146895, 0.39314994],  # apical
+        13: [0.2, 0.2, 0.2],  # axon
+        14: [0.2, 0.2, 0.2],  # axon
+        15: [0.2, 0.2, 0.2],  # basal
+        16: [0.2, 0.2, 0.2],  # basal
+    }
+    for section_id, section in expected.sections.items():
+        section.diameters = diameters[section_id]
+
+    _compare_diameters(expected, small_morph)
+
 
 def test_build_simple_with_several_apical_sections(config, model_params, small_morph):
     """Test the main build function to diametrize a neuron with a known apical section."""
