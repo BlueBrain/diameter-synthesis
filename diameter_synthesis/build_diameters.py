@@ -181,7 +181,13 @@ def _sample_daughter_diameters(section, params, params_tree, rng=np.random):
     # pylint: disable=too-many-locals
     major_sections = params_tree["major_sections"]
 
-    apply_asymmetry = section.id in major_sections
+    apply_asymmetry = False
+    if params_tree.get("with_asymmetry", False):
+        child_not_in_major = [child.id not in major_sections for child in section.children]
+        # if children are not asymmetrical, don't apply asymmetry
+        if False in child_not_in_major:
+            child_sort = np.argsort(child_not_in_major)
+            apply_asymmetry = True
 
     reduction_factor = params_tree["reduction_factor_max"] + 1.0
     # try until we get a reduction of diameter in the branching
@@ -218,15 +224,8 @@ def _sample_daughter_diameters(section, params, params_tree, rng=np.random):
 
     diams = [diam_1] + (len(section.children) - 1) * [diam_2]
 
-    if params_tree.get("with_asymmetry", False):
-        # This case should always happen since the `with_asymmetry` attribute is always set to True
-        # in `_select_model`
-
-        # returns child diameters sorted by child length (major/secondary for apical tree)
-        child_not_in_major = [child.id not in major_sections for child in section.children]
-        if False in child_not_in_major:
-            child_sort = np.argsort(child_not_in_major)
-            return list(np.array(diams)[child_sort])
+    if apply_asymmetry:
+        return list(np.array(diams)[child_sort])
 
     # At the moment we don't have enough information to do better than a random choice in this case
     rng.shuffle(diams)
@@ -315,12 +314,7 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config, rng=n
     if params_tree["with_asymmetry"]:
         # Get sections on the major branch
         for apical_section in params.get("apical_point_sec_ids", []):
-            try:
-                parent = neuron.sections[apical_section].parent
-            except IndexError:
-                # If the given section is a root it has no parent
-                continue
-            for sec in parent.iter(IterType.upstream):
+            for sec in neuron.sections[apical_section].iter(IterType.upstream):
                 major_sections.add(sec.id)
     params_tree["major_sections"] = major_sections
 
