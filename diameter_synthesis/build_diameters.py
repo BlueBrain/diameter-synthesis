@@ -222,10 +222,12 @@ def _sample_daughter_diameters(section, params, params_tree, rng=np.random):
     diam_1 = max(diam_1, terminal_diam)
     diam_2 = max(diam_2, terminal_diam)
 
-    diams = [diam_1] + (len(section.children) - 1) * [diam_2]
+    diams = np.array([diam_1] + (len(section.children) - 1) * [diam_2])
 
     if apply_asymmetry:
-        return list(np.array(diams)[child_sort])
+        sorted_diams = np.empty_like(diams)
+        sorted_diams[child_sort] = diams
+        return sorted_diams
 
     # At the moment we don't have enough information to do better than a random choice in this case
     rng.shuffle(diams)
