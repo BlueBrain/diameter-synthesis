@@ -3,7 +3,7 @@
 [![Codecov.io](https://codecov.io/github/BlueBrain/diameter-synthesis/coverage.svg?branch=main)](https://codecov.io/github/BlueBrain/diameter-synthesis?branch=main)
 [![License](https://img.shields.io/badge/License-GPLv3-blue)](https://github.com/BlueBrain/diameter-synthesis/blob/main/LICENSE.txt)
 [![Documentation status](https://readthedocs.org/projects/diameter-synthesis/badge/?version=latest)](https://diameter-synthesis.readthedocs.io/)
-[![DOI](https://img.shields.io/badge/DOI-10.1101/2020.04.15.040410-blue)](https://doi.org/10.1101/2020.04.15.040410)
+[![DOI](https://img.shields.io/badge/DOI-10.1016/j.celrep.2022.110586-blue)](https://doi.org/10.1016/j.celrep.2022.110586)
 
 
 # Diameter synthesis

@@ -105,7 +105,7 @@ def compute_diameter_power_relation(neurite, method="mean", attribute_name=None,
 def diameter_power_relation_factor(diameter_power_relation, sibling_ratio):
     """Compute the reduction factor for bifurcation diameter."""
     if sibling_ratio > 0:
-        return ((1.0 + sibling_ratio ** -1.5) / diameter_power_relation) ** (2.0 / 3.0)
+        return ((1.0 + sibling_ratio**-1.5) / diameter_power_relation) ** (2.0 / 3.0)
     return 1.0
 
 
