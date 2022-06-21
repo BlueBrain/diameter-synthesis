@@ -25,11 +25,13 @@ import neurom as nm
 import numpy as np
 from morphio.mut import Morphology
 from tqdm import tqdm
+from matplotlib.backends.backend_pdf import PdfPages
 
 from diameter_synthesis import utils
 from diameter_synthesis.build_diameters import build as build_diameters
 from diameter_synthesis.build_models import build as build_model
 from diameter_synthesis.plotting import plot_distribution_fit
+from diameter_synthesis.simpler_diametrizer import plot_model
 
 L = logging.getLogger(__name__)
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
@@ -74,16 +76,22 @@ def plot_models(morphologies, config, models_params, models_data, ext=".png"):
             fit_tpes = models_data[model][mtype]
             model_data = models_data[model][mtype]
             model_param = models_params[model][mtype]
+            if len(model_data) == 3:
 
-            for fit_tpe in fit_tpes:
-                fig_name = Path(config["fig_folder"]) / mtype / fit_tpe
-                plot_distribution_fit(
-                    model_data[fit_tpe],
-                    model_param[fit_tpe],
-                    config["neurite_types"],
-                    fig_name=fig_name,
-                    ext=ext,
-                )
+                fig_name = Path(config["fig_folder"]) / 'fit.pdf'
+                with PdfPages(fig_name) as pdf:
+                    title_str = f"""mtype: {mtype}"""
+                    plot_model(model_param, pdf, title_str, *model_data)
+            else:
+                for fit_tpe in fit_tpes:
+                    fig_name = Path(config["fig_folder"]) / mtype / fit_tpe
+                    plot_distribution_fit(
+                        model_data[fit_tpe],
+                        model_param[fit_tpe],
+                        config["neurite_types"],
+                        fig_name=fig_name,
+                        ext=ext,
+                    )
 
 
 def _build_all_models(morphologies, config, plot=False, ext=".png"):

@@ -34,6 +34,76 @@ def terminal_path_lengths(neurite, cache):
     return _map_sections(partial(section_path_length, cache=cache), neurite, Section.ileaf)
 
 
+def build_model(morphologies, config, neurite_types=None, fit_orders=None):
+    neurite_types = config["neurite_types"]
+    if neurite_types is None:
+        neurite_types = ["basal_dendrite", "apical_dendrite"]
+    if fit_orders is None:
+        fit_orders = {"basal_dendrite": 1, "apical_dendrite": 2, "axon": 1}
+
+    coeffs = {}
+    residues = {}
+    all_diams = {n_type: [] for n_type in neurite_types}
+    all_lengths = {n_type: [] for n_type in neurite_types}
+
+    for neurite_type in neurite_types:
+        for m in morphologies:
+            diams = []
+            lengths = []
+            for neurite in m.neurites:
+                cache = {}
+                if neurite.type == getattr(NeuriteType, neurite_type):
+                    for section in iter_sections(neurite):
+                        diams.append(np.mean(section.points[:, 3]))
+                        tip_length = max(
+                            section_path_length(_section, cache) for _section in section.ipreorder()
+                        )
+                        lengths.append(
+                            tip_length
+                            - section_path_length(section, cache)
+                            + s_length(section.id, section.points, cache)
+                        )
+            if len(lengths):
+                lengths = np.array(lengths)
+                diams = np.array(diams)
+                lengths /= lengths.max()
+                all_lengths[neurite_type] += list(lengths)
+                all_diams[neurite_type] += list(diams)
+        if len(all_lengths[neurite_type]):
+            p, extra = Polynomial.fit(
+                all_lengths[neurite_type],
+                all_diams[neurite_type],
+                fit_orders[neurite_type],
+                full=True,
+            )
+            residues[neurite_type] = extra[0][0]
+            coeffs[neurite_type] = p.convert().coef.tolist()
+    return coeffs, [all_lengths, all_diams, residues]
+
+
+def plot_model(coeffs, pdf, title_str, all_lengths, all_diams, residues):
+    color = {"basal_dendrite": "r", "apical_dendrite": "m", "axon": "b"}
+    plt.figure(figsize=(5, 4))
+    for neurite_type, coeff in coeffs.items():
+        xd = all_lengths[neurite_type]
+        yd = all_diams[neurite_type]
+        plt.scatter(xd, yd, s=0.5, marker=".", c=color[neurite_type])
+        x = np.linspace(0, 1, 100)
+        p = Polynomial(coeff)
+        plt.plot(x, p(x), c=color[neurite_type], lw=2, label=neurite_type)
+        res = np.round(residues[neurite_type], 1)
+        coef = [np.round(c, 3) for c in coeff]
+        pears = np.around(pearsonr(xd, yd)[0], 2)
+        title_str += f"""
+        {neurite_type}: fit: {coef}, residual: {res}, pearson: {pears}"""
+    plt.suptitle(title_str, fontsize=5)
+    plt.xlabel("normalise path distance to most distal tip")
+    plt.ylabel("mean section radius")
+    plt.legend()
+    pdf.savefig()
+    plt.close()
+
+
 def make_model(df, neurite_types=None, fit_orders=None):
     mtypes = sorted(df.mtype.unique())
     if neurite_types is None:

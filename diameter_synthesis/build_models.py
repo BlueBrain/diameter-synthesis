@@ -23,6 +23,8 @@ from neurom import NeuriteType
 import diameter_synthesis.morph_functions as morph_funcs
 from diameter_synthesis.distribution_fitting import fit_distribution
 from diameter_synthesis.exception import DiameterSynthesisError
+from diameter_synthesis.simpler_diametrizer import build_model as build_simpler_model
+
 
 L = logging.getLogger(__name__)
 
@@ -44,28 +46,31 @@ def _get_model_builder(config):
     """
     all_models = {}
     for model in config["models"]:
-        if model == "generic":
-            distribution_types = {
-                "sibling_ratios": ["expon_rev", None],
-                "diameter_power_relation": ["exponnorm", None],
-                "terminal_diameters": ["exponnorm", None],
-                "trunk_diameters": ["exponnorm", None],
-                "trunk_diameters_method": "last",
-                "tapers": ["expon_rev", None],
-            }
-        elif model == "astrocyte":
-            distribution_types = {
-                "sibling_ratios": ["expon_rev", None],
-                "diameter_power_relation": ["exponnorm", None],
-                "terminal_diameters": ["exponnorm", None],
-                "trunk_diameters_method": "mean",
-                "trunk_diameters": ["exponnorm", None],
-                "tapers": ["exponnorm", None],
-            }
+        if model == 'simpler':
+            all_models[model] = build_simpler_model
         else:
-            raise DiameterSynthesisError(f"model not understood {model}")
+            if model == "generic":
+                distribution_types = {
+                    "sibling_ratios": ["expon_rev", None],
+                    "diameter_power_relation": ["exponnorm", None],
+                    "terminal_diameters": ["exponnorm", None],
+                    "trunk_diameters": ["exponnorm", None],
+                    "trunk_diameters_method": "last",
+                    "tapers": ["expon_rev", None],
+                }
+            elif model == "astrocyte":
+                distribution_types = {
+                    "sibling_ratios": ["expon_rev", None],
+                    "diameter_power_relation": ["exponnorm", None],
+                    "terminal_diameters": ["exponnorm", None],
+                    "trunk_diameters_method": "mean",
+                    "trunk_diameters": ["exponnorm", None],
+                    "tapers": ["exponnorm", None],
+                }
+            else:
+                raise DiameterSynthesisError(f"model not understood {model}")
 
-        all_models[model] = partial(build_single_model, distribution_types)
+            all_models[model] = partial(build_single_model, distribution_types)
     return all_models
 
 
