@@ -187,6 +187,41 @@ def _update_diameters(section, diameters):
     section.points = points
 
 
+def simpler_diametrizer(morphology, coeffs, neurite_types, config, rng=np.random):
+    """Diametrize a morphology."""
+    from neurom.core.morphology import Morphology
+    morphology = Morphology(morphology)
+
+    for neurite in morphology.neurites:
+        if neurite.type.name in coeffs:
+            coeff = coeffs[neurite.type.name]
+            p = Polynomial(coeff)
+            cache = {}
+            max_len = max(terminal_path_lengths(neurite, cache))
+            for section in iter_sections(neurite):
+                tip_length = max(
+                    section_path_length(_section, cache) for _section in section.ipreorder()
+                )
+                section_len = (
+                    tip_length
+                    - section_path_length(section, cache)
+                    + s_length(section.id, section.points, cache)
+                )
+                diam = p(section_len / max_len)
+                _update_diameters(section, len(section.points) * [diam])
+            for section in iter_sections(neurite):
+                diam_start = section.points[0, 3]
+                if section.children:
+                    diam_end = max(sec.points[0, 3] for sec in section.children)
+                    diam_end = 0.5 * (diam_start + diam_end)
+                else:
+                    diam_end = p(0)
+                _update_diameters(
+                    section,
+                    diam_start + (diam_end - diam_start) * np.linspace(0, 1, len(section.points)),
+                )
+    return morphology
+
 def diametrize(morphology, coeffs):
     """Diametrize a morphology."""
     for neurite in morphology.neurites:

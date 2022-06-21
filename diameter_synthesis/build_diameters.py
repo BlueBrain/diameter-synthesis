@@ -30,6 +30,7 @@ from diameter_synthesis import morph_functions
 from diameter_synthesis import utils
 from diameter_synthesis.distribution_fitting import sample_distribution
 from diameter_synthesis.exception import DiameterSynthesisError
+from diameter_synthesis.simpler_diametrizer import simpler_diametrizer
 
 TRUNK_FRAC_DECREASE = 0.1
 N_TRIES_BEFORE_REDUC = 5
@@ -361,6 +362,7 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config, rng=n
                     L.warning("max tries attained with %s", neurite_type)
                     wrong_tips = False
                 n_tries += 1
+    return neuron
 
 
 def _select_model(model):
@@ -372,6 +374,10 @@ def _select_model(model):
     Returns:
         function: diametrizer with specific `params_tree`.
     """
+    if model == "simpler":
+
+        return simpler_diametrizer
+
     if model == "generic":
         params_tree = {}
         params_tree["mode_sibling"] = "threshold"
@@ -421,12 +427,14 @@ def build(neuron, neurite_types, model_params, diam_params, random_generator=np.
         L.warning("Several models provided, we will only use the first")
     diameter_generator = _select_model(diam_params["models"][0])
 
-    diameter_generator(neuron, model_params, neurite_types, diam_params, rng=random_generator)
+    neuron = diameter_generator(
+        neuron, model_params, neurite_types, diam_params, rng=random_generator
+    )
     n_samples = diam_params.get("n_samples", 1)
     if n_samples > 1:
         diameters = utils.get_all_diameters(neuron)
         for _ in range(n_samples - 1):
-            diameter_generator(
+            neuron = diameter_generator(
                 neuron, model_params, neurite_types, diam_params, rng=random_generator
             )
             for i, new_diams in enumerate(utils.get_all_diameters(neuron)):
@@ -434,7 +442,7 @@ def build(neuron, neurite_types, model_params, diam_params, random_generator=np.
         for i, _ in enumerate(diameters):
             diameters[i] /= n_samples
         utils.set_all_diameters(neuron, diameters)
-
+    return neuron
 
 def _save_first_diams(morphology, length):
     """Save diameters in a dict up to length."""
