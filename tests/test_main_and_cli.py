@@ -54,7 +54,7 @@ def test_run_models(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir
     assert list(res["generic"].keys()) == ["L5_TPC:A"]
 
     # Check only diameter_power_relation entry
-    compare_dicts(
+    assert compare_dicts(
         res["generic"]["L5_TPC:A"]["diameter_power_relation"],
         {
             "apical": {

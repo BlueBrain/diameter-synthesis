@@ -36,18 +36,6 @@ TRUNK_FRAC_DECREASE = 0.1
 N_TRIES_BEFORE_REDUC = 5
 L = logging.getLogger(__name__)
 
-STR_TO_TYPES = {
-    "basal": SectionType.basal_dendrite,
-    "apical": SectionType.apical_dendrite,
-    "axon": SectionType.axon,
-}
-
-TYPES_TO_STR = {
-    SectionType.basal_dendrite: "basal",
-    SectionType.apical_dendrite: "apical",
-    SectionType.axon: "axon",
-}
-
 
 def _reset_caches():
     """Reset the cached functions."""
@@ -323,10 +311,10 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config, rng=n
 
     for neurite_type in neurite_types:
         if isinstance(neurite_type, str):
-            morphio_neurite_type = STR_TO_TYPES[neurite_type]
+            morphio_neurite_type = getattr(SectionType, neurite_type)
         else:
             morphio_neurite_type = neurite_type
-            neurite_type = TYPES_TO_STR[neurite_type]
+            neurite_type = neurite_type.name
 
         params_tree["neurite_type"] = neurite_type
 
