@@ -1,16 +1,17 @@
 """Simpler diametrizer."""
-from scipy.stats import pearsonr
-from tqdm import tqdm
+from functools import partial
+
 import matplotlib.pyplot as plt
-
 import numpy as np
-from neurom import load_morphology, iter_sections, NeuriteType
-
-from numpy.polynomial import Polynomial
 from matplotlib.backends.backend_pdf import PdfPages
+from neurom import NeuriteType
+from neurom import iter_sections
+from neurom import load_morphology
 from neurom import morphmath
 from neurom.core.morphology import Section
-from functools import partial
+from numpy.polynomial import Polynomial
+from scipy.stats import pearsonr
+from tqdm import tqdm
 
 
 def s_length(s_id, points, cache):
@@ -190,6 +191,7 @@ def _update_diameters(section, diameters):
 def simpler_diametrizer(morphology, coeffs, neurite_types, config, rng=np.random):
     """Diametrize a morphology."""
     from neurom.core.morphology import Morphology
+
     morphology = Morphology(morphology)
 
     for neurite in morphology.neurites:
@@ -221,6 +223,7 @@ def simpler_diametrizer(morphology, coeffs, neurite_types, config, rng=np.random
                     diam_start + (diam_end - diam_start) * np.linspace(0, 1, len(section.points)),
                 )
     return morphology
+
 
 def diametrize(morphology, coeffs):
     """Diametrize a morphology."""

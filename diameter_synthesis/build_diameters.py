@@ -444,6 +444,7 @@ def build(neuron, neurite_types, model_params, diam_params, random_generator=np.
         utils.set_all_diameters(neuron, diameters)
     return neuron
 
+
 def _save_first_diams(morphology, length):
     """Save diameters in a dict up to length."""
     diams = {}

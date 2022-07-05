@@ -25,7 +25,6 @@ from diameter_synthesis.distribution_fitting import fit_distribution
 from diameter_synthesis.exception import DiameterSynthesisError
 from diameter_synthesis.simpler_diametrizer import build_model as build_simpler_model
 
-
 L = logging.getLogger(__name__)
 
 STR_TO_NEUROM_TYPES = {
@@ -46,7 +45,7 @@ def _get_model_builder(config):
     """
     all_models = {}
     for model in config["models"]:
-        if model == 'simpler':
+        if model == "simpler":
             all_models[model] = build_simpler_model
         else:
             if model == "generic":

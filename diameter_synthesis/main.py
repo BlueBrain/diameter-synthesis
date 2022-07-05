@@ -23,9 +23,9 @@ from pathlib import Path
 
 import neurom as nm
 import numpy as np
+from matplotlib.backends.backend_pdf import PdfPages
 from morphio.mut import Morphology
 from tqdm import tqdm
-from matplotlib.backends.backend_pdf import PdfPages
 
 from diameter_synthesis import utils
 from diameter_synthesis.build_diameters import build as build_diameters
@@ -78,7 +78,7 @@ def plot_models(morphologies, config, models_params, models_data, ext=".png"):
             model_param = models_params[model][mtype]
             if len(model_data) == 3:
 
-                fig_name = Path(config["fig_folder"]) / 'fit.pdf'
+                fig_name = Path(config["fig_folder"]) / "fit.pdf"
                 with PdfPages(fig_name) as pdf:
                     title_str = f"""mtype: {mtype}"""
                     plot_model(model_param, pdf, title_str, *model_data)
