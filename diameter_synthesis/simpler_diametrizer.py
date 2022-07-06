@@ -113,7 +113,8 @@ def _update_diameters(section, diameters):
     section.points = points
 
 
-def simpler_diametrizer(morphology, coeffs, _neurite_types, _config, _rng=np.random):
+# pylint: disable=unused-argument
+def simpler_diametrizer(morphology, coeffs, neurite_types, config, rng=np.random):
     """Diametrize a morphology."""
     morphology = Morphology(morphology)
 
