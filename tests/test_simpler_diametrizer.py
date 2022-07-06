@@ -24,7 +24,7 @@ from .testing_tools import _compare_diameters
 from .testing_tools import compare_dicts
 
 
-def test_build_model(single_pop, simpler_model_params, simpler_model_data, empty_build_result):
+def test_build_model(single_pop, simpler_model_params, simpler_model_data):
     """Test the build function."""
     # Test with generic model
     config = {

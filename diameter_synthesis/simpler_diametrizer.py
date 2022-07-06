@@ -64,13 +64,13 @@ def build_simpler_model(morphologies, config, neurite_types=None, fit_orders=Non
                             - section_path_length(section, cache)
                             + _s_length(section.id, section.points, cache)
                         )
-            if len(lengths):
+            if lengths:
                 lengths = np.array(lengths)
                 diams = np.array(diams)
                 lengths /= lengths.max()
                 all_lengths[neurite_type] += lengths.tolist()
                 all_diams[neurite_type] += diams.tolist()
-        if len(all_lengths[neurite_type]):
+        if all_lengths[neurite_type]:
             p, extra = Polynomial.fit(
                 all_lengths[neurite_type],
                 all_diams[neurite_type],
@@ -113,7 +113,7 @@ def _update_diameters(section, diameters):
     section.points = points
 
 
-def simpler_diametrizer(morphology, coeffs, neurite_types, config, rng=np.random):
+def simpler_diametrizer(morphology, coeffs, _neurite_types, _config, _rng=np.random):
     """Diametrize a morphology."""
     morphology = Morphology(morphology)
 
