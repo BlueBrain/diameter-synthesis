@@ -25,7 +25,6 @@ from diameter_synthesis.exception import DiameterSynthesisError
 
 def test_fit_distribution(config, caplog):
     """Test the fit_distribution function."""
-    model = "generic"
     all_data = [
         [0.75, 0.25],
         [0.7, 0.5],
@@ -39,20 +38,16 @@ def test_fit_distribution(config, caplog):
         [0.342, 0.244],
     ]
     data_1d = [i[0] for i in all_data]
-    config[model]["neurite_type"] = "basal"
+    config["neurite_type"] = "basal_dendrite"
 
     # Test expon_rev distribution
-    res_expon_rev = distribution_fitting.fit_distribution(
-        data_1d, "expon_rev", extra_params=config[model]
-    )
+    res_expon_rev = distribution_fitting.fit_distribution(data_1d, "expon_rev", extra_params=config)
     assert res_expon_rev == pytest.approx(
         {"loc": -0.99, "scale": 0.3722, "min": 0.28755, "max": 0.99, "num_value": 10.0}
     )
 
     # Test exponnorm distribution
-    res_exponnorm = distribution_fitting.fit_distribution(
-        data_1d, "exponnorm", extra_params=config[model]
-    )
+    res_exponnorm = distribution_fitting.fit_distribution(data_1d, "exponnorm", extra_params=config)
 
     assert res_exponnorm == pytest.approx(
         {
@@ -66,26 +61,26 @@ def test_fit_distribution(config, caplog):
     )
 
     # Test gamma distribution
-    res_gamma = distribution_fitting.fit_distribution(data_1d, "gamma", extra_params=config[model])
+    res_gamma = distribution_fitting.fit_distribution(data_1d, "gamma", extra_params=config)
     assert res_gamma == pytest.approx(
         {"a": 4.0, "loc": -1e-09, "scale": 0.15445, "min": 0.28755, "max": 0.9081, "num_value": 10}
     )
 
     # Test unknown distribution
     with pytest.raises(DiameterSynthesisError):
-        distribution_fitting.fit_distribution(all_data, "UNKNOWN", extra_params=config[model])
+        distribution_fitting.fit_distribution(all_data, "UNKNOWN", extra_params=config)
 
     # Test unknown attribute name
     with pytest.raises(DiameterSynthesisError):
         distribution_fitting.fit_distribution(
-            data_1d, "expon_rev", attribute_name="UNKNOWN", extra_params=config[model]
+            data_1d, "expon_rev", attribute_name="UNKNOWN", extra_params=config
         )
 
     # Test with empty input data
     caplog.clear()
     caplog.set_level(logging.WARNING)
-    config[model]["name"] = "sibling_ratios"
-    res_no_data = distribution_fitting.fit_distribution([], "expon_rev", extra_params=config[model])
+    config["name"] = "sibling_ratios"
+    res_no_data = distribution_fitting.fit_distribution([], "expon_rev", extra_params=config)
 
     assert res_no_data == {
         "a": 0.0,
@@ -112,7 +107,7 @@ def test_fit_distribution(config, caplog):
 
         # Test exponnorm distribution
         res_exponnorm_MIN_MAX = distribution_fitting.fit_distribution(
-            data_1d, "exponnorm", extra_params=config[model]
+            data_1d, "exponnorm", extra_params=config
         )
         assert res_exponnorm_MIN_MAX == pytest.approx(
             {
@@ -127,7 +122,7 @@ def test_fit_distribution(config, caplog):
 
         # Test gamma distribution
         res_gamma_MIN_MAX = distribution_fitting.fit_distribution(
-            data_1d, "gamma", extra_params=config[model]
+            data_1d, "gamma", extra_params=config
         )
         assert res_gamma_MIN_MAX == pytest.approx(
             {
@@ -144,13 +139,9 @@ def test_fit_distribution(config, caplog):
         distribution_fitting.A_MAX = A_MAX
 
     # Test with attribute name
-    config[model]["features"] = {
-        "TEST FEATURE": {
-            "basal": 0.5,
-        }
-    }
+    config["features"] = {"TEST FEATURE": {"basal_dendrite": 0.5}}
     res_expon_rev_feature = distribution_fitting.fit_distribution(
-        all_data, "expon_rev", attribute_name="TEST FEATURE", extra_params=config[model]
+        all_data, "expon_rev", attribute_name="TEST FEATURE", extra_params=config
     )
     assert res_expon_rev_feature == pytest.approx(
         {"loc": -0.99, "scale": 0.354875, "min": 0.27765, "max": 0.99, "num_value": 8.0}

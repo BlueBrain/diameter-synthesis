@@ -49,8 +49,8 @@
             "description": "The model used to diametrize each neurite type",
             "type": "object",
             "properties": {
-                "apical": {"$ref": "#/definitions/diameter_model"},
-                "basal": {"$ref": "#/definitions/diameter_model"},
+                "apical_dendrite": {"$ref": "#/definitions/diameter_model"},
+                "basal_dendrite": {"$ref": "#/definitions/diameter_model"},
                 "axon": {"$ref": "#/definitions/diameter_model"}
             },
             "title": "Neurite type model"

@@ -84,11 +84,11 @@ def model_params_path(test_data_path):
     """The path to the model parameters."""
     return test_data_path / "model_params.json"
 
+
 @pytest.fixture
 def astro_model_params_path(test_data_path):
     """The path to the model parameters."""
     return test_data_path / "astro_model_params.json"
-
 
 
 @pytest.fixture
@@ -102,7 +102,6 @@ def model_params(model_params_path):
     """The model parameters."""
     with open(model_params_path, encoding="utf-8") as filename:
         return json.load(filename)
-
 
 
 @pytest.fixture
@@ -125,12 +124,12 @@ def model_data(test_data_path):
     with open(test_data_path / "model_data.json", "r", encoding="utf-8") as filename:
         return json.load(filename)
 
+
 @pytest.fixture
 def astro_model_data(test_data_path):
     """The model data."""
     with open(test_data_path / "astro_model_data.json", "r", encoding="utf-8") as filename:
         return json.load(filename)
-
 
 
 @pytest.fixture

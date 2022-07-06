@@ -3,10 +3,10 @@ from functools import partial
 
 import matplotlib.pyplot as plt
 import numpy as np
-from neurom.core.morphology import Morphology
 from neurom import NeuriteType
 from neurom import iter_sections
 from neurom import morphmath
+from neurom.core.morphology import Morphology
 from neurom.core.morphology import Section
 from numpy.polynomial import Polynomial
 from scipy.stats import pearsonr

@@ -16,11 +16,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import morphio.mut
-from diameter_synthesis import build_models
-from diameter_synthesis import build_diameters
 
-from .testing_tools import compare_dicts
+from diameter_synthesis import build_diameters
+from diameter_synthesis import build_models
+
 from .testing_tools import _compare_diameters
+from .testing_tools import compare_dicts
 
 
 def test_build_model(single_pop, simpler_model_params, simpler_model_data, empty_build_result):

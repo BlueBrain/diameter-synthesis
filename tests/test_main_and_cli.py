@@ -29,14 +29,14 @@ from .testing_tools import compare_dicts
 def test_run_models(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir, config):
     """Test the run_models entry point."""
     # Prepare inputs
-    extract_models_params = config["generic"]
+    extract_models_params = config
     extract_models_params["mtypes_file"] = str(single_pop_data_dir / "neurondb.dat")
     extract_models_params["morph_path"] = str(single_pop_data_dir)
     extract_models_params["new_morph_path"] = str(single_pop_diametrized_data_dir)
     extract_models_params["models_params_file"] = str(tmpdir / "model_params_mtypes.json")
     extract_models_params["fig_folder"] = str(tmpdir / "model_figures")
     extract_models_params["n_cpu"] = 1
-    extract_models_params["neurite_types"] = ["basal", "apical"]
+    extract_models_params["neurite_types"] = ["basal_dendrite", "apical_dendrite"]
 
     config_file = str(tmpdir / "diametrizer_params.json")
     with open(config_file, "w", encoding="utf-8") as json_file:
@@ -54,57 +54,62 @@ def test_run_models(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir
     assert list(res["generic"].keys()) == ["L5_TPC:A"]
 
     # Check only diameter_power_relation entry
+
     assert compare_dicts(
         res["generic"]["L5_TPC:A"]["diameter_power_relation"],
         {
-            "apical": {
+            "apical_dendrite": {
                 "distribution": "exponnorm",
                 "params": {
                     "a": 0.3,
-                    "loc": 10.324635885438347,
-                    "max": 21.302095794677733,
-                    "min": 3.745589017868042,
+                    "loc": 10.328228495250197,
+                    "max": 21.30209668850466,
+                    "min": 3.745589063629549,
                     "num_value": 4,
-                    "scale": 7.39024091228236,
+                    "scale": 7.391764357591411,
                 },
-                "sequential": "asymmetry_threshold",
+                "sequential": None,
             },
-            "basal": {
+            "basal_dendrite": {
                 "distribution": "exponnorm",
                 "params": {
                     "a": 4.0,
-                    "loc": 2.081371164504187,
-                    "max": 13.171166133880611,
-                    "min": 2.4313707590103153,
+                    "loc": 2.0812598389209014,
+                    "max": 13.171165832802046,
+                    "min": 2.431370780737994,
                     "num_value": 10,
-                    "scale": 0.8153109268097628,
+                    "scale": 0.8154489206964624,
                 },
-                "sequential": "asymmetry_threshold",
+                "sequential": None,
             },
         },
         precision=6,
     )
 
 
-def test_run_diameters(tmpdir, single_pop_data_dir, config, model_params_path):
+def test_run_diameters(tmpdir, single_pop_data_dir, config, model_params):
     """Test the run_diameters entry point."""
     # Prepare inputs
     res_path = Path(tmpdir / "new_morphologies")
-    extract_models_params = config["generic"]
+    extract_models_params = config
     extract_models_params["mtypes_file"] = str(single_pop_data_dir / "neurondb.dat")
     extract_models_params["morph_path"] = str(single_pop_data_dir)
     extract_models_params["n_cpu"] = 1
-    extract_models_params["neurite_types"] = ["basal", "apical"]
+    extract_models_params["neurite_types"] = ["basal_dendrite", "apical_dendrite"]
     extract_models_params["new_morph_path"] = str(res_path)
 
     config_file = str(tmpdir / "diametrizer_params.json")
     with open(config_file, "w", encoding="utf-8") as json_file:
         json.dump(extract_models_params, json_file, sort_keys=True, indent=4)
 
+    model_params_file = str(tmpdir / "model_params.json")
+    with open(model_params_file, "w", encoding="utf-8") as json_file:
+        json.dump({"generic": {"L5_TPC:A": model_params}}, json_file, sort_keys=True, indent=4)
+
     # Run with CLI
     runner = CliRunner()
     runner.invoke(
-        cli.cli, ["run_diameters", config_file, str(model_params_path)], catch_exceptions=False
+        cli.cli, ["run_diameters", config_file, model_params_file], catch_exceptions=False
     )
 
     # Check results
@@ -168,15 +173,15 @@ def test_run_analysis(tmpdir, single_pop_data_dir, single_pop_diametrized_data_d
     assert sorted(
         [i.relative_to(res_path).as_posix() for i in res_path.glob("**") if i != res_path]
     ) == [
-        "apical",
-        "apical/L5_TPC_A_cumulative_section_path_distances_areas_individual",
-        "apical/L5_TPC_A_cumulative_section_path_distances_volumes_individual",
+        "apical_dendrite",
+        "apical_dendrite/L5_TPC_A_cumulative_section_path_distances_areas_individual",
+        "apical_dendrite/L5_TPC_A_cumulative_section_path_distances_volumes_individual",
         "axon",
         "axon/L5_TPC_A_cumulative_section_path_distances_areas_individual",
         "axon/L5_TPC_A_cumulative_section_path_distances_volumes_individual",
-        "basal",
-        "basal/L5_TPC_A_cumulative_section_path_distances_areas_individual",
-        "basal/L5_TPC_A_cumulative_section_path_distances_volumes_individual",
+        "basal_dendrite",
+        "basal_dendrite/L5_TPC_A_cumulative_section_path_distances_areas_individual",
+        "basal_dendrite/L5_TPC_A_cumulative_section_path_distances_volumes_individual",
     ]
 
     # Test with neither cumukative nor violin

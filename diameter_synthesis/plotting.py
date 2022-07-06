@@ -33,6 +33,7 @@ from neurom import APICAL_DENDRITE
 from neurom import AXON
 from neurom import BASAL_DENDRITE
 from neurom import COLS
+from neurom import NeuriteType
 from neurom import get
 from neurom import iter_sections
 from neurom.geom import bounding_box
@@ -47,7 +48,7 @@ from diameter_synthesis.distribution_fitting import evaluate_distribution
 
 matplotlib.use("Agg")
 L = logging.getLogger(__name__)
-COLORS = {"basal": "r", "apical": "m", "axon": "b"}
+COLORS = {"basal_dendrite": "r", "apical_dendrite": "m", "axon": "b"}
 
 CUMULATIVE_FEATURE_PAIRS = [
     ("section_path_distances", "section_volumes"),
@@ -58,12 +59,6 @@ VIOLIN_FEATURES_LIST = ["segment_radii", "section_areas", "section_volumes"]
 
 VIOLIN_FEATURES_NAME = ["Segment radii", "Section areas", "Section volumes"]
 
-NEURITE_STR_TO_TYPES = {
-    "basal": nm.NeuriteType.basal_dendrite,
-    "apical": nm.NeuriteType.apical_dendrite,
-    "axon": nm.NeuriteType.axon,
-}
-
 
 def _compute_neurite_diff(neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_neg, neurite_types):
     """Compute the differences between neurite diameters."""
@@ -71,22 +66,22 @@ def _compute_neurite_diff(neuron_orig, neuron_new, neuron_diff_pos, neuron_diff_
         neurites_orig = [
             neurite
             for neurite in neuron_orig.neurites
-            if neurite.type == NEURITE_STR_TO_TYPES[neurite_type]
+            if neurite.type == getattr(NeuriteType, neurite_type)
         ]
         neurites_new = [
             neurite
             for neurite in neuron_new.neurites
-            if neurite.type == NEURITE_STR_TO_TYPES[neurite_type]
+            if neurite.type == getattr(NeuriteType, neurite_type)
         ]
         neurites_diff_neg = [
             neurite
             for neurite in neuron_diff_neg.neurites
-            if neurite.type == NEURITE_STR_TO_TYPES[neurite_type]
+            if neurite.type == getattr(NeuriteType, neurite_type)
         ]
         neurites_diff_pos = [
             neurite
             for neurite in neuron_diff_pos.neurites
-            if neurite.type == NEURITE_STR_TO_TYPES[neurite_type]
+            if neurite.type == getattr(NeuriteType, neurite_type)
         ]
 
         for neurite_orig, neurite_new, neurite_diff_pos, neurite_diff_neg in zip(
@@ -240,7 +235,7 @@ def _create_data(
     feature1, feature2, original_cells, diametrized_cells, step_size, neurite_types
 ):  # noqa, pylint: disable=too-many-locals,too-many-arguments
     def feature_data(cell, neurite_type):
-        nm_neurite_type = NEURITE_STR_TO_TYPES[neurite_type]
+        nm_neurite_type = getattr(NeuriteType, neurite_type)
         return [get(feat, cell, neurite_type=nm_neurite_type) for feat in (feature1, feature2)]
 
     def create_paired_features(cell_list1, cell_list2, neurite_type):
@@ -311,7 +306,7 @@ def plot_cumulative_distribution(
         diametrized_cells (list): The new cells with the changed diameters.
         feature1: the metric feature.
         feature2: the cumulative distribution feature.
-        neurite_types (string): The list neurite types to be considered. e.g. ['basal', 'axon'].
+        neurite_types (string): The list neurite types to be considered.
         step_size (float): The step size of the cumulative histogram.
         auto_limit (bool): automatically compute limits.
 

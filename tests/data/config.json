@@ -1,17 +1,15 @@
 {
-    "generic": {
-        "models": [
-            "generic"
-        ],
-        "n_samples": 10,
-        "seed": 0,
-        "taper": {
-            "max": 0.005,
-            "max_residual": 100,
-            "min": -0.01,
-            "zeros": 1E-8
-        },
-        "terminal_threshold": 2.0,
-        "trunk_max_tries": 100
-    }
+    "models": [
+        "generic"
+    ],
+    "n_samples": 10,
+    "seed": 0,
+    "taper": {
+        "max": 0.005,
+        "max_residual": 100,
+        "min": -0.01,
+        "zeros": 1E-8
+    },
+    "terminal_threshold": 2.0,
+    "trunk_max_tries": 100
 }

@@ -37,6 +37,9 @@ def test_build(
     res = build_models.build(single_pop, config, with_data=True)
     res_models_params = build_models.build(single_pop, config, with_data=False)
 
+    import json
+
+    json.dump(res[0], open("data/model_params.json", "w"), indent=4)
     assert len(res) == 2
     assert compare_dicts(res, [model_params, model_data], precision=3)
     assert compare_dicts(res_models_params, model_params, precision=3)
