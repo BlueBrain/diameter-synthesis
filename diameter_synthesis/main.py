@@ -70,8 +70,6 @@ def plot_models(morphologies, config, models_params, models_data, ext=".png"):
         os.mkdir(config["fig_folder"])
 
     for mtype in tqdm(morphologies):
-        if not (Path(config["fig_folder"]) / mtype).exists():
-            os.mkdir(Path(config["fig_folder"]) / mtype)
         for model in config["models"]:
             fit_tpes = models_data[model][mtype]
             model_data = models_data[model][mtype]
@@ -83,6 +81,8 @@ def plot_models(morphologies, config, models_params, models_data, ext=".png"):
                     title_str = f"""mtype: {mtype}"""
                     plot_model(model_param, pdf, title_str, *model_data)
             else:
+                if not (Path(config["fig_folder"]) / mtype).exists():
+                    os.mkdir(Path(config["fig_folder"]) / mtype)
                 for fit_tpe in fit_tpes:
                     fig_name = Path(config["fig_folder"]) / mtype / fit_tpe
                     plot_distribution_fit(
