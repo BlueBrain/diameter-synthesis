@@ -69,18 +69,20 @@ def plot_models(morphologies, config, models_params, models_data, ext=".png"):
     if not Path(config["fig_folder"]).exists():
         os.mkdir(config["fig_folder"])
 
-    for mtype in tqdm(morphologies):
-        for model in config["models"]:
-            fit_tpes = models_data[model][mtype]
-            model_data = models_data[model][mtype]
-            model_param = models_params[model][mtype]
-            if len(model_data) == 3:
-
-                fig_name = Path(config["fig_folder"]) / "fit.pdf"
-                with PdfPages(fig_name) as pdf:
+    for model in config["models"]:
+        if len(models_data[model][list(morphologies.keys())[0]]) == 3:
+            fig_name = Path(config["fig_folder"]) / f"fit_{model}.pdf"
+            with PdfPages(fig_name) as pdf:
+                for mtype in tqdm(morphologies):
                     title_str = f"""mtype: {mtype}"""
+                    model_param = models_params[model][mtype]
+                    model_data = models_data[model][mtype]
                     plot_model(model_param, pdf, title_str, *model_data)
-            else:
+        else:
+            for mtype in tqdm(morphologies):
+                fit_tpes = models_data[model][mtype]
+                model_data = models_data[model][mtype]
+                model_param = models_params[model][mtype]
                 if not (Path(config["fig_folder"]) / mtype).exists():
                     os.mkdir(Path(config["fig_folder"]) / mtype)
                 for fit_tpe in fit_tpes:
