@@ -1,13 +1,13 @@
 {
     "models": [
-        "generic"
+        "simpler"
     ],
     "morph_path": "morphologies",
     "n_cpu": 2,
-    "n_samples": 10,
+    "n_samples": 1,
     "neurite_types": [
-        "basal",
-        "apical"
+        "basal_dendrite",
+        "apical_dendrite"
     ],
     "new_morph_path": "diametrized_morphologies",
     "seed": 1,
