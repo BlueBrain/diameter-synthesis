@@ -30,22 +30,11 @@ from diameter_synthesis import morph_functions
 from diameter_synthesis import utils
 from diameter_synthesis.distribution_fitting import sample_distribution
 from diameter_synthesis.exception import DiameterSynthesisError
+from diameter_synthesis.simpler_diametrizer import simpler_diametrizer
 
 TRUNK_FRAC_DECREASE = 0.1
 N_TRIES_BEFORE_REDUC = 5
 L = logging.getLogger(__name__)
-
-STR_TO_TYPES = {
-    "basal": SectionType.basal_dendrite,
-    "apical": SectionType.apical_dendrite,
-    "axon": SectionType.axon,
-}
-
-TYPES_TO_STR = {
-    SectionType.basal_dendrite: "basal",
-    SectionType.apical_dendrite: "apical",
-    SectionType.axon: "axon",
-}
 
 
 def _reset_caches():
@@ -322,10 +311,10 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config, rng=n
 
     for neurite_type in neurite_types:
         if isinstance(neurite_type, str):
-            morphio_neurite_type = STR_TO_TYPES[neurite_type]
+            morphio_neurite_type = getattr(SectionType, neurite_type)
         else:
             morphio_neurite_type = neurite_type
-            neurite_type = TYPES_TO_STR[neurite_type]
+            neurite_type = neurite_type.name
 
         params_tree["neurite_type"] = neurite_type
 
@@ -361,6 +350,7 @@ def _diametrize_neuron(params_tree, neuron, params, neurite_types, config, rng=n
                     L.warning("max tries attained with %s", neurite_type)
                     wrong_tips = False
                 n_tries += 1
+    return neuron
 
 
 def _select_model(model):
@@ -372,6 +362,10 @@ def _select_model(model):
     Returns:
         function: diametrizer with specific `params_tree`.
     """
+    if model == "simpler":
+
+        return simpler_diametrizer
+
     if model == "generic":
         params_tree = {}
         params_tree["mode_sibling"] = "threshold"
@@ -421,12 +415,14 @@ def build(neuron, neurite_types, model_params, diam_params, random_generator=np.
         L.warning("Several models provided, we will only use the first")
     diameter_generator = _select_model(diam_params["models"][0])
 
-    diameter_generator(neuron, model_params, neurite_types, diam_params, rng=random_generator)
+    neuron = diameter_generator(
+        neuron, model_params, neurite_types, diam_params, rng=random_generator
+    )
     n_samples = diam_params.get("n_samples", 1)
     if n_samples > 1:
         diameters = utils.get_all_diameters(neuron)
         for _ in range(n_samples - 1):
-            diameter_generator(
+            neuron = diameter_generator(
                 neuron, model_params, neurite_types, diam_params, rng=random_generator
             )
             for i, new_diams in enumerate(utils.get_all_diameters(neuron)):

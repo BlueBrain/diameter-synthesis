@@ -23,6 +23,8 @@ from matplotlib import pyplot as plt
 from diameter_synthesis import plotting
 from diameter_synthesis.exception import DiameterSynthesisError
 
+NEURITE_TYPES = ["basal_dendrite", "apical_dendrite"]
+
 
 def test_plot_diameter_diff(neuron_diametrized_path, tmpdir, expected_images_path):
     """Test the plot_diameter_diff function."""
@@ -37,7 +39,7 @@ def test_plot_diameter_diff(neuron_diametrized_path, tmpdir, expected_images_pat
 
     # Plot the figure
     plotting.plot_diameter_diff(
-        neuron_diametrized_path, new_neuron, ["basal", "apical"], tmpdir, ext=".pdf"
+        neuron_diametrized_path, new_neuron, NEURITE_TYPES, tmpdir, ext=".pdf"
     )
 
     # Check the figure
@@ -57,7 +59,7 @@ def test_plot_diameter_diff(neuron_diametrized_path, tmpdir, expected_images_pat
 
     # Plot the figure
     plotting.plot_diameter_diff(
-        neuron_diametrized_path, new_neuron, ["basal", "apical"], tmpdir / "new_dir", ext=".pdf"
+        neuron_diametrized_path, new_neuron, NEURITE_TYPES, tmpdir / "new_dir", ext=".pdf"
     )
 
     # Check the figure
@@ -72,8 +74,8 @@ def test_plot_distribution_fit(model_params, model_data, tmpdir, expected_images
     # Plot the figure
     plotting.plot_distribution_fit(
         model_data["diameter_power_relation"],
-        model_params["generic"]["L5_TPC:A"]["diameter_power_relation"],
-        ["basal", "apical"],
+        model_params["diameter_power_relation"],
+        NEURITE_TYPES,
         fig_name=tmpdir / "test_plot_distribution_fit",
         ext=".pdf",
     )
@@ -82,10 +84,6 @@ def test_plot_distribution_fit(model_params, model_data, tmpdir, expected_images
     assert pdfdiff(
         str(expected_images_path / "test_plot_distribution_fit.pdf"),
         str(tmpdir / "test_plot_distribution_fit.pdf"),
-    )
-    assert pdfdiff(
-        str(expected_images_path / "test_plot_distribution_fit_scatter.pdf"),
-        str(tmpdir / "test_plot_distribution_fit_scatter.pdf"),
     )
 
 
@@ -99,7 +97,7 @@ def test_plot_cumulative_distribution(
         single_pop_diametrized,
         "segment_radial_distances",
         "segment_volumes",
-        ["basal", "apical"],
+        NEURITE_TYPES,
     )
     plt.savefig(tmpdir / "test_plot_cumulative_distribution.pdf", bbox_inches="tight")
     plt.close()
@@ -119,7 +117,7 @@ def test_make_cumulative_figures(single_pop, single_pop_diametrized, tmpdir, exp
         single_pop_diametrized,
         "segment_radial_distances",
         "segment_volumes",
-        ["basal", "apical"],
+        NEURITE_TYPES,
         tmpdir,
         individual=True,
         figname_prefix="with_individual_",
@@ -164,7 +162,7 @@ def test_cumulative_analysis(
         tmpdir / "analysis",
         True,
         single_pop_data_dir / "neurondb.dat",
-        ["basal", "apical"],
+        NEURITE_TYPES,
         ext=".pdf",
     )
 
@@ -217,7 +215,7 @@ def test_cumulative_analysis(
             tmpdir / "analysis",
             True,
             single_pop_data_dir / "neurondb.dat",
-            ["basal", "apical"],
+            NEURITE_TYPES,
             ext=".pdf",
         )
 

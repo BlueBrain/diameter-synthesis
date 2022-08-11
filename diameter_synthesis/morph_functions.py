@@ -56,9 +56,9 @@ def partition_asymmetry_length(section):
     WARNING: This function is not complete, and requires to divide by total length of dendrite,
     which is done later in the code as we don't have access to whole dendrite here.
     """
-    asymmetry_length = sum([sec_length(section) for section in section.children[0].iter()])
+    asymmetry_length = sum(sec_length(section) for section in section.children[0].iter())
     try:
-        asymmetry_length -= sum([sec_length(section) for section in section.children[1].iter()])
+        asymmetry_length -= sum(sec_length(section) for section in section.children[1].iter())
     except IndexError as exc:
         raise DiameterSynthesisError(
             "Bifurcation point with single child, consider using neuror sanitize"

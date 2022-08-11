@@ -23,14 +23,9 @@ from neurom import NeuriteType
 import diameter_synthesis.morph_functions as morph_funcs
 from diameter_synthesis.distribution_fitting import fit_distribution
 from diameter_synthesis.exception import DiameterSynthesisError
+from diameter_synthesis.simpler_diametrizer import build_simpler_model
 
 L = logging.getLogger(__name__)
-
-STR_TO_NEUROM_TYPES = {
-    "apical": NeuriteType.apical_dendrite,
-    "basal": NeuriteType.basal_dendrite,
-    "axon": NeuriteType.axon,
-}
 
 
 def _get_model_builder(config):
@@ -44,28 +39,31 @@ def _get_model_builder(config):
     """
     all_models = {}
     for model in config["models"]:
-        if model == "generic":
-            distribution_types = {
-                "sibling_ratios": ["expon_rev", None],
-                "diameter_power_relation": ["exponnorm", None],
-                "terminal_diameters": ["exponnorm", None],
-                "trunk_diameters": ["exponnorm", None],
-                "trunk_diameters_method": "last",
-                "tapers": ["expon_rev", None],
-            }
-        elif model == "astrocyte":
-            distribution_types = {
-                "sibling_ratios": ["expon_rev", None],
-                "diameter_power_relation": ["exponnorm", None],
-                "terminal_diameters": ["exponnorm", None],
-                "trunk_diameters_method": "mean",
-                "trunk_diameters": ["exponnorm", None],
-                "tapers": ["exponnorm", None],
-            }
+        if model == "simpler":
+            all_models[model] = build_simpler_model
         else:
-            raise DiameterSynthesisError(f"model not understood {model}")
+            if model == "generic":
+                distribution_types = {
+                    "sibling_ratios": ["expon_rev", None],
+                    "diameter_power_relation": ["exponnorm", None],
+                    "terminal_diameters": ["exponnorm", None],
+                    "trunk_diameters": ["exponnorm", None],
+                    "trunk_diameters_method": "last",
+                    "tapers": ["expon_rev", None],
+                }
+            elif model == "astrocyte":
+                distribution_types = {
+                    "sibling_ratios": ["expon_rev", None],
+                    "diameter_power_relation": ["exponnorm", None],
+                    "terminal_diameters": ["exponnorm", None],
+                    "trunk_diameters_method": "mean",
+                    "trunk_diameters": ["exponnorm", None],
+                    "tapers": ["exponnorm", None],
+                }
+            else:
+                raise DiameterSynthesisError(f"model not understood {model}")
 
-        all_models[model] = partial(build_single_model, distribution_types)
+            all_models[model] = partial(build_single_model, distribution_types)
     return all_models
 
 
@@ -129,32 +127,43 @@ def extract_parameters(sampling_model, morphologies, config):
         all_data["trunk_diameters"][neurite_type] = []
         all_data["tapers"][neurite_type] = []
 
+        def _float(data):
+            return [float(d) for d in data]
+
         for neuron in morphologies:
             for neurite in neuron.neurites:
-                if neurite.type == STR_TO_NEUROM_TYPES[neurite_type]:
-                    all_data["sibling_ratios"][neurite_type] += morph_funcs.compute_sibling_ratios(
-                        neurite, attribute_name=sampling_model["sibling_ratios"][1]
+                if neurite.type == getattr(NeuriteType, neurite_type):
+                    all_data["sibling_ratios"][neurite_type] += _float(
+                        morph_funcs.compute_sibling_ratios(
+                            neurite, attribute_name=sampling_model["sibling_ratios"][1]
+                        )
                     )
-                    all_data["diameter_power_relation"][
-                        neurite_type
-                    ] += morph_funcs.compute_diameter_power_relation(
-                        neurite,
-                        attribute_name=sampling_model["diameter_power_relation"][1],
+                    all_data["diameter_power_relation"][neurite_type] += _float(
+                        morph_funcs.compute_diameter_power_relation(
+                            neurite,
+                            attribute_name=sampling_model["diameter_power_relation"][1],
+                        )
                     )
-                    all_data["terminal_diameters"][neurite_type] += morph_funcs.terminal_diameters(
-                        neurite,
-                        threshold=config["terminal_threshold"],
-                        attribute_name=sampling_model["terminal_diameters"][1],
+                    all_data["terminal_diameters"][neurite_type] += _float(
+                        morph_funcs.terminal_diameters(
+                            neurite,
+                            threshold=config["terminal_threshold"],
+                            attribute_name=sampling_model["terminal_diameters"][1],
+                        )
                     )
-                    all_data["trunk_diameters"][neurite_type] += morph_funcs.trunk_diameter(
-                        neurite,
-                        attribute_name=sampling_model["trunk_diameters"][1],
-                        method=sampling_model["trunk_diameters_method"],
+                    all_data["trunk_diameters"][neurite_type] += _float(
+                        morph_funcs.trunk_diameter(
+                            neurite,
+                            attribute_name=sampling_model["trunk_diameters"][1],
+                            method=sampling_model["trunk_diameters_method"],
+                        )
                     )
-                    all_data["tapers"][neurite_type] += morph_funcs.taper(
-                        neurite,
-                        params=config["taper"],
-                        attribute_name=sampling_model["tapers"][1],
+                    all_data["tapers"][neurite_type] += _float(
+                        morph_funcs.taper(
+                            neurite,
+                            params=config["taper"],
+                            attribute_name=sampling_model["tapers"][1],
+                        )
                     )
     return all_data
 

@@ -67,7 +67,7 @@ def plot_diff(orig_path, diam_path, out_dir, ncells=None, ext=".png"):
     """Plot original and new neurons as well as their differences."""
     from .plotting import plot_diameter_diff
 
-    neurite_types = ["basal", "apical", "axon"]
+    neurite_types = ["basal_dendrite", "apical_dendrite", "axon"]
     import neurom as nm
 
     morphologies_dict = create_morphologies_dict(orig_path)
@@ -112,7 +112,7 @@ def run_analysis(
     if cumulative:
         from .plotting import cumulative_analysis
 
-        for neurite_type in ["basal", "axon", "apical"]:
+        for neurite_type in ["basal_dendrite", "axon", "apical_dendrite"]:
             cumulative_analysis(
                 orig_path,
                 diam_path,

@@ -10,10 +10,10 @@
                     "description": "These properties can be used to filter features by value",
                     "type": "object",
                     "properties": {
-                        "apical": {
+                        "apical_dendrite": {
                             "type": "number"
                         },
-                        "basal": {
+                        "basal_dendrite": {
                             "type": "number"
                         },
                         "axon": {

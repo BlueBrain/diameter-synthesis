@@ -1,12 +1,12 @@
 {
     "models": [
-        "generic"
+        "simpler"
     ],
     "models_params_file": "diameter_model.json",
     "morph_path": "morphologies",
     "neurite_types": [
-        "basal",
-        "apical"
+        "basal_dendrite",
+        "apical_dendrite"
     ],
     "taper": {
         "max": 0.005,
@@ -14,5 +14,6 @@
         "min": -0.01,
         "zeros": 1e-08
     },
-    "terminal_threshold": 2.0
+    "terminal_threshold": 2.0,
+    "fig_folder": "figures"
 }

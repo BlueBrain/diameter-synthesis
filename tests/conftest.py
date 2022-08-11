@@ -67,9 +67,34 @@ def config(config_path):
 
 
 @pytest.fixture
+def simpler_config_path(test_data_path):
+    """Path to the config file."""
+    return test_data_path / "simpler_config.json"
+
+
+@pytest.fixture
+def simpler_config(simpler_config_path):
+    """The config used in tests."""
+    with open(simpler_config_path, encoding="utf-8") as filename:
+        return json.load(filename)
+
+
+@pytest.fixture
 def model_params_path(test_data_path):
     """The path to the model parameters."""
     return test_data_path / "model_params.json"
+
+
+@pytest.fixture
+def astro_model_params_path(test_data_path):
+    """The path to the model parameters."""
+    return test_data_path / "astro_model_params.json"
+
+
+@pytest.fixture
+def simpler_model_params_path(test_data_path):
+    """The path to the model parameters."""
+    return test_data_path / "simpler_model_params.json"
 
 
 @pytest.fixture
@@ -80,9 +105,37 @@ def model_params(model_params_path):
 
 
 @pytest.fixture
+def astro_model_params(astro_model_params_path):
+    """The model parameters."""
+    with open(astro_model_params_path, encoding="utf-8") as filename:
+        return json.load(filename)
+
+
+@pytest.fixture
+def simpler_model_params(simpler_model_params_path):
+    """The model parameters."""
+    with open(simpler_model_params_path, encoding="utf-8") as filename:
+        return json.load(filename)
+
+
+@pytest.fixture
 def model_data(test_data_path):
     """The model data."""
     with open(test_data_path / "model_data.json", "r", encoding="utf-8") as filename:
+        return json.load(filename)
+
+
+@pytest.fixture
+def astro_model_data(test_data_path):
+    """The model data."""
+    with open(test_data_path / "astro_model_data.json", "r", encoding="utf-8") as filename:
+        return json.load(filename)
+
+
+@pytest.fixture
+def simpler_model_data(test_data_path):
+    """The model data."""
+    with open(test_data_path / "simpler_model_data.json", "r", encoding="utf-8") as filename:
         return json.load(filename)
 
 
@@ -176,18 +229,18 @@ def empty_build_result():
     """The result of an empty build."""
     return (
         {
-            "diameter_power_relation": {"apical": {}, "basal": {}},
-            "sibling_ratios": {"apical": {}, "basal": {}},
-            "tapers": {"apical": {}, "basal": {}},
-            "terminal_diameters": {"apical": {}, "basal": {}},
-            "trunk_diameters": {"apical": {}, "basal": {}},
+            "diameter_power_relation": {"apical_dendrite": {}, "basal_dendrite": {}},
+            "sibling_ratios": {"apical_dendrite": {}, "basal_dendrite": {}},
+            "tapers": {"apical_dendrite": {}, "basal_dendrite": {}},
+            "terminal_diameters": {"apical_dendrite": {}, "basal_dendrite": {}},
+            "trunk_diameters": {"apical_dendrite": {}, "basal_dendrite": {}},
         },
         {
-            "diameter_power_relation": {"apical": [], "basal": []},
-            "sibling_ratios": {"apical": [], "basal": []},
-            "tapers": {"apical": [], "basal": []},
-            "terminal_diameters": {"apical": [], "basal": []},
-            "trunk_diameters": {"apical": [], "basal": []},
+            "diameter_power_relation": {"apical_dendrite": [], "basal_dendrite": []},
+            "sibling_ratios": {"apical_dendrite": [], "basal_dendrite": []},
+            "tapers": {"apical_dendrite": [], "basal_dendrite": []},
+            "terminal_diameters": {"apical_dendrite": [], "basal_dendrite": []},
+            "trunk_diameters": {"apical_dendrite": [], "basal_dendrite": []},
         },
     )
 

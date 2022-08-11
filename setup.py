@@ -39,6 +39,7 @@ doc_reqs = [
     "sphinx-bluebrain-theme",
     "sphinx-jsonschema",
     "sphinx_click",
+    "docutils<0.19",  # related to https://github.com/CrossNox/m2r2/issues/52
 ]
 
 test_reqs = [

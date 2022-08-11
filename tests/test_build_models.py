@@ -23,12 +23,14 @@ from diameter_synthesis.exception import DiameterSynthesisError
 from .testing_tools import compare_dicts
 
 
-def test_build(single_pop, model_params, model_data, empty_build_result):
+def test_build(
+    single_pop, model_params, model_data, empty_build_result, astro_model_params, astro_model_data
+):
     """Test the build function."""
     # Test with generic model
     config = {
         "models": ["generic"],
-        "neurite_types": ["basal", "apical"],
+        "neurite_types": ["basal_dendrite", "apical_dendrite"],
         "terminal_threshold": 2,
         "taper": {"max": 1e-6, "min": -0.01},
     }
@@ -36,20 +38,21 @@ def test_build(single_pop, model_params, model_data, empty_build_result):
     res_models_params = build_models.build(single_pop, config, with_data=False)
 
     assert len(res) == 2
-    compare_dicts(res, [model_params, model_data], precision=3)
-    compare_dicts(res_models_params, model_params, precision=3)
+    assert compare_dicts(res, [model_params, model_data], precision=3)
+    assert compare_dicts(res_models_params, model_params, precision=3)
 
     # Test with astrocyte model
     config_astrocyte = {
         "models": ["astrocyte"],
-        "neurite_types": ["basal", "apical"],
+        "neurite_types": ["basal_dendrite", "apical_dendrite"],
         "terminal_threshold": 2,
         "taper": {"max": 1e-6, "min": -0.01},
     }
     res_astrocyte = build_models.build(single_pop, config_astrocyte, with_data=True)
 
     assert len(res_astrocyte) == 2
-    compare_dicts(res_astrocyte, [model_params, model_data], precision=3)
+
+    assert compare_dicts(res_astrocyte, [astro_model_params, astro_model_data], precision=3)
 
     # Test with empty population
     res_empty = build_models.build([], config_astrocyte, with_data=True)
@@ -58,7 +61,7 @@ def test_build(single_pop, model_params, model_data, empty_build_result):
     # Test with unknown model (should raise a DiameterSynthesisError exception)
     bad_config = {
         "models": ["UNKNOWN"],
-        "neurite_types": ["basal", "apical"],
+        "neurite_types": ["basal_dendrite", "apical_dendrite"],
         "terminal_threshold": 2,
         "taper": {"max": 1e-6, "min": -0.01},
     }
