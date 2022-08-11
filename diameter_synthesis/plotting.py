@@ -306,7 +306,7 @@ def plot_cumulative_distribution(
         diametrized_cells (list): The new cells with the changed diameters.
         feature1: the metric feature.
         feature2: the cumulative distribution feature.
-        neurite_types (string): The list neurite types to be considered.
+        neurite_types (list[str]): The list of neurite types to be considered.
         step_size (float): The step size of the cumulative histogram.
         auto_limit (bool): automatically compute limits.
 
