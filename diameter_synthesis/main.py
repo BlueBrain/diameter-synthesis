@@ -167,7 +167,7 @@ class DiameterWorker:
 
         neuron = Morphology(fname)
 
-        neuron = build_diameters(
+        build_diameters(
             neuron,
             self.config["neurite_types"],
             self.models_params[mtype],

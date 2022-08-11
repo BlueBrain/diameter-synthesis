@@ -430,7 +430,6 @@ def build(neuron, neurite_types, model_params, diam_params, random_generator=np.
         for i, _ in enumerate(diameters):
             diameters[i] /= n_samples
         utils.set_all_diameters(neuron, diameters)
-    return neuron
 
 
 def _save_first_diams(morphology, length):
