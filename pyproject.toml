@@ -1,8 +1,14 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
+
 # BLACK
 [tool.black]
 line-length = 100
-target-version = ["py36"]
-
+target-version = ["py38"]
 
 # PYLINT
 [tool.pylint.messages-control]
@@ -60,8 +66,7 @@ add-ignore = [
 	"D107",
 ]
 convention = "google"
-match = ".*\\.py"
-
+match = "[diameter_synthesis, tests, doc/source/conf.py, setup.py, examples]"
 
 # ISORT
 [tool.isort]
