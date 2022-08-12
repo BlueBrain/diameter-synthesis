@@ -1,0 +1,5 @@
+[paths]
+source_synthesis =
+	diameter_synthesis
+	*/site-packages/diameter_synthesis
+	*/diameter-synthesis/diameter_synthesis

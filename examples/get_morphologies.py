@@ -15,13 +15,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import pandas as pd
+import json
 import os
 import re
 import ssl
-import json
-from urllib.request import urlopen, Request
 from pathlib import Path
+from urllib.request import Request
+from urllib.request import urlopen
+
+import pandas as pd
 
 NEUROMORPHO_URL = "http://neuromorpho.org"
 

@@ -17,7 +17,7 @@
 
 import neurom as nm
 import pytest
-from diff_pdf_visually import pdfdiff
+from diff_pdf_visually import pdf_similar
 from matplotlib import pyplot as plt
 
 from diameter_synthesis import plotting
@@ -43,7 +43,7 @@ def test_plot_diameter_diff(neuron_diametrized_path, tmpdir, expected_images_pat
     )
 
     # Check the figure
-    assert pdfdiff(
+    assert pdf_similar(
         str(expected_images_path / "test_plot_diameter_diff_mult.pdf"),
         str(tmpdir / neuron_diametrized_path.with_suffix(".pdf").name),
     )
@@ -63,7 +63,7 @@ def test_plot_diameter_diff(neuron_diametrized_path, tmpdir, expected_images_pat
     )
 
     # Check the figure
-    assert pdfdiff(
+    assert pdf_similar(
         str(expected_images_path / "test_plot_diameter_diff_div.pdf"),
         str(tmpdir / "new_dir" / neuron_diametrized_path.with_suffix(".pdf").name),
     )
@@ -81,7 +81,7 @@ def test_plot_distribution_fit(model_params, model_data, tmpdir, expected_images
     )
 
     # Check the figures
-    assert pdfdiff(
+    assert pdf_similar(
         str(expected_images_path / "test_plot_distribution_fit.pdf"),
         str(tmpdir / "test_plot_distribution_fit.pdf"),
     )
@@ -103,7 +103,7 @@ def test_plot_cumulative_distribution(
     plt.close()
 
     # Check the figures
-    assert pdfdiff(
+    assert pdf_similar(
         str(expected_images_path / "test_plot_cumulative_distribution.pdf"),
         str(tmpdir / "test_plot_cumulative_distribution.pdf"),
     )
@@ -126,11 +126,11 @@ def test_make_cumulative_figures(single_pop, single_pop_diametrized, tmpdir, exp
 
     # Check the figures
     images_path = expected_images_path / "test_make_cumulative_figures"
-    assert pdfdiff(
+    assert pdf_similar(
         str(images_path / "cumulative_segment_radial_distances_volumes.pdf"),
         str(tmpdir / "with_individual_cumulative_segment_radial_distances_volumes.pdf"),
     )
-    assert pdfdiff(
+    assert pdf_similar(
         str(
             images_path
             / "cumulative_segment_radial_distances_volumes_individual"
@@ -168,15 +168,15 @@ def test_cumulative_analysis(
 
     # Check the figures
     images_path = expected_images_path / "test_cumulative_analysis" / "analysis"
-    assert pdfdiff(
+    assert pdf_similar(
         str(images_path / "L5_TPC_A_cumulative_section_path_distances_areas.pdf"),
         str(tmpdir / "analysis" / "L5_TPC_A_cumulative_section_path_distances_areas.pdf"),
     )
-    assert pdfdiff(
+    assert pdf_similar(
         str(images_path / "L5_TPC_A_cumulative_section_path_distances_volumes.pdf"),
         str(tmpdir / "analysis" / "L5_TPC_A_cumulative_section_path_distances_volumes.pdf"),
     )
-    assert pdfdiff(
+    assert pdf_similar(
         str(
             images_path
             / "L5_TPC_A_cumulative_section_path_distances_areas_individual"
@@ -189,7 +189,7 @@ def test_cumulative_analysis(
             / "0_L5_TPC_A_cumulative_section_path_distances_areas_C030796A-P3_lite.h5.pdf"
         ),
     )
-    assert pdfdiff(
+    assert pdf_similar(
         str(
             images_path
             / "L5_TPC_A_cumulative_section_path_distances_volumes_individual"
@@ -233,7 +233,7 @@ def test_violin_analysis(
     )
 
     # Check the figures
-    assert pdfdiff(
+    assert pdf_similar(
         str(expected_images_path / "test_violin_analysis.pdf"),
         str(tmpdir / "analysis" / "morphometrics.pdf"),
     )
