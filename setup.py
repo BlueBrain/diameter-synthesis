@@ -42,7 +42,7 @@ doc_reqs = [
 ]
 
 test_reqs = [
-    "diff_pdf_visually>=1.5.1",
+    "diff_pdf_visually>=1.7.0",
     "decorator",
     "matplotlib",
     "mock",
