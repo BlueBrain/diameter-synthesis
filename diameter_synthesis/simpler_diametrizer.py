@@ -34,7 +34,7 @@ def terminal_path_lengths(neurite, cache):
     return _map_sections(partial(section_path_length, cache=cache), neurite, Section.ileaf)
 
 
-def build_simpler_model(morphologies, config, neurite_types=None, fit_orders=None):
+def build_simpler_model(morphologies, config, fit_orders=None):
     """Build diameter model."""
     neurite_types = config["neurite_types"]
     if neurite_types is None:
@@ -114,7 +114,7 @@ def _update_diameters(section, diameters):
 
 
 # pylint: disable=unused-argument
-def simpler_diametrizer(morphology, coeffs, neurite_types, config, rng=np.random):
+def simpler_diametrizer(morphology, coeffs, neurite_types, config=None, rng=np.random):
     """Diametrize a morphology."""
     morphology = Morphology(morphology)
 
