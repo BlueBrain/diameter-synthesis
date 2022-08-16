@@ -1,10 +1,12 @@
 """Example to diametrize single morphologie."""
-from diameter_synthesis.main import diametrize_single_neuron
-from morphio.mut import Morphology
 import matplotlib.pyplot as plt
-from neurom import view, NeuriteType
-from neurom import load_morphology
 import numpy as np
+from morphio.mut import Morphology
+from neurom import NeuriteType
+from neurom import load_morphology
+from neurom import view
+
+from diameter_synthesis.main import diametrize_single_neuron
 
 if __name__ == "__main__":
     morph = Morphology("C060110A2.asc")

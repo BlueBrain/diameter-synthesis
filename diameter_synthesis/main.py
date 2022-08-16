@@ -28,12 +28,12 @@ from morphio.mut import Morphology
 from tqdm import tqdm
 
 from diameter_synthesis import utils
-from diameter_synthesis.simpler_diametrizer import simpler_diametrizer
-from diameter_synthesis.simpler_diametrizer import build_simpler_model
-from diameter_synthesis.build_models import build as build_model
 from diameter_synthesis.build_diameters import build as build_diameters
+from diameter_synthesis.build_models import build as build_model
 from diameter_synthesis.plotting import plot_distribution_fit
+from diameter_synthesis.simpler_diametrizer import build_simpler_model
 from diameter_synthesis.simpler_diametrizer import plot_model
+from diameter_synthesis.simpler_diametrizer import simpler_diametrizer
 
 L = logging.getLogger(__name__)
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
