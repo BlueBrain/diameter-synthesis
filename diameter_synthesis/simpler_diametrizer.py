@@ -36,7 +36,7 @@ def terminal_path_lengths(neurite, cache):
 
 def build_simpler_model(morphologies, config, fit_orders=None):
     """Build diameter model."""
-    neurite_types = config["neurite_types"]
+    neurite_types = config.get("neurite_types")
     if neurite_types is None:
         neurite_types = ["basal_dendrite", "apical_dendrite"]
     if fit_orders is None:
