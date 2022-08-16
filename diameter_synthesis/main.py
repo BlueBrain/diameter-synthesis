@@ -31,7 +31,9 @@ from diameter_synthesis import utils
 from diameter_synthesis.build_diameters import build as build_diameters
 from diameter_synthesis.build_models import build as build_model
 from diameter_synthesis.plotting import plot_distribution_fit
+from diameter_synthesis.simpler_diametrizer import build_simpler_model
 from diameter_synthesis.simpler_diametrizer import plot_model
+from diameter_synthesis.simpler_diametrizer import simpler_diametrizer
 
 L = logging.getLogger(__name__)
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
@@ -42,6 +44,7 @@ class NumpyEncoder(json.JSONEncoder):
 
     def default(self, o):  # pylint: disable=method-hidden
         """Numpy encoder."""
+        # pragma: no cover
         if isinstance(o, np.ndarray):
             return o.tolist()
         if isinstance(o, np.floating):
@@ -215,33 +218,12 @@ def run_diameters(config_file, models_params_file):
             list(tqdm(pool.imap(worker, all_neurons), total=len(all_neurons)))
 
 
-def diametrize_single_neuron(neuron, config=None, apical_point_sec_ids=None):
-    """Diametrize single neuron by learning diameter model from it.
+def diametrize_single_neuron(neuron, neurite_types=None):
+    """Diametrize single neuron by learning simpler diameter model from it.
 
     Args:
         neuron (mophio.mut.Morphology): neuron to consider.
-        config (dict): dict with entry 'model' and 'diameters' with corresponding dicts, if None,
-            default dict will be used.
-        apical_point_sec_ids (list): list of apical points if any.
+        neurite_types (list): list of neurite types to consider, if None basal/apical will be used
     """
-    if config is None:
-        config = {
-            "model": {
-                "taper": {"max": 1e-06, "min": -0.1},
-                "terminal_threshold": 2.0,
-                "models": ["generic"],
-                "neurite_types": ["basal", "apical"],
-            },
-            "diameters": {
-                "models": ["generic"],
-                "n_samples": 1,
-                "neurite_types": ["basal", "apical"],
-                "seed": 0,
-                "trunk_max_tries": 100,
-            },
-        }
-
-    model_params = build_model([nm.load_neuron(neuron)], config["model"])
-    if apical_point_sec_ids is not None:
-        model_params["apical_point_sec_ids"] = apical_point_sec_ids
-    build_diameters(neuron, ["basal", "apical"], model_params, config["diameters"])
+    model, _ = build_simpler_model([nm.load_neuron(neuron)], {"neurite_types": neurite_types})
+    return simpler_diametrizer(neuron, model, neurite_types)
