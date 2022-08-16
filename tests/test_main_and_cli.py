@@ -20,8 +20,10 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
+from numpy.testing import assert_almost_equal
 
 from diameter_synthesis import cli
+from diameter_synthesis import main
 
 from .testing_tools import compare_dicts
 
@@ -114,6 +116,13 @@ def test_run_diameters(tmpdir, single_pop_data_dir, config, model_params):
 
     # Check results
     assert [i.name for i in res_path.iterdir()] == ["C030796A-P3_lite.h5"]
+
+
+def test_run_diametrize_single_neuron(neuron):
+    """Test diametrize single neuron."""
+    new_neuron = main.diametrize_single_neuron(neuron)
+    assert len(neuron.root_sections) == len(new_neuron.root_sections)
+    assert_almost_equal(new_neuron.root_sections[1].diameters, [1.627442,  1.6274352])
 
 
 def test_plot_diff(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir):
