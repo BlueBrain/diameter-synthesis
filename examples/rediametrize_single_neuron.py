@@ -9,7 +9,7 @@ from neurom import view
 from diameter_synthesis.main import diametrize_single_neuron
 
 if __name__ == "__main__":
-    morph = Morphology('PATH_TO_MORPHOLOGY')
+    morph = Morphology("PATH_TO_MORPHOLOGY")
     smooth_morph = diametrize_single_neuron(morph)
     morph = load_morphology(morph)
     new_morph = load_morphology(smooth_morph)
