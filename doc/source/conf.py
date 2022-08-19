@@ -4,21 +4,21 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import importlib.metadata
+import re
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-import re
-
-from pkg_resources import get_distribution
 
 # -- Project information -----------------------------------------------------
 
 project = "diameter-synthesis"
 
 # The short X.Y version
-version = get_distribution(project).version
+version = importlib.metadata.version(project)
 
 # The full version, including alpha/beta/rc tags
 release = version

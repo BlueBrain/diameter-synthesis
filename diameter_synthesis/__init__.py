@@ -15,6 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from pkg_resources import get_distribution
+import importlib.metadata
 
-__version__ = get_distribution("diameter-synthesis").version
+__version__ = importlib.metadata.version("diameter-synthesis")
