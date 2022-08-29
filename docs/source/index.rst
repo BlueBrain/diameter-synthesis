@@ -8,6 +8,6 @@
    Home <self>
    params_and_distrs
    cli
-   api
+   api_ref
    changelog
    contributing

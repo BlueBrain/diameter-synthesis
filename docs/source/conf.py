@@ -4,21 +4,21 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import importlib.metadata
-import re
-
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
+import re
+from importlib import metadata
+
 # -- Project information -----------------------------------------------------
 
 project = "diameter-synthesis"
 
 # The short X.Y version
-version = importlib.metadata.version(project)
+version = metadata.version("diameter_synthesis")
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -34,10 +34,13 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
     "sphinx_click",
     "sphinx-jsonschema",
     "m2r2",
 ]
+
+todo_include_todos = True
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']

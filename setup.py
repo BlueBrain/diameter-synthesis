@@ -1,26 +1,24 @@
-"""Setup for the diameter-synthesis package.
+"""Setup for the diameter-synthesis package."""
 
-Copyright (C) 2021  Blue Brain Project, EPFL
+# Copyright (C) 2021  Blue Brain Project, EPFL
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+from pathlib import Path
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
 from setuptools import find_packages
 from setuptools import setup
-
-# Read the contents of the README file
-with open("README.md", encoding="utf-8") as f:
-    README = f.read()
 
 reqs = [
     "click>=7.0",
@@ -55,15 +53,21 @@ test_reqs = [
 setup(
     name="diameter-synthesis",
     author="Blue Brain Project, EPFL",
-    description="Diametrize cells",
-    long_description=README,
+    description="Diametrize cells.",
+    long_description=Path("README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
-    license="GPLv3",
-    url="https://github.com/BlueBrain/diameter-synthesis",
+    url="https://diameter-synthesis.readthedocs.io",
     project_urls={
         "Tracker": "https://github.com/BlueBrain/diameter-synthesis/issues",
         "Source": "https://github.com/BlueBrain/diameter-synthesis",
     },
+    license="GNU General Public License v3.0",
+    packages=find_packages(exclude=["tests"]),
+    python_requires=">=3.8",
+    use_scm_version=True,
+    setup_requires=[
+        "setuptools_scm",
+    ],
     install_requires=reqs,
     extras_require={
         "docs": doc_reqs,
@@ -74,13 +78,6 @@ setup(
     entry_points={
         "console_scripts": ["diameter-synthesis=diameter_synthesis.cli:cli"],
     },
-    python_requires=">=3.8",
-    use_scm_version=True,
-    setup_requires=[
-        "setuptools_scm",
-    ],
-    packages=find_packages(exclude="tests"),
-    include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
@@ -89,5 +86,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
+    include_package_data=True,
 )

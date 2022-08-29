@@ -1,4 +1,7 @@
-"""Package containing the diameter-synthesis features."""
+"""diameter-synthesis package.
+
+Diametrize cells.
+"""
 
 # Copyright (C) 2021  Blue Brain Project, EPFL
 #

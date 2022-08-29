@@ -1,4 +1,4 @@
-"""Module to test the diameter-synthesis package."""
+"""Tests suite for the diameter-synthesis package."""
 
 # Copyright (C) 2021  Blue Brain Project, EPFL
 #

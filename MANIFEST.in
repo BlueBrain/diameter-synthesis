@@ -1,1 +1,2 @@
+global-exclude *.py[co] .DS_Store
 include diameter_synthesis/schemas/*.json
