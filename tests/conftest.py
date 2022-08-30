@@ -1,4 +1,4 @@
-"""Prepare the tests."""
+"""Configuration for the pytest test suite."""
 
 # Copyright (C) 2021  Blue Brain Project, EPFL
 #

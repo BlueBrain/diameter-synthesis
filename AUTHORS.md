@@ -1,10 +1,8 @@
-Maintainer
-----------
+# Maintainer
 
 Alexis Arnaudon (@arnaudon)
 
-Contributors
-------------
+# Contributors
 
 * Adrien Berchet (@adrien-berchet)
 * Eleftherios Zisis (@eleftherioszisis)

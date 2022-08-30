@@ -1,143 +1,42 @@
-
-SOURCES.txt
-*.svg
-*.png
-*.DS_Store
-
-*~
+# data
+.eggs
+.idea
 *.pyc
-egg-info/
-*checkpoints
-*.run*
-*.pkl
-*.mvd*
-output/
-*profile_benchmark*
-*stdout
 *.swp
-.idea/
-*.c
-*.o
-*.so
-uild/*
+*py~
+*~
+*.egg-info
 
-# jupyter notebook
-*jupyter-log*
-.ipynb_checkpoints/
+# Mac related stuff
+.DS_Store
 
-*.eqc
+# Packaging builds
+build
+dist
 
-*si_*
-*si_*
-*.log
+# tox
+.tox
 
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
-*.c
-*.cpp
-
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
+# coverage
 .coverage
-.coverage.*
-.coverage-*
-.cache
-nosetests.xml
+.coverage*
 coverage.xml
-*.cover
-.hypothesis/
-reports/
 
-# Translations
-*.mo
-*.pot
+# venv
+venv
+test_venv
 
-# Django stuff:
-*.log
-local_settings.py
+# docs
+docs/build
+docs/source/generated
+docs/source/examples
 
-# Flask stuff:
-instance/
-.webassets-cache
+# reports
+reports
 
-# Scrapy stuff:
-.scrapy
+# examples
+examples/.ipynb_checkpoints
 
-# Sphinx documentation
-doc/_build/
-doc/build/
-doc/source/generated
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# celery beat schedule file
-celerybeat-schedule
-
-# SageMath parsed files
-*.sage.py
-
-# dotenv
-.env
-
-# virtualenv
-.venv
-venv/
-ENV/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-
-# pytest
-.pytest_cache
+# Node
+node_modules
+package-lock.json
