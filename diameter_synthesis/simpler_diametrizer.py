@@ -114,14 +114,13 @@ def _update_diameters(section, diameters):
 
 
 # pylint: disable=unused-argument
-def simpler_diametrizer(morphology, coeffs, neurite_types, config=None, rng=np.random):
+def simpler_diametrizer(morphology, neurite_types, model_params, diam_params=None, rng=np.random):
     """Diametrize a morphology."""
-    morphology = Morphology(morphology)
+    _morphology = Morphology(morphology)
 
-    for neurite in morphology.neurites:
-        if neurite.type.name in coeffs:
-            coeff = coeffs[neurite.type.name]
-            p = Polynomial(coeff)
+    for neurite in _morphology.neurites:
+        if neurite.type.name in model_params:
+            p = Polynomial(model_params[neurite.type.name])
             cache = {}
             max_len = max(terminal_path_lengths(neurite, cache))
             for section in iter_sections(neurite):
@@ -134,7 +133,7 @@ def simpler_diametrizer(morphology, coeffs, neurite_types, config=None, rng=np.r
                     + _s_length(section.id, section.points, cache)
                 )
                 diam = p(section_len / max_len)
-                _update_diameters(section, len(section.points) * [diam])
+                morphology.sections[section.id].diameters = len(section.points) * [diam]
             for section in iter_sections(neurite):
                 diam_start = section.points[0, 3]
                 if section.children:
@@ -142,8 +141,6 @@ def simpler_diametrizer(morphology, coeffs, neurite_types, config=None, rng=np.r
                     diam_end = 0.5 * (diam_start + diam_end)
                 else:
                     diam_end = p(0)
-                _update_diameters(
-                    section,
-                    diam_start + (diam_end - diam_start) * np.linspace(0, 1, len(section.points)),
-                )
-    return morphology
+                    morphology.sections[section.id].diameters = diam_start + (
+                        diam_end - diam_start
+                    ) * np.linspace(0, 1, len(section.points))
