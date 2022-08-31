@@ -5,23 +5,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 from neurom import NeuriteType
 from neurom import iter_sections
-from neurom import morphmath
+
 from neurom.core.morphology import Morphology
 from neurom.core.morphology import Section
 from numpy.polynomial import Polynomial
 from scipy.stats import pearsonr
 
 
-def _s_length(s_id, points, cache):
-    """Section length with cache."""
-    if s_id not in cache:
-        cache[s_id] = morphmath.section_length(points)
-    return cache[s_id]
-
-
 def section_path_length(section, cache):
     """Path length from section to root."""
-    return sum(_s_length(s.id, s.points, cache) for s in section.iupstream())
+    if section.id not in cache:
+        cache[section.id] = sum(section.length for s in section.iupstream())
+    return cache[section.id]
 
 
 def _map_sections(fun, neurite, iterator_type=Section.ipreorder):
@@ -60,9 +55,7 @@ def build_simpler_model(morphologies, config, fit_orders=None):
                             section_path_length(_section, cache) for _section in section.ipreorder()
                         )
                         lengths.append(
-                            tip_length
-                            - section_path_length(section, cache)
-                            + _s_length(section.id, section.points, cache)
+                            tip_length - section_path_length(section, cache) + section.length
                         )
             if lengths:
                 lengths = np.array(lengths)
@@ -106,20 +99,15 @@ def plot_model(coeffs, pdf, title_str, all_lengths, all_diams, residues):
     plt.close()
 
 
-def _update_diameters(section, diameters):
-    """Shortcut to update diameters with neurom v3."""
-    points = section.points
-    points[:, 3] = diameters
-    section.points = points
-
-
 # pylint: disable=unused-argument
 def simpler_diametrizer(morphology, neurite_types, model_params, diam_params=None, rng=np.random):
     """Diametrize a morphology."""
-    _morphology = Morphology(morphology)
+    if not isinstance(neurite_types, list):
+        neurite_types = [neurite_types]
 
+    _morphology = Morphology(morphology)
     for neurite in _morphology.neurites:
-        if neurite.type.name in model_params:
+        if neurite.type in neurite_types and neurite.type.name in model_params:
             p = Polynomial(model_params[neurite.type.name])
             cache = {}
             max_len = max(terminal_path_lengths(neurite, cache))
@@ -127,12 +115,8 @@ def simpler_diametrizer(morphology, neurite_types, model_params, diam_params=Non
                 tip_length = max(
                     section_path_length(_section, cache) for _section in section.ipreorder()
                 )
-                section_len = (
-                    tip_length
-                    - section_path_length(section, cache)
-                    + _s_length(section.id, section.points, cache)
-                )
-                diam = p(section_len / max_len)
+                section_length = tip_length - section_path_length(section, cache) + section.length
+                diam = p(section_length / max_len)
                 morphology.sections[section.id].diameters = len(section.points) * [diam]
             for section in iter_sections(neurite):
                 diam_start = section.points[0, 3]
