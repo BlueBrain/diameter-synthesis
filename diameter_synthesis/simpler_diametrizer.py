@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from neurom import NeuriteType
 from neurom import iter_sections
-
 from neurom.core.morphology import Morphology
 from neurom.core.morphology import Section
 from numpy.polynomial import Polynomial
@@ -57,12 +56,11 @@ def build_simpler_model(morphologies, config, fit_orders=None):
                         lengths.append(
                             tip_length - section_path_length(section, cache) + section.length
                         )
-            if lengths:
-                lengths = np.array(lengths)
-                diams = np.array(diams)
-                lengths /= lengths.max()
-                all_lengths[neurite_type] += lengths.tolist()
-                all_diams[neurite_type] += diams.tolist()
+            lengths = np.array(lengths)
+            diams = np.array(diams)
+            lengths /= lengths.max()
+            all_lengths[neurite_type] += lengths.tolist()
+            all_diams[neurite_type] += diams.tolist()
         if all_lengths[neurite_type]:
             p, extra = Polynomial.fit(
                 all_lengths[neurite_type],

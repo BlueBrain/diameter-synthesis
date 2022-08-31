@@ -126,6 +126,11 @@ def test_run_diametrize_single_neuron(neuron):
     assert_almost_equal(neuron.root_sections[1].diameters, [1.627442, 1.6274352])
 
 
+def test_run_diametrize_single_neuron_basal(neuron):
+    main.diametrize_single_neuron(neuron, neurite_types=["basal_dendrite"])
+    assert_almost_equal(neuron.root_sections[1].diameters, [1.627442, 1.6274352])
+
+
 def test_plot_diff(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir):
     """Test the plot_diff entry point."""
     res_path = Path(tmpdir / "figures")
