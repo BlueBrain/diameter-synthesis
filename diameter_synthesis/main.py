@@ -225,5 +225,7 @@ def diametrize_single_neuron(neuron, neurite_types=None):
         neuron (mophio.mut.Morphology): neuron to consider.
         neurite_types (list): list of neurite types to consider, if None basal/apical will be used
     """
+    if neurite_types is None:
+        neurite_types = ["basal_dendrite", "apical_dendrite"]
     model, _ = build_simpler_model([nm.load_neuron(neuron)], {"neurite_types": neurite_types})
-    return simpler_diametrizer(neuron, model, neurite_types)
+    simpler_diametrizer(neuron, neurite_types, model)
