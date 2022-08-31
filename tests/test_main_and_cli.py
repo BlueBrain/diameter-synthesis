@@ -127,6 +127,7 @@ def test_run_diametrize_single_neuron(neuron):
 
 
 def test_run_diametrize_single_neuron_basal(neuron):
+    """Test diametrize single neuron with only basal."""
     main.diametrize_single_neuron(neuron, neurite_types=["basal_dendrite"])
     assert_almost_equal(neuron.root_sections[1].diameters, [1.627442, 1.6274352])
 

@@ -61,15 +61,14 @@ def build_simpler_model(morphologies, config, fit_orders=None):
             lengths /= lengths.max()
             all_lengths[neurite_type] += lengths.tolist()
             all_diams[neurite_type] += diams.tolist()
-        if all_lengths[neurite_type]:
-            p, extra = Polynomial.fit(
-                all_lengths[neurite_type],
-                all_diams[neurite_type],
-                fit_orders[neurite_type],
-                full=True,
-            )
-            residues[neurite_type] = float(extra[0][0])
-            coeffs[neurite_type] = p.convert().coef.tolist()
+        p, extra = Polynomial.fit(
+            all_lengths[neurite_type],
+            all_diams[neurite_type],
+            fit_orders[neurite_type],
+            full=True,
+        )
+        residues[neurite_type] = float(extra[0][0])
+        coeffs[neurite_type] = p.convert().coef.tolist()
     return coeffs, [all_lengths, all_diams, residues]
 
 
