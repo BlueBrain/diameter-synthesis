@@ -120,9 +120,10 @@ def test_run_diameters(tmpdir, single_pop_data_dir, config, model_params):
 
 def test_run_diametrize_single_neuron(neuron):
     """Test diametrize single neuron."""
-    new_neuron = main.diametrize_single_neuron(neuron)
-    assert len(neuron.root_sections) == len(new_neuron.root_sections)
-    assert_almost_equal(new_neuron.root_sections[1].diameters, [1.627442, 1.6274352])
+    n_root = len(neuron.root_sections)
+    main.diametrize_single_neuron(neuron)
+    assert len(neuron.root_sections) == n_root
+    assert_almost_equal(neuron.root_sections[1].diameters, [1.627442, 1.6274352])
 
 
 def test_plot_diff(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir):

@@ -15,7 +15,7 @@ from scipy.stats import pearsonr
 def section_path_length(section, cache):
     """Path length from section to root."""
     if section.id not in cache:
-        cache[section.id] = sum(section.length for s in section.iupstream())
+        cache[section.id] = sum(s.length for s in section.iupstream())
     return cache[section.id]
 
 
@@ -50,7 +50,7 @@ def build_simpler_model(morphologies, config, fit_orders=None):
                 cache = {}
                 if neurite.type == getattr(NeuriteType, neurite_type):
                     for section in iter_sections(neurite):
-                        diams.append(np.mean(section.points[:, 3]))
+                        diams.append(2 * np.mean(section.points[:, 3]))
                         tip_length = max(
                             section_path_length(_section, cache) for _section in section.ipreorder()
                         )
@@ -104,7 +104,10 @@ def simpler_diametrizer(morphology, neurite_types, model_params, diam_params=Non
     """Diametrize a morphology."""
     if not isinstance(neurite_types, list):
         neurite_types = [neurite_types]
-
+    neurite_types = [
+        getattr(NeuriteType, neurite_type) if isinstance(neurite_type, str) else neurite_type
+        for neurite_type in neurite_types
+    ]
     _morphology = Morphology(morphology)
     for neurite in _morphology.neurites:
         if neurite.type in neurite_types and neurite.type.name in model_params:
@@ -119,12 +122,14 @@ def simpler_diametrizer(morphology, neurite_types, model_params, diam_params=Non
                 diam = p(section_length / max_len)
                 morphology.sections[section.id].diameters = len(section.points) * [diam]
             for section in iter_sections(neurite):
-                diam_start = section.points[0, 3]
+                diam_start = morphology.sections[section.id].diameters[0]
                 if section.children:
-                    diam_end = max(sec.points[0, 3] for sec in section.children)
+                    diam_end = max(
+                        morphology.sections[sec.id].diameters[0] for sec in section.children
+                    )
                     diam_end = 0.5 * (diam_start + diam_end)
                 else:
                     diam_end = p(0)
-                    morphology.sections[section.id].diameters = diam_start + (
-                        diam_end - diam_start
-                    ) * np.linspace(0, 1, len(section.points))
+                morphology.sections[section.id].diameters = diam_start + (
+                    diam_end - diam_start
+                ) * np.linspace(0, 1, len(section.points))

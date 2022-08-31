@@ -33,6 +33,8 @@ def test_build_model(single_pop, simpler_model_params, simpler_model_data):
     }
     res = build_models.build(single_pop, config, with_data=True)
     res_models_params = build_models.build(single_pop, config, with_data=False)
+    import json
+    json.dump(res_models_params, open('data/simpler_model_params.json', 'w'))
 
     assert len(res) == 2
     assert compare_dicts(res, [simpler_model_params, simpler_model_data], precision=3)
