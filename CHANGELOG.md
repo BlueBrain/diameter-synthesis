@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.2](https://github.com/BlueBrain/diameter-synthesis/compare/0.5.1..0.5.2)
+
+> 31 August 2022
+
+### Refactoring and Updates
+
+- Apply Copier template (Adrien Berchet - [#30](https://github.com/BlueBrain/diameter-synthesis/pull/30))
+
+### Uncategorized Changes
+
+- Improve simpler diametrizer (Alexis Arnaudon - [#31](https://github.com/BlueBrain/diameter-synthesis/pull/31))
+
 ## [0.5.1](https://github.com/BlueBrain/diameter-synthesis/compare/0.5.0..0.5.1)
 
 > 22 August 2022
