@@ -289,14 +289,14 @@ def _diametrize_tree(neurite, params, params_tree, rng=np.random):
     return wrong_tips
 
 
-def _diametrize_neuron(params_tree, neuron, params, neurite_types, config, rng=np.random):
+def _diametrize_neuron(params_tree, neuron, neurite_types, params, config, rng=np.random):
     """Diametrize a neuron.
 
     Args:
         params_tree (dict): specific parameters of the current tree.
         neuron (morphio.mut.Morphology): neuron to diametrize.
-        params (dict): model parameters.
         neurite_types (str or morphio.SectionType): the neurite type to consider.
+        params (dict): model parameters.
         config (dict): general configuration parameters.
         rng (numpy.random.Generator): the random number generator to use.
     """
@@ -416,14 +416,14 @@ def build(neuron, neurite_types, model_params, diam_params, random_generator=np.
     diameter_generator = _select_model(diam_params["models"][0])
 
     neuron = diameter_generator(
-        neuron, model_params, neurite_types, diam_params, rng=random_generator
+        neuron, neurite_types, model_params, diam_params, rng=random_generator
     )
     n_samples = diam_params.get("n_samples", 1)
     if n_samples > 1:
         diameters = utils.get_all_diameters(neuron)
         for _ in range(n_samples - 1):
             neuron = diameter_generator(
-                neuron, model_params, neurite_types, diam_params, rng=random_generator
+                neuron, neurite_types, model_params, diam_params, rng=random_generator
             )
             for i, new_diams in enumerate(utils.get_all_diameters(neuron)):
                 diameters[i] += new_diams
