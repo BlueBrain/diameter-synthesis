@@ -32,12 +32,12 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
 
 @click.group()
+@click.version_option(prog_name="diameter-synthesis")
 def main():
     """Cli to learn and generate diameters of neurons."""
 
 
 @main.command("run_models")
-@click.version_option()
 @click.argument("config_file", type=click.Path(exists=True))
 @click.option("--plot", is_flag=True)
 @click.option("--ext", default=".png")
@@ -49,7 +49,6 @@ def run_models(config_file, plot=False, ext=".png"):
 
 
 @main.command("run_diameters")
-@click.version_option()
 @click.argument("config_file", type=click.Path(exists=True))
 @click.argument("models_params_file", type=click.Path(exists=True))
 def run_diameters(config_file, models_params_file):
@@ -60,7 +59,6 @@ def run_diameters(config_file, models_params_file):
 
 
 @main.command("plot_diff")
-@click.version_option()
 @click.option("--orig-path", help="Path to original cells", required=True)
 @click.option("--diam-path", help="Path to diametrized cells", required=True)
 @click.option("-o", "--out-dir", help="Directory to output the analysis results", required=True)
@@ -98,7 +96,6 @@ def plot_diff(orig_path, diam_path, out_dir, ncells=None, ext=".png"):
 
 
 @main.command("run_analysis")
-@click.version_option()
 @click.option("--orig-path", help="Path to original cells", required=True)
 @click.option("--diam-path", help="Path to diametrized cells", required=True)
 @click.option("--mtypes-file", help="Path to mtypes file", required=False)

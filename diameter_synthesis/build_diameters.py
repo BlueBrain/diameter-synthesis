@@ -181,7 +181,6 @@ def _sample_daughter_diameters(section, params, params_tree, rng=np.random):
     reduction_factor = params_tree["reduction_factor_max"] + 1.0
     # try until we get a reduction of diameter in the branching
     while reduction_factor > params_tree["reduction_factor_max"]:
-
         sibling_ratio = _sample_sibling_ratio(
             params,
             params_tree["neurite_type"],
@@ -363,7 +362,6 @@ def _select_model(model):
         function: diametrizer with specific `params_tree`.
     """
     if model == "simpler":
-
         return simpler_diametrizer
 
     if model == "generic":

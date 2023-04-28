@@ -1,4 +1,4 @@
-"""Fetch some barrel morphologies from neuromorpho.org
+"""Fetch some barrel morphologies from neuromorpho.org.
 
 Copyright (C) 2021  Blue Brain Project, EPFL
 
@@ -40,13 +40,14 @@ def get_url(url):
 
 
 def get_swc_by_neuron_index(neuronIndex, folder="morphologies"):
-    """Download a neuron by index and store it into a SWC file
-    Keyword arguments:
-    neronIndex -- the neuron index in the database
+    """Download a neuron by index and store it into a SWC file.
+
+    Args:
+        neuronIndex: the neuron index in the database
+        folder: the output folder (must already exist)
 
     Adapted from https://github.com/NeuroBox3D/neuromorpho/blob/master/rest_wrapper/rest_wrapper.py
     """
-
     url = "%s/api/neuron/id/%i" % (NEUROMORPHO_URL, neuronIndex)
     response = get_url(url)
     neuron_name = json.loads(response.read().decode("utf-8"))["neuron_name"]

@@ -189,7 +189,6 @@ def fit_all_models(all_data, sampling_model, config):
 
     extra_params = config.copy()
     for neurite_type in config["neurite_types"]:
-
         extra_params["neurite_type"] = neurite_type
         extra_params["name"] = "sibling_ratios"
         all_models["sibling_ratios"][neurite_type] = fit_model(

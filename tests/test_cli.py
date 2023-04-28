@@ -1,4 +1,4 @@
-"""Test the cli module."""
+"""Tests for the diameter_synthesis.cli module."""
 
 # Copyright (C) 2021  Blue Brain Project, EPFL
 #
@@ -28,6 +28,28 @@ from diameter_synthesis import main
 from .testing_tools import compare_dicts
 
 
+def test_cli(cli_runner):
+    # pylint: disable=unused-argument
+    """Test the CLI."""
+    result = cli_runner.invoke(
+        cli.main,
+        [
+            "--version",
+        ],
+    )
+    assert result.exit_code == 0
+    assert result.output.startswith("diameter-synthesis, version ")
+
+
+@pytest.mark.parametrize("command", ["run_models", "run_diameters", "plot_diff", "run_analysis"])
+def test_entry_points(script_runner, command):
+    """Test the entry points."""
+    ret = script_runner.run("diameter-synthesis", command)
+    assert not ret.success
+    assert f"Usage: diameter-synthesis {command}" in ret.stderr
+    assert ret.stdout == ""
+
+
 def test_run_models(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir, config):
     """Test the run_models entry point."""
     # Prepare inputs
@@ -46,7 +68,7 @@ def test_run_models(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir
 
     # Run with CLI
     runner = CliRunner()
-    runner.invoke(cli.cli, ["run_models", config_file], catch_exceptions=False)
+    runner.invoke(cli.main, ["run_models", config_file], catch_exceptions=False)
 
     # Check results
     with open(extract_models_params["models_params_file"], "r", encoding="utf-8") as json_file:
@@ -111,7 +133,7 @@ def test_run_diameters(tmpdir, single_pop_data_dir, config, model_params):
     # Run with CLI
     runner = CliRunner()
     runner.invoke(
-        cli.cli, ["run_diameters", config_file, model_params_file], catch_exceptions=False
+        cli.main, ["run_diameters", config_file, model_params_file], catch_exceptions=False
     )
 
     # Check results
@@ -139,7 +161,7 @@ def test_plot_diff(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir)
     # Run with CLI
     runner = CliRunner()
     runner.invoke(
-        cli.cli,
+        cli.main,
         [
             "plot_diff",
             "--orig-path",
@@ -165,7 +187,7 @@ def test_run_analysis(tmpdir, single_pop_data_dir, single_pop_diametrized_data_d
     # Run with CLI
     runner = CliRunner()
     runner.invoke(
-        cli.cli,
+        cli.main,
         [
             "run_analysis",
             "--orig-path",
@@ -203,7 +225,7 @@ def test_run_analysis(tmpdir, single_pop_data_dir, single_pop_diametrized_data_d
     # Test with neither cumukative nor violin
     with pytest.raises(ValueError):
         runner.invoke(
-            cli.cli,
+            cli.main,
             [
                 "run_analysis",
                 "--orig-path",
