@@ -23,12 +23,12 @@ from setuptools import setup
 reqs = [
     "click>=7.0",
     "jsonschema>=3",
-    "matplotlib>=2.2.0",
-    "morphio>=2.3.4",
+    "matplotlib>=3.4",
+    "morphio>=3.3.4",
     "neurom>=3.0,<4.0",
-    "numpy>=1.15.0",
-    "pandas>=0.24.0",
-    "scipy>=0.13.3",
+    "numpy>=1.22.0",
+    "pandas>=1.0.5",
+    "scipy>=1.6",
 ]
 
 doc_reqs = [
@@ -41,15 +41,14 @@ doc_reqs = [
 
 test_reqs = [
     "diff_pdf_visually>=1.7.0",
-    "decorator",
-    "matplotlib",
+    "decorator>=4",
     "mock>=3",
     "pytest>=6",
     "pytest-click>=1",
     "pytest-console-scripts>=1.3",
     "pytest-cov>=3",
     "pytest-html>=2",
-    "pytest-xdist",
+    "pytest-xdist>=2",
 ]
 
 setup(
