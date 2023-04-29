@@ -248,6 +248,7 @@ def _create_data(
         return bin_centers, bins
 
     def find_upper_bound(pairs):
+        # pylint: disable=nested-min-max
         return max(max(max(vals1), max(vals2)) for (vals1, _), (vals2, _) in pairs)
 
     def per_neurite_data(original_cells, diametrized_cells, neurite_types):
@@ -261,7 +262,6 @@ def _create_data(
     n_cells = len(original_cells)
     iter_neurite_data = per_neurite_data(original_cells, diametrized_cells, neurite_types)
     for _, data_pairs in enumerate(iter_neurite_data):
-
         try:
             upper_bound = find_upper_bound(data_pairs)
         except BaseException:  # pylint: disable=broad-except
@@ -274,7 +274,6 @@ def _create_data(
         stats2 = np.empty_like(stats1)
 
         for i, ((metric1, data1), (metric2, data2)) in enumerate(data_pairs):
-
             res1 = stats.binned_statistic(
                 metric1, data1, statistic="sum", bins=bins, range=(0, upper_bound)
             )
@@ -326,8 +325,7 @@ def plot_cumulative_distribution(
 
     fig, axes = plt.subplots(3, 1, figsize=(5, 12))
 
-    for (bin_centers, stats1, stats2) in data_generator:
-
+    for bin_centers, stats1, stats2 in data_generator:
         means = stats1.mean(axis=0)
         color = "C0"
         axes[0].plot(bin_centers, means, c=color, linestyle="-", lw=3, label="original cells")

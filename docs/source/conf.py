@@ -18,7 +18,7 @@ from importlib import metadata
 project = "diameter-synthesis"
 
 # The short X.Y version
-version = metadata.version("diameter_synthesis")
+version = metadata.version("diameter-synthesis")
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -64,7 +64,7 @@ html_theme = "sphinx-bluebrain-theme"
 # html_static_path = ['_static']
 
 html_theme_options = {
-    "metadata_distribution": project,
+    "metadata_distribution": "diameter-synthesis",
 }
 
 html_title = "Diameter Synthesis"

@@ -17,18 +17,18 @@
 
 from pathlib import Path
 
-from setuptools import find_packages
+from setuptools import find_namespace_packages
 from setuptools import setup
 
 reqs = [
     "click>=7.0",
     "jsonschema>=3",
-    "matplotlib>=2.2.0",
-    "morphio>=2.3.4",
+    "matplotlib>=3.4",
+    "morphio>=3.3.4",
     "neurom>=3.0,<4.0",
-    "numpy>=1.15.0",
-    "pandas>=0.24.0",
-    "scipy>=0.13.3",
+    "numpy>=1.22.0",
+    "pandas>=1.0.5",
+    "scipy>=1.6",
 ]
 
 doc_reqs = [
@@ -41,13 +41,14 @@ doc_reqs = [
 
 test_reqs = [
     "diff_pdf_visually>=1.7.0",
-    "decorator",
-    "matplotlib",
-    "mock",
-    "pytest",
-    "pytest-cov",
-    "pytest-html",
-    "pytest-xdist",
+    "decorator>=4",
+    "mock>=3",
+    "pytest>=6",
+    "pytest-click>=1",
+    "pytest-console-scripts>=1.3",
+    "pytest-cov>=3",
+    "pytest-html>=2",
+    "pytest-xdist>=2",
 ]
 
 setup(
@@ -59,10 +60,10 @@ setup(
     url="https://diameter-synthesis.readthedocs.io",
     project_urls={
         "Tracker": "https://github.com/BlueBrain/diameter-synthesis/issues",
-        "Source": "https://github.com/BlueBrain/diameter-synthesis",
+        "Source": "git@github.com:BlueBrain/diameter-synthesis.git",
     },
     license="GNU General Public License v3.0",
-    packages=find_packages(exclude=["tests"]),
+    packages=find_namespace_packages(include=["diameter_synthesis*"]),
     python_requires=">=3.8",
     use_scm_version=True,
     setup_requires=[
@@ -74,10 +75,12 @@ setup(
         "plot": "seaborn>=0.11.1",
         "test": test_reqs,
     },
-    tests_require=test_reqs,
     entry_points={
-        "console_scripts": ["diameter-synthesis=diameter_synthesis.cli:cli"],
+        "console_scripts": [
+            "diameter-synthesis=diameter_synthesis.cli:main",
+        ],
     },
+    include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
@@ -86,7 +89,8 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
-    include_package_data=True,
 )
