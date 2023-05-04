@@ -7,7 +7,7 @@ author_name: Blue Brain Project, EPFL
 copyright_license: GNU General Public License v3.0
 copyright_year: '2022'
 distribution_name: diameter-synthesis
-download_url: git@github.com:BlueBrain/diameter-synthesis.git
+download_url: https://github.com/BlueBrain/diameter-synthesis
 init_git: false
 maintainer: Alexis Arnaudon (@arnaudon)
 package_name: diameter_synthesis
