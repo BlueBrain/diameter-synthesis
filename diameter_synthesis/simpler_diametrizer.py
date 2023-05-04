@@ -36,8 +36,8 @@ def build_simpler_model(morphologies, config, fit_orders=None):
     if fit_orders is None:
         fit_orders = {"basal_dendrite": 1, "apical_dendrite": 2, "axon": 1}
 
-    coeffs = {}
-    residues = {}
+    coeffs = {n_type: [] for n_type in neurite_types}
+    residues = {n_type: None for n_type in neurite_types}
     all_diams = {n_type: [] for n_type in neurite_types}
     all_lengths = {n_type: [] for n_type in neurite_types}
 
@@ -56,11 +56,15 @@ def build_simpler_model(morphologies, config, fit_orders=None):
                         lengths.append(
                             tip_length - section_path_length(section, cache) + section.length
                         )
+            if not diams:
+                continue
             lengths = np.array(lengths)
             diams = np.array(diams)
             lengths /= lengths.max()
             all_lengths[neurite_type] += lengths.tolist()
             all_diams[neurite_type] += diams.tolist()
+        if not all_diams[neurite_type]:
+            continue
         p, extra = Polynomial.fit(
             all_lengths[neurite_type],
             all_diams[neurite_type],
