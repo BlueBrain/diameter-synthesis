@@ -60,7 +60,7 @@ setup(
     url="https://diameter-synthesis.readthedocs.io",
     project_urls={
         "Tracker": "https://github.com/BlueBrain/diameter-synthesis/issues",
-        "Source": "git@github.com:BlueBrain/diameter-synthesis.git",
+        "Source": "https://github.com/BlueBrain/diameter-synthesis",
     },
     license="GNU General Public License v3.0",
     packages=find_namespace_packages(include=["diameter_synthesis*"]),

@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.5.4](https://github.com/BlueBrain/diameter-synthesis/compare/0.5.3..0.5.4)
+
+> 4 May 2023
+
+### Fixes
+
+- Handle missing neurites in simpler model (Adrien Berchet - [#36](https://github.com/BlueBrain/diameter-synthesis/pull/36))
+
+### Chores And Housekeeping
+
+- Add templates for issues and pull requests (Adrien Berchet - [#37](https://github.com/BlueBrain/diameter-synthesis/pull/37))
+- Bump copier template (Adrien Berchet - [#34](https://github.com/BlueBrain/diameter-synthesis/pull/34))
+
+## [0.5.3](https://github.com/BlueBrain/diameter-synthesis/compare/0.5.2..0.5.3)
+
+> 6 September 2022
+
+### General Changes
+
+- Fixing small bug (Alexis Arnaudon - [#32](https://github.com/BlueBrain/diameter-synthesis/pull/32))
+
 ## [0.5.2](https://github.com/BlueBrain/diameter-synthesis/compare/0.5.1..0.5.2)
 
 > 31 August 2022
@@ -8,7 +29,7 @@
 
 - Apply Copier template (Adrien Berchet - [#30](https://github.com/BlueBrain/diameter-synthesis/pull/30))
 
-### Uncategorized Changes
+### General Changes
 
 - Improve simpler diametrizer (Alexis Arnaudon - [#31](https://github.com/BlueBrain/diameter-synthesis/pull/31))
 
@@ -20,6 +41,10 @@
 
 > 19 August 2022
 
+### Build
+
+- Fix docutils requirement as the new M2R2 release fixes it (Adrien Berchet - [#24](https://github.com/BlueBrain/diameter-synthesis/pull/24))
+
 ### Chores And Housekeeping
 
 - Use importlib instead of pkg_resources (Adrien Berchet - [#27](https://github.com/BlueBrain/diameter-synthesis/pull/27))
@@ -28,10 +53,9 @@
 
 - Setup pre-commit and format files accordingly (Adrien Berchet - [#25](https://github.com/BlueBrain/diameter-synthesis/pull/25))
 
-### Uncategorized Changes
+### General Changes
 
 - Simpler rediametrize (Alexis Arnaudon - [#26](https://github.com/BlueBrain/diameter-synthesis/pull/26))
-- Fix docutils requirement as the new M2R2 release fixes it (Adrien Berchet - [#24](https://github.com/BlueBrain/diameter-synthesis/pull/24))
 - simpler diametrizer (Alexis Arnaudon - [#22](https://github.com/BlueBrain/diameter-synthesis/pull/22))
 - Updating copyright year (bbpgithubaudit - [#21](https://github.com/BlueBrain/diameter-synthesis/pull/21))
 - Update DOI to the final article (Adrien Berchet - [#19](https://github.com/BlueBrain/diameter-synthesis/pull/19))
@@ -41,7 +65,7 @@
 
 > 3 March 2022
 
-### Uncategorized Changes
+### General Changes
 
 - Fix asymmetry of last children in apical diametrizer (Alexis Arnaudon - [#16](https://github.com/BlueBrain/diameter-synthesis/pull/16))
 
