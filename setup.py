@@ -72,7 +72,7 @@ setup(
     install_requires=reqs,
     extras_require={
         "docs": doc_reqs,
-        "plot": "seaborn>=0.11.1",
+        "plot": "seaborn>=0.13",
         "test": test_reqs,
     },
     entry_points={
