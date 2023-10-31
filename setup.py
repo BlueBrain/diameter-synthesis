@@ -27,8 +27,9 @@ reqs = [
     "morphio>=3.3.4",
     "neurom>=3.0,<4.0",
     "numpy>=1.22.0",
-    "pandas>=1.0.5",
+    "pandas>=1.1",
     "scipy>=1.6",
+    "tqdm>=4.50",
 ]
 
 doc_reqs = [
@@ -72,7 +73,7 @@ setup(
     install_requires=reqs,
     extras_require={
         "docs": doc_reqs,
-        "plot": "seaborn>=0.11.1",
+        "plot": "seaborn>=0.13",
         "test": test_reqs,
     },
     entry_points={
