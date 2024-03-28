@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.5](https://github.com/BlueBrain/diameter-synthesis/compare/0.5.4..0.5.5)
+
+> 28 March 2024
+
+### New Features
+
+- move fit_orders to config (Alexis Arnaudon - [#48](https://github.com/BlueBrain/diameter-synthesis/pull/48))
+
+### General Changes
+
+- Bump mikepenz/action-junit-report from 3 to 4 (dependabot[bot] - [#39](https://github.com/BlueBrain/diameter-synthesis/pull/39))
+- Bump actions/checkout from 3 to 4 (dependabot[bot] - [#40](https://github.com/BlueBrain/diameter-synthesis/pull/40))
+
 ## [0.5.4](https://github.com/BlueBrain/diameter-synthesis/compare/0.5.3..0.5.4)
 
 > 4 May 2023
