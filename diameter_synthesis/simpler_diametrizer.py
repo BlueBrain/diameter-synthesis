@@ -1,4 +1,5 @@
 """Simpler diametrizer."""
+
 from functools import partial
 
 import matplotlib.pyplot as plt
@@ -28,13 +29,15 @@ def terminal_path_lengths(neurite, cache):
     return _map_sections(partial(section_path_length, cache=cache), neurite, Section.ileaf)
 
 
-def build_simpler_model(morphologies, config, fit_orders=None):
+def build_simpler_model(morphologies, config):
     """Build diameter model."""
     neurite_types = config.get("neurite_types")
     if neurite_types is None:
         neurite_types = ["basal_dendrite", "apical_dendrite"]
-    if fit_orders is None:
-        fit_orders = {"basal_dendrite": 1, "apical_dendrite": 2, "axon": 1}
+
+    fit_orders = {"basal_dendrite": 1, "apical_dendrite": 2, "axon": 1}
+    if config.get("fit_orders") is not None:
+        fit_orders.update(config["fit_orders"])
 
     coeffs = {n_type: [] for n_type in neurite_types}
     residues = {n_type: None for n_type in neurite_types}
