@@ -156,7 +156,7 @@ def _sample_daughter_diameters(section, params, params_tree, rng=np.random):
     Returns:
        list: list of daughter diameters.
     """
-    # pylint: disable=too-many-locals,possibly-used-before-assignment
+    # pylint: disable=too-many-locals,used-before-assignment
     major_sections = params_tree["major_sections"]
 
     apply_asymmetry = False
