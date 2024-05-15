@@ -1,6 +1,6 @@
 """Build neurite diameters from a pre-generated model."""
 
-# Copyright (C) 2021  Blue Brain Project, EPFL
+# Copyright (C) 2021-2024  Blue Brain Project, EPFL
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -156,7 +156,7 @@ def _sample_daughter_diameters(section, params, params_tree, rng=np.random):
     Returns:
        list: list of daughter diameters.
     """
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals,possibly-used-before-assignment
     major_sections = params_tree["major_sections"]
 
     apply_asymmetry = False

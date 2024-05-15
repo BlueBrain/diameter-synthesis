@@ -1,6 +1,6 @@
 """Utils functions."""
 
-# Copyright (C) 2021  Blue Brain Project, EPFL
+# Copyright (C) 2021-2024  Blue Brain Project, EPFL
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -31,7 +31,7 @@ def _create_morphologies_dict_dat(morph_path, mtypes_file="neurondb.dat"):
         dict: dictionary of morphologies keyed by mtypes.
     """
     # pylint wrongly determines `morph_name` as TextFileReader
-    # pylint: disable=no-member
+    # pylint: disable=no-member,possibly-used-before-assignment
     morph_name = pd.read_csv(mtypes_file, sep=r"\s+", header=None)
     name_dict = defaultdict(list)
     if not morph_name.empty:

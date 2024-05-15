@@ -1,6 +1,6 @@
 """Functions to fit distributions to parameters of diameter models."""
 
-# Copyright (C) 2021  Blue Brain Project, EPFL
+# Copyright (C) 2021-2024  Blue Brain Project, EPFL
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -149,6 +149,7 @@ def sample_distribution(model, rng=np.random):
     Returns:
         float: the value of the distribution at the given position.
     """
+    # pylint: disable=possibly-used-before-assignment
     if "a" in model["params"]:
         a_clip = np.clip(model["params"]["a"], A_MIN, A_MAX)
 

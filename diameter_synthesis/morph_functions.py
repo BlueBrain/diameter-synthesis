@@ -1,6 +1,6 @@
 """Morphology extraction functions."""
 
-# Copyright (C) 2021  Blue Brain Project, EPFL
+# Copyright (C) 2021-2024  Blue Brain Project, EPFL
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -153,6 +153,7 @@ def max_diameter(neurite, attribute_name=None, bounds=None):
 
 def trunk_diameter(neurite, attribute_name=None, bounds=None, method="last"):
     """Get the trunc diameters (neurom only)."""
+    # pylint: disable=possibly-used-before-assignment
     if method == "mean":
         trunk_diam = _get_mean_diameter(neurite.root_node)
     if method == "first":
