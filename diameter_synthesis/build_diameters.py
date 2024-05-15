@@ -1,19 +1,8 @@
 """Build neurite diameters from a pre-generated model."""
 
-# Copyright (C) 2021  Blue Brain Project, EPFL
+# Copyright (C) 2021-2024  Blue Brain Project, EPFL
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# SPDX-License-Identifier: Apache-2.0
 
 import logging
 from collections import deque
@@ -167,7 +156,7 @@ def _sample_daughter_diameters(section, params, params_tree, rng=np.random):
     Returns:
        list: list of daughter diameters.
     """
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals,used-before-assignment
     major_sections = params_tree["major_sections"]
 
     apply_asymmetry = False

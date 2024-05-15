@@ -1,19 +1,8 @@
 """Morphology extraction functions."""
 
-# Copyright (C) 2021  Blue Brain Project, EPFL
+# Copyright (C) 2021-2024  Blue Brain Project, EPFL
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# SPDX-License-Identifier: Apache-2.0
 
 import logging
 from functools import lru_cache
@@ -164,6 +153,7 @@ def max_diameter(neurite, attribute_name=None, bounds=None):
 
 def trunk_diameter(neurite, attribute_name=None, bounds=None, method="last"):
     """Get the trunc diameters (neurom only)."""
+    # pylint: disable=possibly-used-before-assignment
     if method == "mean":
         trunk_diam = _get_mean_diameter(neurite.root_node)
     if method == "first":
