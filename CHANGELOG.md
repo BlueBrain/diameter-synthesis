@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.0](https://github.com/BlueBrain/diameter-synthesis/compare/0.5.5..0.6.0)
+
+> 15 May 2024
+
+### Chores And Housekeeping
+
+- Change license from GPLv3 to Apache-v2 (Adrien Berchet - [#50](https://github.com/BlueBrain/diameter-synthesis/pull/50))
+
 ## [0.5.5](https://github.com/BlueBrain/diameter-synthesis/compare/0.5.4..0.5.5)
 
 > 28 March 2024
