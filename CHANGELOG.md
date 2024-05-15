@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.1](https://github.com/BlueBrain/diameter-synthesis/compare/0.6.0..0.6.1)
+
+> 15 May 2024
+
+### Fixes
+
+- License in classifiers (Adrien Berchet - [#52](https://github.com/BlueBrain/diameter-synthesis/pull/52))
+
 ## [0.6.0](https://github.com/BlueBrain/diameter-synthesis/compare/0.5.5..0.6.0)
 
 > 15 May 2024
