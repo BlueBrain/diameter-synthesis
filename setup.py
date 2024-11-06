@@ -15,8 +15,8 @@ reqs = [
     "matplotlib>=3.4",
     "morphio>=3.3.4",
     "neurom>=3.0,<4.0",
-    "numpy>=1.22.0",
-    "pandas>=1.1",
+    "numpy>=1.23",
+    "pandas>=1.5",
     "scipy>=1.6",
     "tqdm>=4.50",
 ]
