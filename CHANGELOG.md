@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0](https://github.com/BlueBrain/diameter-synthesis/compare/0.6.1..0.7.0)
+
+> 6 November 2024
+
+### Build
+
+- Drop Py38 support (Adrien Berchet - [#55](https://github.com/BlueBrain/diameter-synthesis/pull/55))
+
 ## [0.6.1](https://github.com/BlueBrain/diameter-synthesis/compare/0.6.0..0.6.1)
 
 > 15 May 2024
