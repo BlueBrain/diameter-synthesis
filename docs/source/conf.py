@@ -15,10 +15,11 @@ from importlib import metadata
 
 # -- Project information -----------------------------------------------------
 
-project = "diameter-synthesis"
+project_name = "Diameter Synthesis"
+package_name = "diameter-synthesis"
 
 # The short X.Y version
-version = metadata.version("diameter-synthesis")
+version = metadata.version(package_name)
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -64,10 +65,10 @@ html_theme = "sphinx-bluebrain-theme"
 # html_static_path = ['_static']
 
 html_theme_options = {
-    "metadata_distribution": "diameter-synthesis",
+    "metadata_distribution": package_name,
 }
 
-html_title = "Diameter Synthesis"
+html_title = project_name
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = False
