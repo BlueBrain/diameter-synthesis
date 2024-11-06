@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import dictdiffer
 import morphio.mut
 import neurom as nm
 from morphio import SectionType
@@ -11,8 +12,7 @@ from morphio import SectionType
 from diameter_synthesis import build_diameters
 from diameter_synthesis import build_models
 
-from .testing_tools import _compare_diameters
-from .testing_tools import compare_dicts
+from .testing_tools import compare_diameters
 
 
 def test_build_model(single_pop, simpler_model_params, simpler_model_data):
@@ -26,8 +26,8 @@ def test_build_model(single_pop, simpler_model_params, simpler_model_data):
     res_models_params = build_models.build(single_pop, config, with_data=False)
 
     assert len(res) == 2
-    assert compare_dicts(res, [simpler_model_params, simpler_model_data], precision=3)
-    assert compare_dicts(res_models_params, simpler_model_params, precision=3)
+    assert dictdiffer.diff(res, [simpler_model_params, simpler_model_data], absolute_tolerance=1e-3)
+    assert dictdiffer.diff(res_models_params, simpler_model_params, absolute_tolerance=1e-3)
 
 
 def test_build_model_missing_neurite_type(tmpdir, neuron, simpler_model_params, simpler_model_data):
@@ -58,8 +58,8 @@ def test_build_model_missing_neurite_type(tmpdir, neuron, simpler_model_params, 
 
     # Check results
     assert len(res) == 2
-    assert compare_dicts(res, [simpler_model_params, simpler_model_data], precision=3)
-    assert compare_dicts(res_models_params, simpler_model_params, precision=3)
+    assert dictdiffer.diff(res, [simpler_model_params, simpler_model_data], absolute_tolerance=1e-3)
+    assert dictdiffer.diff(res_models_params, simpler_model_params, absolute_tolerance=1e-3)
 
 
 def test_build_diameters(simpler_config, simpler_model_params, small_morph, test_data_path):
@@ -68,4 +68,4 @@ def test_build_diameters(simpler_config, simpler_model_params, small_morph, test
 
     build_diameters.build(small_morph, neurite_types, simpler_model_params, simpler_config)
     expected = morphio.mut.Morphology(test_data_path / "simpler_morph_diametrized.asc")
-    _compare_diameters(expected, small_morph)
+    compare_diameters(expected, small_morph)

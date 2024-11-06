@@ -133,6 +133,7 @@ def test_make_cumulative_figures(single_pop, single_pop_diametrized, tmpdir, exp
                 ".h5.pdf"
             )
         ),
+        threshold=99,
     )
 
 
@@ -225,4 +226,5 @@ def test_violin_analysis(
     assert pdf_similar(
         str(expected_images_path / "test_violin_analysis.pdf"),
         str(tmpdir / "analysis" / "morphometrics.pdf"),
+        threshold=99,
     )

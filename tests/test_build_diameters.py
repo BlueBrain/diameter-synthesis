@@ -15,7 +15,7 @@ from morphio import SectionType
 from diameter_synthesis import build_diameters
 from diameter_synthesis.exception import DiameterSynthesisError
 
-from .testing_tools import _compare_diameters
+from .testing_tools import compare_diameters
 
 NEURITE_TYPES = ["basal_dendrite", "apical_dendrite"]
 
@@ -24,7 +24,7 @@ def test_build_simple(config, model_params, small_morph, test_data_path):
     """Test the main build function to diametrize a neuron."""
     build_diameters.build(small_morph, NEURITE_TYPES, model_params, config)
     expected = morphio.mut.Morphology(test_data_path / "small_morph_diametrized.asc")
-    _compare_diameters(expected, small_morph)
+    compare_diameters(expected, small_morph)
 
 
 def test_build_simple_with_apical_sections(config, model_params, small_morph, test_data_path):
@@ -33,7 +33,7 @@ def test_build_simple_with_apical_sections(config, model_params, small_morph, te
 
     build_diameters.build(small_morph, NEURITE_TYPES, model_params, config)
     expected = morphio.mut.Morphology(test_data_path / "small_morph_apical_diametrized.asc")
-    _compare_diameters(expected, small_morph)
+    compare_diameters(expected, small_morph)
 
 
 def test_build_simple_with_several_apical_sections(
@@ -55,13 +55,13 @@ def test_build_simple_with_several_apical_sections(
     build_diameters.build(small_morph, NEURITE_TYPES, model_params, config)
 
     expected = morphio.mut.Morphology(test_data_path / "small_morph_several_apical_diametrized.asc")
-    _compare_diameters(expected, small_morph)
+    compare_diameters(expected, small_morph)
 
 
 def test_build(config, model_params, neuron, neuron_diametrized):
     """Test the main build function to diametrize a neuron."""
     build_diameters.build(neuron, NEURITE_TYPES, model_params, config)
-    _compare_diameters(neuron_diametrized, neuron)
+    compare_diameters(neuron_diametrized, neuron)
 
 
 def test_build_no_seed(config, model_params, neuron, neuron_diametrized):
@@ -69,7 +69,7 @@ def test_build_no_seed(config, model_params, neuron, neuron_diametrized):
     rng = np.random.default_rng(config.pop("seed"))
 
     build_diameters.build(neuron, NEURITE_TYPES, model_params, config, rng)
-    _compare_diameters(neuron_diametrized, neuron)
+    compare_diameters(neuron_diametrized, neuron)
 
 
 def test_build_multiple_models_warning(config, model_params, neuron, neuron_diametrized, caplog):
@@ -85,7 +85,7 @@ def test_build_multiple_models_warning(config, model_params, neuron, neuron_diam
     assert level == 30
     assert entry == "Several models provided, we will only use the first"
 
-    _compare_diameters(neuron_diametrized, neuron)
+    compare_diameters(neuron_diametrized, neuron)
 
 
 def test_build_one_sample(test_data_path, config, model_params, neuron):
@@ -98,7 +98,7 @@ def test_build_one_sample(test_data_path, config, model_params, neuron):
         test_data_path / "C030796A-P3_lite_diametrized_1_sample.h5"
     )
 
-    _compare_diameters(neuron_diametrized, neuron)
+    compare_diameters(neuron_diametrized, neuron)
 
 
 def test_build_no_sequential(test_data_path, config, model_params, neuron):
@@ -113,7 +113,7 @@ def test_build_no_sequential(test_data_path, config, model_params, neuron):
         test_data_path / "C030796A-P3_lite_diametrized_astrocyte.h5"
     )
 
-    _compare_diameters(neuron_diametrized, neuron)
+    compare_diameters(neuron_diametrized, neuron)
 
 
 def test_build_small_n_tries_warning(config, model_params, neuron, caplog):
@@ -278,4 +278,4 @@ def test_diametrize_axon(small_morph):
     for section_id, section in expected.sections.items():
         section.diameters = diameters[section_id]
 
-    _compare_diameters(expected, small_morph, rtol=1e-6)
+    compare_diameters(expected, small_morph, rtol=1e-6)

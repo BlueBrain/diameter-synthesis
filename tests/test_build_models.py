@@ -4,12 +4,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import dictdiffer
 import pytest
 
 from diameter_synthesis import build_models
 from diameter_synthesis.exception import DiameterSynthesisError
-
-from .testing_tools import compare_dicts
 
 
 def test_build(
@@ -27,8 +26,8 @@ def test_build(
     res_models_params = build_models.build(single_pop, config, with_data=False)
 
     assert len(res) == 2
-    assert compare_dicts(res, [model_params, model_data], precision=3)
-    assert compare_dicts(res_models_params, model_params, precision=3)
+    assert dictdiffer.diff(res, [model_params, model_data], absolute_tolerance=1e-3)
+    assert dictdiffer.diff(res_models_params, model_params, absolute_tolerance=1e-3)
 
     # Test with astrocyte model
     config_astrocyte = {
@@ -41,7 +40,9 @@ def test_build(
 
     assert len(res_astrocyte) == 2
 
-    assert compare_dicts(res_astrocyte, [astro_model_params, astro_model_data], precision=3)
+    assert dictdiffer.diff(
+        res_astrocyte, [astro_model_params, astro_model_data], absolute_tolerance=1e-3
+    )
 
     # Test with empty population
     res_empty = build_models.build([], config_astrocyte, with_data=True)

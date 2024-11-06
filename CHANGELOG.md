@@ -355,7 +355,7 @@
 > 27 January 2020
 
 - Code cleaning (Alexis Arnaudon - [262c6af](https://github.com/BlueBrain/diameter-synthesis/commit/262c6afcf3a51cf4c5b5ffd01ea8a6f3ced6c391))
-- Simplfied build_diameter (Alexis Arnaudon - [a2d887a](https://github.com/BlueBrain/diameter-synthesis/commit/a2d887a0c7382ab0d82c941f1458fb348984c473))
+- Simplified build_diameter (Alexis Arnaudon - [a2d887a](https://github.com/BlueBrain/diameter-synthesis/commit/a2d887a0c7382ab0d82c941f1458fb348984c473))
 - Generating model to test with diameter-check (arnaudon - [6920a44](https://github.com/BlueBrain/diameter-synthesis/commit/6920a44a7e8502b7e21b92f3f031910d38d5d6d5))
 -  many updates (arnaudon - [9e52c34](https://github.com/BlueBrain/diameter-synthesis/commit/9e52c34d3e7884cd467625eef4aa225b0753cbba))
 - Morphio -&gt; neurom + file reshaping (arnaudon - [0673b93](https://github.com/BlueBrain/diameter-synthesis/commit/0673b935a588f0f1317a062d6ac83152ab1091cd))

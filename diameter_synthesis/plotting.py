@@ -632,6 +632,7 @@ def _analyze_from_dict(max_cells, cells, with_axon=False):
         fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(15, 10))
     fig.subplots_adjust(hspace=0.5)
     plot_violins(data_frame.replace([np.inf, -np.inf], np.nan).dropna(), ax=axes[0])
+    axes[0].legend(title=None, loc="upper right")
     axes[0].set_ylim(-3, 5)
     axes[0].title.set_text("basal dendrites")
 
@@ -647,6 +648,7 @@ def _analyze_from_dict(max_cells, cells, with_axon=False):
 
         data_frame = transform2DataFrame(data, pop_names, flist=VIOLIN_FEATURES_NAME)
         plot_violins(data_frame.replace([np.inf, -np.inf], np.nan).dropna(), ax=axes[1])
+        axes[1].legend(title=None, loc="upper right")
         axes[1].set_ylim(-3, 5)
         axes[1].title.set_text("apical dendrites")
 
@@ -659,6 +661,7 @@ def _analyze_from_dict(max_cells, cells, with_axon=False):
         )
         data_frame = transform2DataFrame(data, pop_names, flist=VIOLIN_FEATURES_NAME)
         plot_violins(data_frame.replace([np.inf, -np.inf], np.nan).dropna(), ax=axes[2])
+        axes[2].legend(title=None, loc="upper right")
         axes[2].set_ylim(-3, 5)
 
     return mtype, fig

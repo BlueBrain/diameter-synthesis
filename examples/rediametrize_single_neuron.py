@@ -1,4 +1,5 @@
 """Example to diametrize single morphologie."""
+
 import matplotlib.pyplot as plt
 import numpy as np
 from morphio.mut import Morphology

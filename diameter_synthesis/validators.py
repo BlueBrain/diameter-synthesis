@@ -5,12 +5,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
+from importlib import resources
 
 from jsonschema import validate
-from pkg_resources import resource_stream
 
-MODEL_SCHEMA = json.load(resource_stream("diameter_synthesis", "schemas/model_params.json"))
-CONFIG_SCHEMA = json.load(resource_stream("diameter_synthesis", "schemas/config.json"))
+MODEL_SCHEMA = json.load(
+    (resources.files("diameter_synthesis") / "schemas" / "model_params.json").open(encoding="utf-8")
+)
+CONFIG_SCHEMA = json.load(
+    (resources.files("diameter_synthesis") / "schemas" / "config.json").open(encoding="utf-8")
+)
 
 
 def validate_model_params(data):

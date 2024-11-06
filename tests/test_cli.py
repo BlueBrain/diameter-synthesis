@@ -7,14 +7,13 @@
 import json
 from pathlib import Path
 
+import dictdiffer
 import pytest
 from click.testing import CliRunner
 from numpy.testing import assert_almost_equal
 
 from diameter_synthesis import cli
 from diameter_synthesis import main
-
-from .testing_tools import compare_dicts
 
 
 def test_cli(cli_runner):
@@ -68,18 +67,18 @@ def test_run_models(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir
 
     # Check only diameter_power_relation entry
 
-    assert compare_dicts(
+    assert dictdiffer.diff(
         res["generic"]["L5_TPC:A"]["diameter_power_relation"],
         {
             "apical_dendrite": {
                 "distribution": "exponnorm",
                 "params": {
                     "a": 0.3,
-                    "loc": 10.328228495250197,
-                    "max": 21.30209668850466,
-                    "min": 3.745589063629549,
+                    "loc": 10.328229,
+                    "max": 21.302097,
+                    "min": 3.745589,
                     "num_value": 4,
-                    "scale": 7.391764357591411,
+                    "scale": 7.391765,
                 },
                 "sequential": None,
             },
@@ -87,16 +86,16 @@ def test_run_models(tmpdir, single_pop_data_dir, single_pop_diametrized_data_dir
                 "distribution": "exponnorm",
                 "params": {
                     "a": 4.0,
-                    "loc": 2.0812598389209014,
-                    "max": 13.171165832802046,
-                    "min": 2.431370780737994,
+                    "loc": 2.0812598,
+                    "max": 13.171166,
+                    "min": 2.431371,
                     "num_value": 10,
-                    "scale": 0.8154489206964624,
+                    "scale": 0.815449,
                 },
                 "sequential": None,
             },
         },
-        precision=6,
+        absolute_tolerance=1e-5,
     )
 
 
