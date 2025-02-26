@@ -1,3 +1,7 @@
+> [!WARNING]
+> The Blue Brain Project concluded in December 2024, so development has ceased under the BlueBrain GitHub organization.
+> Future development will take place at: https://github.com/openbraininstitute/diameter-synthesis
+
 [![Version](https://img.shields.io/pypi/v/diameter-synthesis)](https://github.com/BlueBrain/diameter-synthesis/releases)
 [![Build status](https://github.com/BlueBrain/diameter-synthesis/actions/workflows/run-tox.yml/badge.svg?branch=main)](https://github.com/BlueBrain/diameter-synthesis/actions)
 [![Codecov.io](https://codecov.io/github/BlueBrain/diameter-synthesis/coverage.svg?branch=main)](https://codecov.io/github/BlueBrain/diameter-synthesis?branch=main)
